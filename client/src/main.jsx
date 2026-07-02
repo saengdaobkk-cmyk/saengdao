@@ -20,6 +20,7 @@ import Contact from "./pages/Contact.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminProducts from "./pages/admin/AdminProducts.jsx";
+import AdminTaxonomy from "./pages/admin/AdminTaxonomy.jsx";
 import AdminSlides from "./pages/admin/AdminSlides.jsx";
 import AdminContent from "./pages/admin/AdminContent.jsx";
 import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
@@ -55,6 +56,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
+                <Route path="taxonomy" element={<AdminTaxonomy />} />
                 <Route path="slides" element={<AdminSlides />} />
                 <Route path="content" element={<AdminContent />} />
                 <Route path="integrations" element={<AdminIntegrations />} />

@@ -230,15 +230,60 @@ router.post("/books/import", async (req, res, next) => {
 });
 
 /* ---------- Categories ---------- */
+// auto slug ถ้าไม่กรอก
+const autoSlug = (name, slug) =>
+  (slug?.trim() || String(name).trim().toLowerCase().replace(/[^\w฀-๿]+/g, "-").replace(/^-+|-+$/g, "")).slice(0, 40);
+
 router.post("/categories", async (req, res, next) => {
   try {
     const name = req.body.name?.trim();
-    const slug = req.body.slug?.trim().toLowerCase();
-    if (!name || !slug) return res.status(400).json({ error: "กรอกชื่อและ slug" });
+    const slug = autoSlug(name, req.body.slug);
+    if (!name || !slug) return res.status(400).json({ error: "กรอกชื่อหมวด" });
     const cat = await prisma.category.create({ data: { name, slug } });
     res.status(201).json(cat);
   } catch (err) {
-    if (err.code === "P2002") return res.status(409).json({ error: "หมวดหมู่นี้มีอยู่แล้ว" });
+    if (err.code === "P2002") return res.status(409).json({ error: "ชื่อหมวดหรือ slug ซ้ำ" });
+    next(err);
+  }
+});
+
+router.patch("/categories/:id", async (req, res, next) => {
+  try {
+    const name = req.body.name?.trim();
+    const slug = autoSlug(name, req.body.slug);
+    if (!name || !slug) return res.status(400).json({ error: "กรอกชื่อหมวด" });
+    const cat = await prisma.category.update({ where: { id: req.params.id }, data: { name, slug } });
+    res.json(cat);
+  } catch (err) {
+    if (err.code === "P2002") return res.status(409).json({ error: "ชื่อหมวดหรือ slug ซ้ำ" });
+    next(err);
+  }
+});
+
+router.delete("/categories/:id", async (req, res, next) => {
+  try {
+    // ปลดหนังสือออกจากหมวด (ไม่ลบหนังสือ) แล้วค่อยลบหมวด
+    await prisma.book.updateMany({ where: { categoryId: req.params.id }, data: { categoryId: null } });
+    await prisma.category.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- Publishers (เก็บเป็น string ใน Book) ---------- */
+// เปลี่ยนชื่อ/รวมสำนักพิมพ์ — อัปเดตทุกเล่มที่ใช้ · to ว่าง = ล้างค่า
+router.patch("/publishers", async (req, res, next) => {
+  try {
+    const from = String(req.body.from || "").trim();
+    const to = String(req.body.to || "").trim();
+    if (!from) return res.status(400).json({ error: "ระบุสำนักพิมพ์เดิม" });
+    const r = await prisma.book.updateMany({
+      where: { publisher: from },
+      data: { publisher: to || null },
+    });
+    res.json({ updated: r.count });
+  } catch (err) {
     next(err);
   }
 });

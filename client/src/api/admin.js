@@ -36,6 +36,38 @@ export function useImportBooks() {
   });
 }
 
+/* ---------- Categories / Publishers ---------- */
+export function useSaveCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (c) =>
+      c.id
+        ? (await api.patch(`/admin/categories/${c.id}`, c)).data
+        : (await api.post("/admin/categories", c)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+  });
+}
+export function useDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/categories/${id}`)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+    },
+  });
+}
+export function useRenamePublisher() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ from, to }) => (await api.patch("/admin/publishers", { from, to })).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["publishers"] });
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+    },
+  });
+}
+
 /* ---------- Orders ---------- */
 export const useAdminOrders = () =>
   useQuery({ queryKey: ["admin", "orders"], queryFn: async () => (await api.get("/admin/orders")).data });

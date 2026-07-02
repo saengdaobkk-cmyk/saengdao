@@ -7,6 +7,7 @@ const nav = [
   { to: "/admin", label: "ภาพรวม", end: true, icon: HomeIcon },
   { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
   { to: "/admin/products", label: "สินค้า", icon: ProductIcon },
+  { to: "/admin/taxonomy", label: "หมวด/สำนักพิมพ์", icon: FolderIcon },
   { to: "/admin/slides", label: "สไลด์หน้าแรก", icon: SlideIcon },
   { to: "/admin/content", label: "ข้อความในเว็บ", icon: TextIcon },
   { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon },
@@ -18,6 +19,7 @@ const TITLES = {
   "/admin": "ภาพรวม",
   "/admin/orders": "คำสั่งซื้อ",
   "/admin/products": "สินค้า",
+  "/admin/taxonomy": "หมวด / สำนักพิมพ์",
   "/admin/slides": "สไลด์หน้าแรก",
   "/admin/content": "ข้อความในเว็บ",
   "/admin/coupons": "โค้ดส่วนลด",
@@ -152,5 +154,6 @@ function TagIcon() { return <svg {...base()}><path d="M3 3h8l10 10-8 8L3 11V3Z" 
 function GearIcon() { return <svg {...base()}><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2l-.4-2.6H9.9l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h4.2l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z" /></svg>; }
 function StoreIcon() { return <svg {...base()}><path d="M4 9V5h16v4M4 9l1 11h14l1-11M4 9h16" /></svg>; }
 function SlideIcon() { return <svg {...base()}><rect x="3" y="5" width="18" height="12" rx="2" /><path d="M8 21h8M12 17v4" /></svg>; }
+function FolderIcon() { return <svg {...base()}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></svg>; }
 function TextIcon() { return <svg {...base()}><path d="M4 6h16M4 6V4h16v2M9 6v14M9 20H7m2 0h2" /></svg>; }
 function PlugIcon() { return <svg {...base()}><path d="M9 2v6M15 2v6M7 8h10v3a5 5 0 0 1-10 0V8ZM12 16v6" /></svg>; }
