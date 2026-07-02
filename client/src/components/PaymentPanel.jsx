@@ -1,0 +1,227 @@
+import { useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toBlob } from "html-to-image";
+import { api } from "../lib/api";
+import { useSettings } from "../api/settings";
+import { formatPrice } from "../lib/format";
+
+export default function PaymentPanel({ order }) {
+  const { paymentStatus, paymentMethod, id } = order;
+
+  // ชำระ/รอตรวจแล้ว
+  if (paymentStatus === "PAID")
+    return (
+      <Banner tone="green" title="ชำระเงินเรียบร้อย" desc="ขอบคุณครับ ร้านกำลังจัดเตรียมสินค้าให้คุณ" />
+    );
+
+  if (paymentStatus === "PENDING_REVIEW")
+    return (
+      <div className="mt-6">
+        <Banner tone="amber" title="ได้รับสลิปแล้ว กำลังตรวจสอบ" desc="ร้านจะยืนยันการชำระเงินภายใน 24 ชม." />
+        {order.slipImage && (
+          <a href={order.slipImage} target="_blank" rel="noreferrer" className="mt-3 block">
+            <img src={order.slipImage} alt="สลิป" className="mx-auto max-h-64 rounded-xl border border-line" />
+          </a>
+        )}
+      </div>
+    );
+
+  // ยังไม่จ่าย → แสดงวิธีจ่ายตามช่องทาง
+  return (
+    <div className="mt-8">
+      {paymentMethod === "PROMPTPAY" && <PromptPayBox orderId={id} />}
+      {paymentMethod === "TRANSFER" && <BankBox total={order.total} />}
+      {paymentMethod === "CARD" && (
+        <Banner tone="mist" title="บัตรเครดิต/เดบิต" desc="ช่องทางบัตรจะเปิดใช้งานเร็วๆ นี้ — ระหว่างนี้เลือกพร้อมเพย์หรือโอนเงินได้" />
+      )}
+      {(paymentMethod === "PROMPTPAY" || paymentMethod === "TRANSFER") && <SlipUpload orderId={id} />}
+    </div>
+  );
+}
+
+// ---- PromptPay QR ----
+function PromptPayBox({ orderId }) {
+  const cardRef = useRef(null);
+  const [saving, setSaving] = useState(false);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["promptpay", orderId],
+    queryFn: async () => (await api.get(`/orders/${orderId}/promptpay`)).data,
+  });
+
+  // บันทึกทั้งการ์ด (QR + ชื่อ + ยอด) เป็นรูปเดียว
+  // มือถือ/iPhone → share sheet (มีปุ่ม "บันทึกรูปภาพ") · เดสก์ท็อป → ดาวน์โหลด
+  const saveCard = async () => {
+    if (!cardRef.current) return;
+    setSaving(true);
+    try {
+      const blob = await toBlob(cardRef.current, { backgroundColor: "#ffffff", pixelRatio: 2, cacheBust: true });
+      const name = `saengdao-promptpay-${data.amount}.png`;
+      const file = new File([blob], name, { type: "image/png" });
+
+      // iOS/Android: เปิด share sheet เพื่อเซฟลงคลังรูป
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "ชำระเงิน SAENGDAO" });
+          return;
+        } catch (e) {
+          if (e.name === "AbortError") return; // ผู้ใช้กดยกเลิก
+        }
+      }
+
+      // เดสก์ท็อป: ดาวน์โหลดไฟล์
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // fallback สุดท้าย: เปิด QR ให้กดค้างเซฟเอง
+      window.open(data.qr, "_blank");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-line p-6 text-center">
+      {isLoading && <p className="py-8 text-[13px] text-sub">กำลังสร้าง QR...</p>}
+      {isError && <p className="py-8 text-[13px] text-red-500">สร้าง QR ไม่สำเร็จ (ร้านอาจยังไม่ตั้งค่าพร้อมเพย์)</p>}
+      {data && (
+        <>
+          {/* ส่วนที่ถูกบันทึกเป็นรูป */}
+          <div ref={cardRef} className="bg-white px-4 pb-4 pt-2">
+            <h3 className="text-[15px] font-semibold text-ink">สแกนจ่ายด้วยพร้อมเพย์</h3>
+            <img src={data.qr} alt="PromptPay QR" className="mx-auto my-4 h-56 w-56" />
+            {data.promptpayName && <p className="text-[14px] text-ink">{data.promptpayName}</p>}
+            <p className="text-[13px] text-sub">พร้อมเพย์ · {data.promptpayId}</p>
+            <p className="mt-2 text-[18px] font-semibold text-ink">{formatPrice(data.amount)}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={saveCard}
+            disabled={saving}
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" strokeLinecap="round" />
+            </svg>
+            {saving ? "กำลังบันทึก..." : "บันทึกรูปการชำระเงิน"}
+          </button>
+          <p className="mt-2 text-[11px] text-sub">เซฟรูปแล้วเปิดในแอปธนาคาร → สแกนจากรูปได้เลย</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- โอนเงินผ่านธนาคาร ----
+function BankBox({ total }) {
+  const s = useSettings();
+  return (
+    <div className="rounded-2xl border border-line p-6">
+      <h3 className="mb-4 text-[15px] font-semibold text-ink">โอนเงินเข้าบัญชี</h3>
+      {s.bankAccountNo ? (
+        <dl className="space-y-2 text-[14px]">
+          <Line label="ธนาคาร" value={s.bankName} />
+          <Line label="เลขบัญชี" value={s.bankAccountNo} copy />
+          <Line label="ชื่อบัญชี" value={s.bankAccountName} />
+          <Line label="ยอดโอน" value={formatPrice(total)} strong />
+        </dl>
+      ) : (
+        <p className="text-[13px] text-sub">ร้านยังไม่ได้ตั้งค่าบัญชีธนาคาร</p>
+      )}
+    </div>
+  );
+}
+
+function Line({ label, value, copy, strong }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className="text-sub">{label}</dt>
+      <dd className={`flex items-center gap-2 text-right ${strong ? "text-[16px] font-semibold text-ink" : "text-ink"}`}>
+        {value}
+        {copy && value && (
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(value.replace(/[-\s]/g, ""));
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+            className="rounded-full bg-mist px-2 py-0.5 text-[11px] text-sub hover:text-ink"
+          >
+            {copied ? "คัดลอกแล้ว" : "คัดลอก"}
+          </button>
+        )}
+      </dd>
+    </div>
+  );
+}
+
+// ---- อัปโหลดสลิป ----
+function SlipUpload({ orderId }) {
+  const qc = useQueryClient();
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState("");
+
+  const upload = useMutation({
+    mutationFn: async () => {
+      const fd = new FormData();
+      fd.append("slip", file);
+      return (await api.post(`/orders/${orderId}/slip`, fd)).data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["order", orderId] }),
+    onError: (err) => setError(err.response?.data?.error || "อัปโหลดไม่สำเร็จ"),
+  });
+
+  const pick = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setError("");
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+  };
+
+  return (
+    <div className="mt-4 rounded-2xl border border-line p-6">
+      <h3 className="text-[15px] font-semibold text-ink">แนบสลิปการโอน</h3>
+      <p className="mt-1 text-[12px] text-sub">อัปโหลดรูปสลิปเพื่อยืนยันการชำระเงิน</p>
+
+      {preview && <img src={preview} alt="ตัวอย่างสลิป" className="mx-auto mt-4 max-h-56 rounded-xl border border-line" />}
+
+      <label className="mt-4 flex cursor-pointer items-center justify-center rounded-full border border-dashed border-line py-3 text-[14px] text-sub transition hover:border-ink/30 hover:text-ink">
+        {file ? file.name : "เลือกรูปสลิป"}
+        <input type="file" accept="image/*" onChange={pick} className="hidden" />
+      </label>
+
+      {error && <p className="mt-2 text-[12px] text-red-500">{error}</p>}
+
+      <button
+        onClick={() => upload.mutate()}
+        disabled={!file || upload.isPending}
+        className="mt-4 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-40"
+      >
+        {upload.isPending ? "กำลังส่งสลิป..." : "ส่งสลิปยืนยัน"}
+      </button>
+    </div>
+  );
+}
+
+function Banner({ tone, title, desc }) {
+  const tones = {
+    green: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700",
+    mist: "bg-mist text-ink",
+  };
+  return (
+    <div className={`rounded-2xl px-5 py-4 text-center ${tones[tone]}`}>
+      <p className="text-[15px] font-semibold">{title}</p>
+      <p className="mt-1 text-[13px] opacity-90">{desc}</p>
+    </div>
+  );
+}

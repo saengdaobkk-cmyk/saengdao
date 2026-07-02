@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
+    background-color: #ffffff;
+    color: #1d1d1f;
+  }
+}
+
+/* ช่องที่กรอกผิด — ขอบแดงเรืองแสงนีออนจางๆ */
+@layer components {
+  .neon-error {
+    border-color: #f87171 !important;
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.1),
+      0 0 6px 0 rgba(239, 68, 68, 0.22);
+    animation: neonPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes neonPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.08),
+      0 0 4px 0 rgba(239, 68, 68, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.14),
+      0 0 8px 1px rgba(239, 68, 68, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

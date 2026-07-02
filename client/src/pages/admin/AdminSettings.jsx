@@ -1,0 +1,120 @@
+import { useEffect, useState } from "react";
+import { useSettings, useUpdateSettings } from "../../api/settings";
+
+export default function AdminSettings() {
+  const settings = useSettings();
+  const update = useUpdateSettings();
+
+  return (
+    <div className="space-y-12">
+      {/* การแสดงผล */}
+      <section>
+        <h2 className="mb-4 text-[15px] font-semibold text-ink">การแสดงผล</h2>
+        <div className="divide-y divide-line rounded-2xl border border-line bg-white">
+          <ToggleRow
+            title="Cart Drawer"
+            desc="เปิด: กดตะกร้าแล้วแผงเลื่อนออกจากด้านขวา · ปิด: ไปหน้าตะกร้าเต็มจอ"
+            checked={settings.cartDrawerEnabled}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ cartDrawerEnabled: v })}
+          />
+        </div>
+      </section>
+
+      <PaymentSettings settings={settings} save={update} />
+    </div>
+  );
+}
+
+function PaymentSettings({ settings, save }) {
+  const [form, setForm] = useState({
+    promptpayId: "",
+    promptpayName: "",
+    bankName: "",
+    bankAccountNo: "",
+    bankAccountName: "",
+  });
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setForm({
+      promptpayId: settings.promptpayId || "",
+      promptpayName: settings.promptpayName || "",
+      bankName: settings.bankName || "",
+      bankAccountNo: settings.bankAccountNo || "",
+      bankAccountName: settings.bankAccountName || "",
+    });
+  }, [settings]);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const submit = (e) => {
+    e.preventDefault();
+    setSaved(false);
+    save.mutate(form, { onSuccess: () => setSaved(true) });
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">การชำระเงิน</h2>
+      <p className="mb-4 text-[12px] text-sub">แสดงให้ลูกค้าเห็นตอนชำระเงิน (QR สร้างจากพร้อมเพย์อัตโนมัติ)</p>
+
+      <form onSubmit={submit} className="space-y-6 rounded-2xl border border-line bg-white p-6">
+        <div>
+          <p className="mb-3 text-[13px] font-semibold text-ink">พร้อมเพย์</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="เบอร์ / เลขบัตรประชาชน" value={form.promptpayId} onChange={set("promptpayId")} placeholder="0812345678" />
+            <Input label="ชื่อบัญชีพร้อมเพย์" value={form.promptpayName} onChange={set("promptpayName")} />
+          </div>
+        </div>
+        <div>
+          <p className="mb-3 text-[13px] font-semibold text-ink">บัญชีธนาคาร</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="ธนาคาร" value={form.bankName} onChange={set("bankName")} />
+            <Input label="เลขบัญชี" value={form.bankAccountNo} onChange={set("bankAccountNo")} />
+            <Input label="ชื่อบัญชี" value={form.bankAccountName} onChange={set("bankAccountName")} />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function ToggleRow({ title, desc, checked, onChange, disabled }) {
+  return (
+    <div className="flex items-center justify-between gap-6 px-5 py-4">
+      <div>
+        <p className="text-[14px] font-medium text-ink">{title}</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-sub">{desc}</p>
+      </div>
+      <button
+        role="switch"
+        aria-checked={checked}
+        aria-label={title}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${checked ? "bg-accent" : "bg-line"}`}
+      >
+        <span
+          className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, placeholder }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-[12px] font-medium text-sub">{label}</span>
+      <input value={value} onChange={onChange} placeholder={placeholder} className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30" />
+    </label>
+  );
+}

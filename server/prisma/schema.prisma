@@ -1,0 +1,223 @@
+// Prisma schema — Bookstore
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ตั้งค่าร้าน (key-value) เช่น เปิด/ปิด Cart Drawer
+model Setting {
+  key   String @id
+  value String
+}
+
+// ข้อความในเว็บ (จัดการจากหลังบ้าน) — แยกตาม section
+model Content {
+  key     String @id // เช่น "checkout.title"
+  section String // เช่น "checkout"
+  label   String // คำอธิบายภาษาไทยว่าช่องนี้คืออะไร
+  value   String // ข้อความจริง
+  order   Int    @default(0)
+
+  @@index([section])
+}
+
+// สไลด์ hero หน้าแรก (จัดการจากหลังบ้าน)
+model Slide {
+  id        String   @id @default(uuid())
+  eyebrow   String? // ข้อความเล็กด้านบน
+  title     String // หัวข้อใหญ่ (ขึ้นบรรทัดใหม่ได้)
+  subtitle  String?
+  ctaText   String? // ข้อความปุ่ม
+  ctaLink   String   @default("#catalog")
+  image     String? // URL รูปพื้นหลัง
+  bgColor   String? // สีพื้นหลัง (ถ้าไม่มีรูป) เช่น #1d1d1f
+  dark      Boolean  @default(true) // true = ตัวหนังสือสีขาว
+  align     String   @default("center") // แนวนอน: left|center|right
+  valign    String   @default("center") // แนวตั้ง: top|center|bottom
+  overlay   Int      @default(0) // ความเข้มแผ่นแรเงาบนรูป 0-100 (0=เห็นรูปชัด)
+  linkUrl         String? // คลิกที่รูป banner ไปที่ URL นี้
+  textColor       String? // สีตัวอักษร (override dark)
+  buttonColor     String? // สีพื้นปุ่ม CTA
+  buttonTextColor String? // สีตัวอักษรปุ่ม
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+enum DiscountType {
+  PERCENT // ลดเป็นเปอร์เซ็นต์
+  FIXED // ลดเป็นจำนวนเงิน
+}
+
+// โค้ดส่วนลด
+model Coupon {
+  id          String       @id @default(uuid())
+  code        String       @unique
+  type        DiscountType
+  value       Decimal      @db.Decimal(10, 2)
+  minSubtotal Decimal?     @db.Decimal(10, 2) // ยอดขั้นต่ำที่ใช้ได้
+  active      Boolean      @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime     @default(now())
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  phone     String?
+  address   String? // ที่อยู่จัดส่ง
+  // ข้อมูลออกใบเสร็จที่บันทึกไว้
+  receiptName    String?
+  receiptTaxId   String?
+  receiptAddress String?
+  role      Role     @default(USER)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String @unique
+  books Book[]
+}
+
+model Book {
+  id            String      @id @default(uuid())
+  title         String
+  author        String // ผู้เขียน (หลายชื่อคั่นด้วย ,)
+  translator    String? // ผู้แปล
+  isbn          String?     @unique
+  description   String?
+  price         Decimal     @db.Decimal(10, 2)
+  discountPrice Decimal?    @db.Decimal(10, 2) // ราคาลด
+  stock         Int         @default(0)
+  soldCount     Int         @default(0)
+  featured      Boolean     @default(false) // แนะนำหน้าแรก
+  tags          String[]    @default([]) // แท็ก เช่น ขายดี/ใหม่/แนะนำ
+  coverImage    String?
+  backCoverImage String? // ปกหลัง
+  galleryImages String[]   @default([]) // รูปแกลเลอรี
+  previewPdf    String? // ไฟล์ตัวอย่าง PDF (flip book)
+  categoryId    String?
+  category      Category?   @relation(fields: [categoryId], references: [id])
+  // ข้อมูลจำเพาะ (Meta)
+  publisher     String? // สำนักพิมพ์
+  edition       String? // พิมพ์ครั้งที่
+  pageCount     Int?
+  dimensions    String?
+  weight        String?
+  paperType     String? // กระดาษเนื้อใน
+  coverType     String? // ปกอ่อน/ปกแข็ง
+  // รหัส & SEO
+  sku           String?
+  metaTitle     String?
+  metaDescription String?
+  slug          String?    @unique
+  importedAt    DateTime? // วันที่นำเข้า (จัดลำดับ collection)
+  variants      Variant[]
+  orderItems    OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([categoryId])
+  @@index([title])
+}
+
+// ตัวเลือกสินค้า เช่น ปกอ่อน/ปกแข็ง/Boxset — แต่ละแบบมีราคา+สต็อกของตัวเอง
+model Variant {
+  id            String   @id @default(uuid())
+  bookId        String
+  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  name          String
+  price         Decimal  @db.Decimal(10, 2)
+  discountPrice Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  order         Int      @default(0)
+
+  @@index([bookId])
+}
+
+enum OrderStatus {
+  PENDING // รอชำระเงิน
+  PAID // ชำระแล้ว (รอตรวจ/รอส่ง)
+  SHIPPED // จัดส่งแล้ว
+  COMPLETED // สำเร็จ
+  CANCELLED // ยกเลิก
+}
+
+enum PaymentMethod {
+  PROMPTPAY // PromptPay QR (สร้างเอง + แนบสลิป)
+  CARD // บัตรเครดิต (Omise)
+  TRANSFER // โอนเงิน + แนบสลิป
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING_REVIEW // แนบสลิปแล้ว รอ admin ยืนยัน
+  PAID
+  FAILED
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  total           Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+  // ที่อยู่จัดส่ง / ติดต่อ
+  shipName        String
+  shipPhone       String
+  shipAddress     String
+  email           String? // อีเมลสำหรับส่งใบยืนยัน
+  // ใบเสร็จรับเงิน / ใบกำกับภาษี
+  needReceipt     Boolean       @default(false)
+  receiptName     String?
+  receiptTaxId    String?
+  receiptAddress  String?
+  // หมายเหตุ + ส่วนลด
+  note            String?
+  discountCode    String?
+  discount        Decimal       @default(0) @db.Decimal(10, 2)
+  zortOrderId     String? // id ออเดอร์ใน ZORT หลัง sync
+  // การชำระเงิน
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus @default(UNPAID)
+  slipImage       String? // URL รูปสลิป (PromptPay/โอนเงิน)
+  omiseChargeId   String? // สำหรับบัตรเครดิต
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId      String
+  book        Book    @relation(fields: [bookId], references: [id])
+  variantId   String? // ตัวเลือกที่เลือก (ถ้ามี)
+  variantName String? // ชื่อ variant ณ ตอนซื้อ (เก็บไว้เผื่อ variant ถูกลบ)
+  quantity    Int
+  price       Decimal @db.Decimal(10, 2) // ราคา ณ ตอนซื้อ
+
+  @@index([orderId])
+}
