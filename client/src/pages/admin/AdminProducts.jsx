@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf } from "../../api/admin";
 import { useCategories } from "../../api/books";
 import { formatPrice } from "../../lib/format";
+import ImportBooks from "./ImportBooks";
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
@@ -16,6 +17,7 @@ export default function AdminProducts() {
   const { data: categories } = useCategories();
   const del = useDeleteBook();
   const [editing, setEditing] = useState(null);
+  const [importing, setImporting] = useState(false);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
@@ -52,10 +54,17 @@ export default function AdminProducts() {
           <option value="out">สินค้าหมด</option>
           <option value="featured">แนะนำหน้าแรก</option>
         </select>
-        <button onClick={() => setEditing(EMPTY)} className="ml-auto rounded-full bg-accent px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90">
-          + เพิ่มหนังสือ
-        </button>
+        <div className="ml-auto flex gap-2">
+          <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+            ⬆ นำเข้า CSV/Excel
+          </button>
+          <button onClick={() => setEditing(EMPTY)} className="rounded-full bg-accent px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90">
+            + เพิ่มหนังสือ
+          </button>
+        </div>
       </div>
+
+      {importing && <ImportBooks onClose={() => setImporting(false)} />}
 
       {isLoading ? (
         <p className="text-sub">กำลังโหลด...</p>
@@ -267,8 +276,8 @@ function BookForm({ book, categories, onClose }) {
         {/* ขวา */}
         <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
           <Card>
-            <F label="รูปปก" hint="jpg/png/webp ≤ 4MB">
-              <div className="mb-3 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-xl bg-mist">
+            <F label="รูปปก" hint="สัดส่วน 145:210 (เช่น 600×870) · jpg/png/webp ≤ 4MB">
+              <div className="mb-3 flex aspect-[145/210] items-center justify-center overflow-hidden rounded-xl bg-mist">
                 {form.coverImage ? <img src={form.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-3xl opacity-25">𝐀</span>}
               </div>
               <UploadBtn busy={busy.coverImage} onChange={(e) => onCover(e, "coverImage")} label={form.coverImage ? "เปลี่ยนรูปปก" : "อัปโหลดรูปปก"} />

@@ -29,7 +29,7 @@ export default function BookRow({ title, eyebrow, sort }) {
         <div className="flex gap-5 overflow-hidden">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="w-[160px] shrink-0 animate-pulse sm:w-[200px]">
-              <div className="aspect-[3/4] rounded-2xl bg-mist" />
+              <div className="aspect-[145/210] rounded-2xl bg-mist" />
               <div className="mt-3 h-3 w-2/3 rounded bg-mist" />
             </div>
           ))}

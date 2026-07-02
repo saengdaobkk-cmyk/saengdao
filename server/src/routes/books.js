@@ -7,7 +7,7 @@ const router = Router();
 // รองรับ ค้นหา (title/author) + กรองหมวด (slug) + แบ่งหน้า + เรียง
 router.get("/", async (req, res, next) => {
   try {
-    const { q, category, sort } = req.query;
+    const { q, category, publisher, sort } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(48, Math.max(1, parseInt(req.query.limit) || 12));
 
@@ -20,6 +20,9 @@ router.get("/", async (req, res, next) => {
     }
     if (category) {
       where.category = { slug: category };
+    }
+    if (publisher) {
+      where.publisher = publisher;
     }
 
     const orderBy =
@@ -54,6 +57,25 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// GET /api/books/publishers — รายชื่อสำนักพิมพ์ + จำนวนหนังสือ
+router.get("/publishers", async (req, res, next) => {
+  try {
+    const rows = await prisma.book.groupBy({
+      by: ["publisher"],
+      where: { publisher: { not: null } },
+      _count: { publisher: true },
+      orderBy: { _count: { publisher: "desc" } },
+    });
+    res.json(
+      rows
+        .filter((r) => r.publisher?.trim())
+        .map((r) => ({ name: r.publisher, count: r._count.publisher }))
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/books/:id — รองรับทั้ง id และ slug
 router.get("/:id", async (req, res, next) => {
   try {
@@ -67,6 +89,26 @@ router.get("/:id", async (req, res, next) => {
     });
     if (!book) return res.status(404).json({ error: "ไม่พบหนังสือเล่มนี้" });
     res.json(book);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/books/:id/related — เล่มใกล้เคียง (หมวดเดียวกัน, ไม่รวมเล่มนี้)
+router.get("/:id/related", async (req, res, next) => {
+  try {
+    const book = await prisma.book.findUnique({
+      where: { id: req.params.id },
+      select: { categoryId: true },
+    });
+    if (!book) return res.json([]);
+    const related = await prisma.book.findMany({
+      where: { id: { not: req.params.id }, categoryId: book.categoryId || undefined },
+      orderBy: { soldCount: "desc" },
+      take: 4,
+      include: { category: { select: { name: true } } },
+    });
+    res.json(related);
   } catch (err) {
     next(err);
   }

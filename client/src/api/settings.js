@@ -9,6 +9,14 @@ const FALLBACK = {
   bankName: "",
   bankAccountNo: "",
   bankAccountName: "",
+  contactPhone: "",
+  contactEmail: "",
+  contactLine: "",
+  contactAddress: "",
+  contactHours: "",
+  socialFacebook: "",
+  socialInstagram: "",
+  socialLine: "",
 };
 
 export function useSettings() {

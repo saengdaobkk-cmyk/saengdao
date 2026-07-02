@@ -21,8 +21,60 @@ export default function AdminSettings() {
         </div>
       </section>
 
+      <ContactSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
+  );
+}
+
+function ContactSettings({ settings, save }) {
+  const keys = ["contactPhone", "contactEmail", "contactLine", "contactAddress", "contactHours", "socialFacebook", "socialInstagram", "socialLine"];
+  const [form, setForm] = useState({});
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setForm(Object.fromEntries(keys.map((k) => [k, settings[k] || ""])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const submit = (e) => {
+    e.preventDefault();
+    setSaved(false);
+    save.mutate(form, { onSuccess: () => setSaved(true) });
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ข้อมูลติดต่อ</h2>
+      <p className="mb-4 text-[12px] text-sub">แสดงบนหน้า "ติดต่อเรา" และ footer</p>
+      <form onSubmit={submit} className="space-y-6 rounded-2xl border border-line bg-white p-6">
+        <div>
+          <p className="mb-3 text-[13px] font-semibold text-ink">ติดต่อ</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="เบอร์โทรศัพท์" value={form.contactPhone} onChange={set("contactPhone")} placeholder="0812345678" />
+            <Input label="อีเมล" value={form.contactEmail} onChange={set("contactEmail")} placeholder="hello@saengdao.com" />
+            <Input label="LINE ID" value={form.contactLine} onChange={set("contactLine")} placeholder="@saengdao" />
+            <Input label="เวลาทำการ" value={form.contactHours} onChange={set("contactHours")} placeholder="จ–ส 09:00–18:00" />
+            <Input label="ที่อยู่" value={form.contactAddress} onChange={set("contactAddress")} placeholder="123 ถนน... กรุงเทพฯ" className="sm:col-span-2" />
+          </div>
+        </div>
+        <div>
+          <p className="mb-3 text-[13px] font-semibold text-ink">โซเชียล (ลิงก์เพจ)</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input label="Facebook (URL)" value={form.socialFacebook} onChange={set("socialFacebook")} placeholder="https://facebook.com/..." />
+            <Input label="Instagram (URL)" value={form.socialInstagram} onChange={set("socialInstagram")} placeholder="https://instagram.com/..." />
+            <Input label="LINE (URL)" value={form.socialLine} onChange={set("socialLine")} placeholder="https://lin.ee/..." />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+        </div>
+      </form>
+    </section>
   );
 }
 
@@ -110,9 +162,9 @@ function ToggleRow({ title, desc, checked, onChange, disabled }) {
   );
 }
 
-function Input({ label, value, onChange, placeholder }) {
+function Input({ label, value, onChange, placeholder, className = "" }) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       <span className="mb-1.5 block text-[12px] font-medium text-sub">{label}</span>
       <input value={value} onChange={onChange} placeholder={placeholder} className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30" />
     </label>

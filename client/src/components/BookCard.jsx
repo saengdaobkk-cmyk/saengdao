@@ -5,7 +5,7 @@ export default function BookCard({ book }) {
   return (
     <Link to={`/books/${book.id}`} className="group block">
       {/* ปก */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-mist">
+      <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         {book.coverImage ? (
           <img
             src={book.coverImage}

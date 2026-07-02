@@ -19,10 +19,28 @@ export function useBook(id) {
   });
 }
 
+// เล่มใกล้เคียง (หมวดเดียวกัน)
+export function useRelated(id) {
+  return useQuery({
+    queryKey: ["related", id],
+    queryFn: async () => (await api.get(`/books/${id}/related`)).data,
+    enabled: !!id,
+  });
+}
+
 // หมวดหมู่
 export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: async () => (await api.get("/categories")).data,
+  });
+}
+
+// สำนักพิมพ์ (+ จำนวนหนังสือ)
+export function usePublishers() {
+  return useQuery({
+    queryKey: ["publishers"],
+    queryFn: async () => (await api.get("/books/publishers")).data,
+    staleTime: 1000 * 60,
   });
 }

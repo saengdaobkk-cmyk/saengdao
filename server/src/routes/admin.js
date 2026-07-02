@@ -146,6 +146,89 @@ router.delete("/books/:id", async (req, res, next) => {
   }
 });
 
+// POST /admin/books/import — นำเข้าหลายเล่มจากตาราง (rows = array ของ object)
+router.post("/books/import", async (req, res, next) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    if (rows.length === 0) return res.status(400).json({ error: "ไม่มีข้อมูลให้นำเข้า" });
+    if (rows.length > 2000) return res.status(400).json({ error: "นำเข้าได้ครั้งละไม่เกิน 2000 แถว" });
+
+    // เตรียมหมวด (หา/สร้างตามชื่อ)
+    const cats = await prisma.category.findMany();
+    const catByName = new Map(cats.map((c) => [c.name.trim().toLowerCase(), c]));
+    const slugify = (s) =>
+      String(s).trim().toLowerCase().replace(/[^\w฀-๿]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || null;
+
+    const val = (r, ...keys) => {
+      for (const k of keys) if (r[k] != null && String(r[k]).trim() !== "") return String(r[k]).trim();
+      return "";
+    };
+    const truthy = (v) => v === 1 || v === "1" || v === true || /^(true|yes|y|ใช่)$/i.test(String(v || ""));
+
+    let created = 0;
+    const errors = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const line = i + 2; // แถวในไฟล์ (มี header)
+      try {
+        const title = val(r, "title", "ชื่อหนังสือ", "ชื่อสินค้า");
+        if (!title) { errors.push({ line, error: "ไม่มีชื่อหนังสือ (title)" }); continue; }
+        const price = Number(val(r, "price", "ราคา", "ราคาปกติ"));
+        if (!price || price <= 0) { errors.push({ line, error: "ราคาไม่ถูกต้อง" }); continue; }
+
+        // หมวด
+        let categoryId = null;
+        const cname = val(r, "category", "หมวด", "หมวดหมู่");
+        if (cname) {
+          let cat = catByName.get(cname.toLowerCase());
+          if (!cat) {
+            cat = await prisma.category.create({ data: { name: cname, slug: slugify(cname) || `cat-${Date.now()}` } });
+            catByName.set(cname.toLowerCase(), cat);
+          }
+          categoryId = cat.id;
+        }
+
+        const saleRaw = val(r, "sale_price", "ราคาลด", "discount_price");
+        const pagesRaw = val(r, "pages", "pageCount", "จำนวนหน้า");
+        const tagsRaw = val(r, "tags", "แท็ก");
+
+        await prisma.book.create({
+          data: {
+            title,
+            author: val(r, "author", "ผู้เขียน", "ผู้แต่ง"),
+            translator: val(r, "translator", "ผู้แปล") || null,
+            price,
+            discountPrice: saleRaw ? Number(saleRaw) : null,
+            stock: parseInt(val(r, "stock", "สต็อก")) || 0,
+            featured: truthy(r.is_featured ?? r.featured ?? r["แนะนำ"]),
+            publisher: val(r, "publisher", "สำนักพิมพ์") || null,
+            edition: val(r, "edition", "พิมพ์ครั้งที่") || null,
+            pageCount: pagesRaw ? parseInt(pagesRaw) : null,
+            dimensions: val(r, "dimensions", "ขนาด") || null,
+            weight: val(r, "weight", "น้ำหนัก") || null,
+            paperType: val(r, "paper_inner", "paperType", "กระดาษเนื้อใน") || null,
+            coverType: val(r, "cover_type", "coverType", "ปก") || null,
+            isbn: val(r, "isbn", "ISBN") || null,
+            sku: val(r, "sku", "SKU") || null,
+            coverImage: val(r, "image_url", "coverImage", "รูปปก") || null,
+            description: val(r, "description", "รายละเอียด") || null,
+            tags: tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [],
+            categoryId,
+          },
+        });
+        created++;
+      } catch (e) {
+        errors.push({ line, error: e.code === "P2002" ? "ISBN/Slug ซ้ำกับเล่มอื่น" : e.message });
+      }
+    }
+
+    res.json({ created, failed: errors.length, errors: errors.slice(0, 50) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ---------- Categories ---------- */
 router.post("/categories", async (req, res, next) => {
   try {

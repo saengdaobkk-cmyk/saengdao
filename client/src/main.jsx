@@ -7,6 +7,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { CartProvider } from "./cart/CartContext";
 import App from "./App.jsx";
 import Home from "./pages/Home.jsx";
+import Collection from "./pages/Collection.jsx";
 import BookDetail from "./pages/BookDetail.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -14,6 +15,8 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderConfirm from "./pages/OrderConfirm.jsx";
 import Account from "./pages/Account.jsx";
+import About from "./pages/About.jsx";
+import Contact from "./pages/Contact.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminProducts from "./pages/admin/AdminProducts.jsx";
@@ -36,6 +39,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               {/* หน้าร้าน */}
               <Route path="/" element={<App />}>
                 <Route index element={<Home />} />
+                <Route path="books" element={<Collection />} />
                 <Route path="books/:id" element={<BookDetail />} />
                 <Route path="login" element={<Login />} />
                 <Route path="register" element={<Register />} />
@@ -43,6 +47,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="orders/:id" element={<OrderConfirm />} />
               <Route path="account" element={<Account />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
               </Route>
 
               {/* หลังร้าน — layout แยกเอกเทศ */}

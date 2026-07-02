@@ -28,6 +28,14 @@ export function useDeleteBook() {
   });
 }
 
+export function useImportBooks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows) => (await api.post("/admin/books/import", { rows })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "books"] }),
+  });
+}
+
 /* ---------- Orders ---------- */
 export const useAdminOrders = () =>
   useQuery({ queryKey: ["admin", "orders"], queryFn: async () => (await api.get("/admin/orders")).data });

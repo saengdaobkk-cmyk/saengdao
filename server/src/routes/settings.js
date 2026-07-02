@@ -12,6 +12,15 @@ const STRING_KEYS = [
   "bankName", // ธนาคาร
   "bankAccountNo", // เลขบัญชี
   "bankAccountName", // ชื่อบัญชี
+  // ข้อมูลติดต่อ (สาธารณะ — แสดงบนเว็บ)
+  "contactPhone",
+  "contactEmail",
+  "contactLine",
+  "contactAddress",
+  "contactHours",
+  "socialFacebook",
+  "socialInstagram",
+  "socialLine",
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -20,6 +29,14 @@ const DEFAULTS = {
   bankName: "",
   bankAccountNo: "",
   bankAccountName: "",
+  contactPhone: "",
+  contactEmail: "",
+  contactLine: "",
+  contactAddress: "",
+  contactHours: "",
+  socialFacebook: "",
+  socialInstagram: "",
+  socialLine: "",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด
