@@ -61,6 +61,23 @@ enum DiscountType {
   FIXED // ลดเป็นจำนวนเงิน
 }
 
+enum TermType {
+  PUBLISHER // สำนักพิมพ์
+  AUTHOR // ผู้เขียน
+  TRANSLATOR // ผู้แปล
+}
+
+// รายชื่อ (collection) ที่จัดการได้ — หนังสือเก็บเป็นข้อความ, Term เป็นแคตตาล็อกให้เลือก
+model Term {
+  id        String   @id @default(uuid())
+  type      TermType
+  name      String
+  createdAt DateTime @default(now())
+
+  @@unique([type, name])
+  @@index([type])
+}
+
 // โค้ดส่วนลด
 model Coupon {
   id          String       @id @default(uuid())

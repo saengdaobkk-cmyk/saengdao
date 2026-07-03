@@ -36,11 +36,20 @@ export function useCategories() {
   });
 }
 
-// สำนักพิมพ์ (+ จำนวนหนังสือ)
+// สำนักพิมพ์ (+ จำนวนหนังสือ) — ใช้หน้าแรก section
 export function usePublishers() {
   return useQuery({
     queryKey: ["publishers"],
     queryFn: async () => (await api.get("/books/publishers")).data,
+    staleTime: 1000 * 60,
+  });
+}
+
+// รายชื่อ term (PUBLISHER/AUTHOR/TRANSLATOR) สำหรับ datalist ในฟอร์ม
+export function useTermList(type) {
+  return useQuery({
+    queryKey: ["terms", type],
+    queryFn: async () => (await api.get(`/terms?type=${type}`)).data,
     staleTime: 1000 * 60,
   });
 }

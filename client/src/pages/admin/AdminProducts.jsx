@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf } from "../../api/admin";
-import { useCategories } from "../../api/books";
+import { useCategories, useTermList } from "../../api/books";
 import { formatPrice } from "../../lib/format";
 import ImportBooks from "./ImportBooks";
 
@@ -130,6 +130,9 @@ function Tag({ children, color }) {
 /* ============ ฟอร์มเต็มหน้า ============ */
 function BookForm({ book, categories, onClose }) {
   const save = useSaveBook();
+  const pubs = useTermList("PUBLISHER").data || [];
+  const authors = useTermList("AUTHOR").data || [];
+  const translators = useTermList("TRANSLATOR").data || [];
   const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState({});
@@ -172,6 +175,11 @@ function BookForm({ book, categories, onClose }) {
 
   return (
     <form onSubmit={submit}>
+      {/* datalist แนะนำรายชื่อ (จาก collection) */}
+      <datalist id="dl-publisher">{pubs.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="dl-author">{authors.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="dl-translator">{translators.map((n) => <option key={n} value={n} />)}</datalist>
+
       <h2 className="mb-6 text-2xl font-semibold tracking-tightest text-ink">{book.id ? "แก้ไขหนังสือ" : "เพิ่มหนังสือ"}</h2>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
@@ -180,8 +188,8 @@ function BookForm({ book, categories, onClose }) {
           <Card>
             <F label="ชื่อหนังสือ *"><Inp value={form.title} onChange={set("title")} /></F>
             <div className="grid gap-4 sm:grid-cols-2">
-              <F label="ผู้เขียน" hint="หลายชื่อคั่นด้วย ,"><Inp value={form.author} onChange={set("author")} /></F>
-              <F label="ผู้แปล" hint="หลายชื่อคั่นด้วย ,"><Inp value={form.translator} onChange={set("translator")} /></F>
+              <F label="ผู้เขียน" hint="หลายชื่อคั่นด้วย ,"><Inp value={form.author} onChange={set("author")} list="dl-author" /></F>
+              <F label="ผู้แปล" hint="หลายชื่อคั่นด้วย ,"><Inp value={form.translator} onChange={set("translator")} list="dl-translator" /></F>
             </div>
             <F label="หมวดหนังสือ">
               <Select value={form.categoryId || ""} onChange={set("categoryId")}>
@@ -205,7 +213,7 @@ function BookForm({ book, categories, onClose }) {
 
           <Card title="ข้อมูลจำเพาะ (Meta)">
             <div className="grid gap-4 sm:grid-cols-2">
-              <F label="สำนักพิมพ์"><Inp value={form.publisher} onChange={set("publisher")} /></F>
+              <F label="สำนักพิมพ์"><Inp value={form.publisher} onChange={set("publisher")} list="dl-publisher" /></F>
               <F label="พิมพ์ครั้งที่"><Inp value={form.edition} onChange={set("edition")} /></F>
               <F label="จำนวนหน้า"><Inp type="number" value={form.pageCount ?? ""} onChange={set("pageCount")} /></F>
               <F label="ขนาด"><Inp value={form.dimensions} onChange={set("dimensions")} placeholder="14.5 × 21 cm." /></F>

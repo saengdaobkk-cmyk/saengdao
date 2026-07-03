@@ -57,11 +57,31 @@ export function useDeleteCategory() {
     },
   });
 }
-export function useRenamePublisher() {
+// Terms: สำนักพิมพ์ / ผู้เขียน / ผู้แปล (collection)
+export const useAdminTerms = (type) =>
+  useQuery({ queryKey: ["admin", "terms", type], queryFn: async () => (await api.get(`/admin/terms?type=${type}`)).data });
+
+export function useSaveTerm(type) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ from, to }) => (await api.patch("/admin/publishers", { from, to })).data,
+    mutationFn: async (t) =>
+      t.id
+        ? (await api.patch(`/admin/terms/${t.id}`, { name: t.name })).data
+        : (await api.post("/admin/terms", { type, name: t.name })).data,
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "terms", type] });
+      qc.invalidateQueries({ queryKey: ["publishers"] });
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+    },
+  });
+}
+
+export function useDeleteTerm(type) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/terms/${id}`)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "terms", type] });
       qc.invalidateQueries({ queryKey: ["publishers"] });
       qc.invalidateQueries({ queryKey: ["admin", "books"] });
     },

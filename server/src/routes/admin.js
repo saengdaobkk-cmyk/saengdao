@@ -5,6 +5,7 @@ import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
 import { ZK, ZORT_DEFAULT_BASE, getZortConfig, testZortConnection, pushOrderToZort } from "../lib/zort.js";
+import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks } from "../lib/terms.js";
 
 const router = Router();
 router.use(authenticate, requireAdmin); // ทุก endpoint เฉพาะ admin
@@ -108,6 +109,7 @@ router.post("/books", async (req, res, next) => {
       data: { ...data, variants: { create: variantCreate(req.body) } },
       include: { variants: true },
     });
+    await syncTermsFromBook(book);
     res.status(201).json(book);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "ISBN หรือ Slug ซ้ำกับเล่มอื่น" });
@@ -126,6 +128,7 @@ router.patch("/books/:id", async (req, res, next) => {
       data: { ...data, variants: { deleteMany: {}, create: variantCreate(req.body) } },
       include: { variants: true },
     });
+    await syncTermsFromBook(book);
     res.json(book);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "ISBN หรือ Slug ซ้ำกับเล่มอื่น" });
@@ -193,7 +196,7 @@ router.post("/books/import", async (req, res, next) => {
         const pagesRaw = val(r, "pages", "pageCount", "จำนวนหน้า");
         const tagsRaw = val(r, "tags", "แท็ก");
 
-        await prisma.book.create({
+        const newBook = await prisma.book.create({
           data: {
             title,
             author: val(r, "author", "ผู้เขียน", "ผู้แต่ง"),
@@ -217,6 +220,7 @@ router.post("/books/import", async (req, res, next) => {
             categoryId,
           },
         });
+        await syncTermsFromBook(newBook);
         created++;
       } catch (e) {
         errors.push({ line, error: e.code === "P2002" ? "ISBN/Slug ซ้ำกับเล่มอื่น" : e.message });
@@ -271,18 +275,63 @@ router.delete("/categories/:id", async (req, res, next) => {
   }
 });
 
-/* ---------- Publishers (เก็บเป็น string ใน Book) ---------- */
-// เปลี่ยนชื่อ/รวมสำนักพิมพ์ — อัปเดตทุกเล่มที่ใช้ · to ว่าง = ล้างค่า
-router.patch("/publishers", async (req, res, next) => {
+/* ---------- Terms: สำนักพิมพ์ / ผู้เขียน / ผู้แปล (collection) ---------- */
+// GET /admin/terms?type=PUBLISHER|AUTHOR|TRANSLATOR
+router.get("/terms", async (req, res, next) => {
   try {
-    const from = String(req.body.from || "").trim();
-    const to = String(req.body.to || "").trim();
-    if (!from) return res.status(400).json({ error: "ระบุสำนักพิมพ์เดิม" });
-    const r = await prisma.book.updateMany({
-      where: { publisher: from },
-      data: { publisher: to || null },
-    });
-    res.json({ updated: r.count });
+    const type = String(req.query.type || "").toUpperCase();
+    if (!TERM_TYPES.includes(type)) return res.status(400).json({ error: "type ไม่ถูกต้อง" });
+    res.json(await listTermsWithCount(type));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/terms", async (req, res, next) => {
+  try {
+    const type = String(req.body.type || "").toUpperCase();
+    const name = String(req.body.name || "").trim();
+    if (!TERM_TYPES.includes(type)) return res.status(400).json({ error: "type ไม่ถูกต้อง" });
+    if (!name) return res.status(400).json({ error: "กรอกชื่อ" });
+    const t = await prisma.term.create({ data: { type, name } });
+    res.status(201).json(t);
+  } catch (err) {
+    if (err.code === "P2002") return res.status(409).json({ error: "มีชื่อนี้อยู่แล้ว" });
+    next(err);
+  }
+});
+
+router.patch("/terms/:id", async (req, res, next) => {
+  try {
+    const name = String(req.body.name || "").trim();
+    if (!name) return res.status(400).json({ error: "กรอกชื่อ" });
+    const term = await prisma.term.findUnique({ where: { id: req.params.id } });
+    if (!term) return res.status(404).json({ error: "ไม่พบรายชื่อ" });
+
+    const updated = await renameTermInBooks(term.type, term.name, name); // อัปเดตหนังสือ
+    try {
+      const t = await prisma.term.update({ where: { id: term.id }, data: { name } });
+      res.json({ ...t, updated });
+    } catch (e) {
+      // ชื่อใหม่ซ้ำกับ term ที่มีอยู่ → รวมกัน (ลบตัวเดิม)
+      if (e.code === "P2002") {
+        await prisma.term.delete({ where: { id: term.id } });
+        return res.json({ merged: true, updated });
+      }
+      throw e;
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/terms/:id", async (req, res, next) => {
+  try {
+    const term = await prisma.term.findUnique({ where: { id: req.params.id } });
+    if (!term) return res.json({ ok: true });
+    const cleared = await renameTermInBooks(term.type, term.name, null); // ล้างออกจากหนังสือ
+    await prisma.term.delete({ where: { id: term.id } });
+    res.json({ ok: true, cleared });
   } catch (err) {
     next(err);
   }
