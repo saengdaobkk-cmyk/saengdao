@@ -112,8 +112,9 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
     const el = stageRef.current;
     el.style.cssText = ""; // ล้าง inline เก่าตอน rebuild
 
-    // มือถือ/จอแคบ = เลื่อนดูภาพเต็มความกว้าง (flip เล็กจนอ่านไม่ออก)
-    if (availW < 720) {
+    // มือถือ/แท็บเล็ตแนวตั้ง/จอแคบ = เลื่อนดูภาพเต็มความกว้าง (flip คู่หน้าเล็กจนอ่านไม่ออก)
+    // ต่ำกว่า 900 = คู่หน้าจะแคบกว่า ~430px ต่อหน้า → อ่านยาก จึงใช้โหมดเลื่อนภาพแทน
+    if (availW < 900) {
       setScrollMode(true);
       el.style.cssText = "display:block;width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;";
       el.innerHTML = "";
