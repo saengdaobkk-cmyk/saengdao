@@ -28,6 +28,7 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
   const pagesRef = useRef(null); // เก็บรูปหน้าที่ render แล้ว (รีบิลด์ตอนหมุนจอ/ปรับขนาดโดยไม่ต้องโหลดใหม่)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [scrollMode, setScrollMode] = useState(false); // มือถือ = เลื่อนดูภาพ (อ่านชัด), เดสก์ท็อป = flip
 
   // ล็อกสกอลล์ + คีย์บอร์ด ตอนเปิด
   useEffect(() => {
@@ -106,16 +107,32 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
       counts[k] = (counts[k] || 0) + 1;
       if (counts[k] > bestN) { bestN = counts[k]; ratio = r; }
     }
-    // คำนวณขนาดหน้าสูงสุดให้พอดีทั้งกว้าง+สูง โดย maxWidth/maxHeight ต้องสอดคล้องสัดส่วนหน้าจริง
-    // (ถ้าตั้งแยกกันจะทำให้ page-flip บีบหน้าผิดสัดส่วน → รูปยืด/ขอบขาวบานออกข้าง)
     const availW = window.innerWidth - 24;
     const availH = window.innerHeight - 96; // หักแถบบน/ล่าง
-    const twoPage = availW >= 720; // จอกว้าง → คู่หน้า, แคบ → หน้าเดียว
+    const el = stageRef.current;
+    el.style.cssText = ""; // ล้าง inline เก่าตอน rebuild
+
+    // มือถือ/จอแคบ = เลื่อนดูภาพเต็มความกว้าง (flip เล็กจนอ่านไม่ออก)
+    if (availW < 720) {
+      setScrollMode(true);
+      el.style.cssText = "display:block;width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;";
+      el.innerHTML = "";
+      for (const p of pages) {
+        const img = document.createElement("img");
+        img.src = p.src;
+        img.loading = "lazy";
+        img.style.cssText = "display:block;width:100%;max-width:820px;height:auto;margin:0 auto 10px;background:#fff;border-radius:2px;";
+        el.appendChild(img);
+      }
+      return;
+    }
+
+    // เดสก์ท็อป = flipbook · maxWidth/maxHeight ต้องสอดคล้องสัดส่วนหน้าจริง (กันหน้าผิดสัดส่วน)
+    setScrollMode(false);
+    const twoPage = availW >= 720; // จอกว้าง → คู่หน้า
     const perW = (twoPage ? availW / 2 : availW) - 8;
     const maxW = Math.max(200, Math.round(Math.min(perW, availH / ratio, 900)));
     const minW = Math.min(360, maxW);
-    const el = stageRef.current;
-    el.style.cssText = ""; // ล้าง inline เก่าตอน rebuild
     const pf = new window.St.PageFlip(el, {
       width: maxW,
       height: Math.round(maxW * ratio),
@@ -148,8 +165,10 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
           <span className="truncate">ตัวอย่าง: {title}</span>
         </span>
         <div className="flex items-center gap-1">
-          <button onClick={() => pageFlipRef.current?.flipPrev()} className={btn} title="หน้าก่อน">‹</button>
-          <button onClick={() => pageFlipRef.current?.flipNext()} className={btn} title="หน้าถัดไป">›</button>
+          {!scrollMode && <>
+            <button onClick={() => pageFlipRef.current?.flipPrev()} className={btn} title="หน้าก่อน">‹</button>
+            <button onClick={() => pageFlipRef.current?.flipNext()} className={btn} title="หน้าถัดไป">›</button>
+          </>}
           <button onClick={onClose} className={`${btn} text-[15px]`} title="ปิด">✕</button>
         </div>
       </div>
@@ -161,7 +180,9 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
         {error && <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white/85">{error}</p>}
       </div>
 
-      <div className="pb-3 text-center text-[12px] text-white/45">ลากที่มุมหน้า หรือกดปุ่ม ‹ › เพื่อพลิกหน้า</div>
+      <div className="pb-3 text-center text-[12px] text-white/45">
+        {scrollMode ? "เลื่อนขึ้น-ลงเพื่อดูหน้าถัดไป" : "ลากที่มุมหน้า หรือกดปุ่ม ‹ › เพื่อพลิกหน้า"}
+      </div>
     </div>
   );
 }
