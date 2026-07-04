@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 // ค่า default ระหว่างที่ยังโหลดไม่เสร็จ
 const FALLBACK = {
   cartDrawerEnabled: true,
+  showCardCategory: false,
   promptpayId: "",
   promptpayName: "",
   bankName: "",

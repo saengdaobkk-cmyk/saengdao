@@ -45,6 +45,15 @@ export function usePublishers() {
   });
 }
 
+// directory: รายชื่อ term ทั้งหมด + slug + จำนวนเล่ม (สำหรับหน้ารวมสำนักพิมพ์/ผู้เขียน/ผู้แปล)
+export function useTermDirectory(type) {
+  return useQuery({
+    queryKey: ["term-directory", type],
+    queryFn: async () => (await api.get(`/terms/list/${type.toLowerCase()}`)).data,
+    staleTime: 1000 * 60,
+  });
+}
+
 // รายชื่อ term (PUBLISHER/AUTHOR/TRANSLATOR) สำหรับ datalist ในฟอร์ม
 export function useTermList(type) {
   return useQuery({

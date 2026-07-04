@@ -5,7 +5,8 @@ import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
 import { ZK, ZORT_DEFAULT_BASE, getZortConfig, testZortConnection, pushOrderToZort } from "../lib/zort.js";
-import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks } from "../lib/terms.js";
+import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
+import { ensureNav } from "../lib/navDefaults.js";
 
 const router = Router();
 router.use(authenticate, requireAdmin); // ทุก endpoint เฉพาะ admin
@@ -64,6 +65,7 @@ function bookData(body) {
     discountPrice: num(body.discountPrice),
     stock: int(body.stock) ?? 0,
     soldCount: int(body.soldCount) ?? 0,
+    active: body.active === undefined ? true : !!body.active,
     featured: !!body.featured,
     tags: Array.isArray(body.tags) ? body.tags.map((t) => String(t).trim()).filter(Boolean) : [],
     coverImage: str(body.coverImage),
@@ -93,6 +95,9 @@ function variantCreate(body) {
     .filter((v) => v && String(v.name).trim())
     .map((v, i) => ({
       name: String(v.name).trim(),
+      isbn: str(v.isbn),
+      coverImage: str(v.coverImage),
+      backCoverImage: str(v.backCoverImage),
       price: num(v.price) ?? 0,
       discountPrice: num(v.discountPrice),
       stock: int(v.stock) ?? 0,
@@ -293,7 +298,8 @@ router.post("/terms", async (req, res, next) => {
     const name = String(req.body.name || "").trim();
     if (!TERM_TYPES.includes(type)) return res.status(400).json({ error: "type ไม่ถูกต้อง" });
     if (!name) return res.status(400).json({ error: "กรอกชื่อ" });
-    const t = await prisma.term.create({ data: { type, name } });
+    const slug = await uniqueTermSlug(type, name);
+    const t = await prisma.term.create({ data: { type, name, slug } });
     res.status(201).json(t);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "มีชื่อนี้อยู่แล้ว" });
@@ -310,7 +316,8 @@ router.patch("/terms/:id", async (req, res, next) => {
 
     const updated = await renameTermInBooks(term.type, term.name, name); // อัปเดตหนังสือ
     try {
-      const t = await prisma.term.update({ where: { id: term.id }, data: { name } });
+      const slug = await uniqueTermSlug(term.type, name, term.id);
+      const t = await prisma.term.update({ where: { id: term.id }, data: { name, slug } });
       res.json({ ...t, updated });
     } catch (e) {
       // ชื่อใหม่ซ้ำกับ term ที่มีอยู่ → รวมกัน (ลบตัวเดิม)
@@ -332,6 +339,69 @@ router.delete("/terms/:id", async (req, res, next) => {
     const cleared = await renameTermInBooks(term.type, term.name, null); // ล้างออกจากหนังสือ
     await prisma.term.delete({ where: { id: term.id } });
     res.json({ ok: true, cleared });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- Nav / เมนูหน้าร้าน ---------- */
+router.get("/nav", async (req, res, next) => {
+  try {
+    res.json(await ensureNav(prisma));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/nav", async (req, res, next) => {
+  try {
+    const label = String(req.body.label || "").trim();
+    const url = String(req.body.url || "").trim();
+    if (!label) return res.status(400).json({ error: "กรอกชื่อเมนู" });
+    if (!url) return res.status(400).json({ error: "เลือกหน้า/ใส่ลิงก์" });
+    const max = await prisma.navItem.aggregate({ _max: { order: true } });
+    const item = await prisma.navItem.create({
+      data: { label, url, order: (max._max.order ?? -1) + 1 },
+    });
+    res.status(201).json(item);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/nav/:id", async (req, res, next) => {
+  try {
+    const data = {};
+    if (req.body.label !== undefined) data.label = String(req.body.label).trim();
+    if (req.body.url !== undefined) data.url = String(req.body.url).trim();
+    if (req.body.active !== undefined) data.active = !!req.body.active;
+    if (req.body.order !== undefined) data.order = Number(req.body.order);
+    const item = await prisma.navItem.update({ where: { id: req.params.id }, data });
+    res.json(item);
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "ไม่พบเมนู" });
+    next(err);
+  }
+});
+
+router.delete("/nav/:id", async (req, res, next) => {
+  try {
+    await prisma.navItem.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.code === "P2025") return res.json({ ok: true });
+    next(err);
+  }
+});
+
+// จัดเรียงใหม่ — รับ ids ตามลำดับที่ต้องการ
+router.patch("/nav-reorder", async (req, res, next) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+    await prisma.$transaction(
+      ids.map((id, i) => prisma.navItem.update({ where: { id }, data: { order: i } }))
+    );
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

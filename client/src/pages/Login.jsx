@@ -52,7 +52,7 @@ export default function Login() {
 
       <p className="mt-6 text-center text-[13px] text-sub">
         ยังไม่มีบัญชี?{" "}
-        <Link to="/register" state={location.state} className="text-accent hover:underline">
+        <Link to="/register" state={location.state} className="text-accent">
           สมัครสมาชิก
         </Link>
       </p>

@@ -211,7 +211,7 @@ function OrdersSection() {
       ) : !orders?.length ? (
         <div className="rounded-2xl border border-line p-8 text-center">
           <p className="text-[14px] text-sub">ยังไม่มีคำสั่งซื้อ</p>
-          <Link to="/" className="mt-3 inline-block text-[14px] text-accent hover:underline">เลือกซื้อหนังสือ</Link>
+          <Link to="/" className="mt-3 inline-block text-[14px] text-accent">เลือกซื้อหนังสือ</Link>
         </div>
       ) : (
         <div className="space-y-3">

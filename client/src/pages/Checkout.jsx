@@ -244,7 +244,7 @@ export default function Checkout() {
                 <span className="text-[13px] font-medium text-emerald-700">
                   ใช้โค้ด {coupon.code} แล้ว
                 </span>
-                <button type="button" onClick={removeCoupon} className="text-[12px] text-emerald-700 hover:underline">
+                <button type="button" onClick={removeCoupon} className="text-[12px] text-emerald-700">
                   ยกเลิก
                 </button>
               </div>
@@ -304,7 +304,7 @@ export default function Checkout() {
                     clear();
                     navigate("/");
                   }}
-                  className="mt-2 text-[13px] font-medium text-accent hover:underline"
+                  className="mt-2 text-[13px] font-medium text-accent"
                 >
                   ล้างตะกร้าแล้วเลือกใหม่ →
                 </button>

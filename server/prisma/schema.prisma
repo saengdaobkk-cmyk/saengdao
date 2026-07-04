@@ -22,6 +22,16 @@ model Setting {
   value String
 }
 
+// เมนูนำทางบนหน้าร้าน (จัดการจากหลังบ้าน)
+model NavItem {
+  id        String   @id @default(uuid())
+  label     String
+  url       String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 // ข้อความในเว็บ (จัดการจากหลังบ้าน) — แยกตาม section
 model Content {
   key     String @id // เช่น "checkout.title"
@@ -72,9 +82,11 @@ model Term {
   id        String   @id @default(uuid())
   type      TermType
   name      String
+  slug      String?
   createdAt DateTime @default(now())
 
   @@unique([type, name])
+  @@unique([type, slug])
   @@index([type])
 }
 
@@ -125,6 +137,7 @@ model Book {
   discountPrice Decimal?    @db.Decimal(10, 2) // ราคาลด
   stock         Int         @default(0)
   soldCount     Int         @default(0)
+  active        Boolean     @default(true) // เปิดขาย (false = ซ่อนจากหน้าร้าน)
   featured      Boolean     @default(false) // แนะนำหน้าแรก
   tags          String[]    @default([]) // แท็ก เช่น ขายดี/ใหม่/แนะนำ
   coverImage    String?
@@ -162,6 +175,9 @@ model Variant {
   bookId        String
   book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   name          String
+  isbn          String? // ISBN/บาร์โค้ดของตัวเลือกนี้
+  coverImage     String? // ปกหน้าเฉพาะตัวเลือกนี้ (เผื่อปกไม่เหมือนกัน)
+  backCoverImage String? // ปกหลังเฉพาะตัวเลือกนี้
   price         Decimal  @db.Decimal(10, 2)
   discountPrice Decimal? @db.Decimal(10, 2)
   stock         Int      @default(0)

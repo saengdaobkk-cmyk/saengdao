@@ -3,7 +3,9 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useBook, useRelated } from "../api/books";
 import { useCart } from "../cart/CartContext";
 import { useSettings } from "../api/settings";
+import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
+import FlipBook from "../components/FlipBook";
 import { formatPrice } from "../lib/format";
 
 export default function BookDetail() {
@@ -11,6 +13,7 @@ export default function BookDetail() {
   const navigate = useNavigate();
   const { add, openDrawer } = useCart();
   const { cartDrawerEnabled } = useSettings();
+  const { t } = useContent();
   const { data: book, isLoading, isError } = useBook(id);
   const { data: related } = useRelated(id);
 
@@ -20,14 +23,15 @@ export default function BookDetail() {
   const [qty, setQty] = useState(1);
   const [lbIndex, setLbIndex] = useState(null); // index รูปใน lightbox (null = ปิด)
   const [descOpen, setDescOpen] = useState(false);
+  const [flipOpen, setFlipOpen] = useState(false); // เปิด flipbook ตัวอย่าง PDF
 
   const variant = book?.variants?.find((v) => v.id === variantId) || null;
   const hasVariants = book?.variants?.length > 0;
   const effStock = hasVariants ? (variant ? variant.stock : null) : book?.stock;
 
   // รูปทั้งหมด (ปกหน้า → ปกหลัง → แกลเลอรี) สำหรับ lightbox
-  const front = book?.coverImage;
-  const back = book?.backCoverImage;
+  const front = variant?.coverImage || book?.coverImage;
+  const back = variant?.backCoverImage || book?.backCoverImage;
   const gallery = book?.galleryImages || [];
   const allImages = [front, back, ...gallery].filter(Boolean);
   const openLb = (src) => setLbIndex(Math.max(0, allImages.indexOf(src)));
@@ -73,8 +77,8 @@ export default function BookDetail() {
   if (isError || !book)
     return (
       <div className="mx-auto max-w-page px-5 py-32 text-center">
-        <p className="mb-4 text-sub">ไม่พบหนังสือเล่มนี้</p>
-        <Link to="/books" className="text-[14px] text-accent hover:underline">กลับไปร้านหนังสือ</Link>
+        <p className="mb-4 text-sub">{t("product.not_found", "ไม่พบหนังสือเล่มนี้")}</p>
+        <Link to="/books" className="text-[14px] text-accent">{t("product.back_to_shop", "กลับไปร้านหนังสือ")}</Link>
       </div>
     );
 
@@ -84,15 +88,14 @@ export default function BookDetail() {
   const pct = showDiscount ? Math.round((1 - showPrice / showFull) * 100) : 0;
 
   const meta = [
-    ["สำนักพิมพ์", book.publisher],
-    ["ผู้แปล", book.translator],
-    ["พิมพ์ครั้งที่", book.edition],
-    ["จำนวนหน้า", book.pageCount && `${book.pageCount} หน้า`],
-    ["ขนาด", book.dimensions],
-    ["น้ำหนัก", book.weight],
-    ["กระดาษเนื้อใน", book.paperType],
-    ["ปก", book.coverType],
-    ["ISBN", book.isbn],
+    [t("product.spec_publisher", "สำนักพิมพ์"), book.publisher],
+    [t("product.spec_edition", "พิมพ์ครั้งที่"), book.edition],
+    [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && `${book.pageCount} ${t("product.unit_page", "หน้า")}`],
+    [t("product.spec_dimensions", "ขนาด"), book.dimensions],
+    [t("product.spec_weight", "น้ำหนัก"), book.weight],
+    [t("product.spec_paper", "กระดาษเนื้อใน"), book.paperType],
+    [t("product.spec_cover", "ปก"), book.coverType],
+    [t("product.spec_isbn", "ISBN"), variant?.isbn || book.isbn],
   ].filter(([, v]) => v);
 
   const longDesc = (book.description || "").length > 220;
@@ -101,8 +104,8 @@ export default function BookDetail() {
     <div className="mx-auto max-w-page px-5 py-10 sm:py-14">
       {/* breadcrumbs */}
       <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
-        <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
-        <Link to="/books" className="hover:text-ink">ร้านหนังสือ</Link>
+        <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
+        <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link>
         {book.category && (<><span>›</span><Link to={`/books?category=${book.category.slug}`} className="hover:text-ink">{book.category.name}</Link></>)}
       </nav>
 
@@ -157,14 +160,26 @@ export default function BookDetail() {
         <div>
           {/* chips */}
           <div className="flex flex-wrap items-center gap-2">
-            {book.publisher && <Link to={`/books?publisher=${encodeURIComponent(book.publisher)}`} className="rounded-full border border-line px-3 py-1 text-[12px] text-ink transition hover:border-ink/40">🏢 {book.publisher}</Link>}
+            {book.publisherLink && <Link to={`/publisher/${book.publisherLink.slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-[12px] text-ink transition hover:border-ink/40"><BuildingIcon />{book.publisherLink.name}</Link>}
             {book.category && <Link to={`/books?category=${book.category.slug}`} className="rounded-full bg-mist px-3 py-1 text-[12px] text-ink/70 transition hover:bg-line">{book.category.name}</Link>}
             {(book.tags || []).map((t) => <span key={t} className="rounded-full bg-mist px-2.5 py-1 text-[11px] text-ink/60">{t}</span>)}
           </div>
 
           <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
-          {book.author && <p className="mt-2 text-[15px] text-sub">โดย <span className="text-ink">{book.author}</span></p>}
-          {book.translator && <p className="mt-0.5 text-[14px] text-sub">แปลโดย <span className="text-ink">{book.translator}</span></p>}
+          {book.authorLinks?.length > 0 && (
+            <p className="mt-2 text-[15px] text-sub">
+              {t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
+                <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="text-accent transition-colors hover:text-accent/80">{a.name}</Link></span>
+              ))}
+            </p>
+          )}
+          {book.translatorLinks?.length > 0 && (
+            <p className="mt-0.5 text-[14px] text-sub">
+              {t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
+                <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="text-accent transition-colors hover:text-accent/80">{a.name}</Link></span>
+              ))}
+            </p>
+          )}
 
           {/* buybox */}
           <div className="mt-6 rounded-2xl border border-line p-5">
@@ -173,22 +188,22 @@ export default function BookDetail() {
               {showDiscount && (
                 <>
                   <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
-                  <span className="mb-1.5 rounded-full bg-rose-500 px-2 py-0.5 text-[12px] font-semibold text-white">ลด {pct}%</span>
+                  <span className="mb-1.5 rounded-full bg-rose-500 px-2 py-0.5 text-[12px] font-semibold text-white">{t("product.discount_label", "ลด")} {pct}%</span>
                 </>
               )}
             </div>
             <p className="mt-1.5 text-[13px]">
               {hasVariants
                 ? variant
-                  ? variant.stock > 0 ? <span className="text-emerald-600">● พร้อมส่ง · เหลือ {variant.stock} ชิ้น</span> : <span className="text-sub">● ตัวเลือกนี้สินค้าหมด</span>
-                  : <span className="text-sub">เลือกตัวเลือกเพื่อดูราคา/สต็อก</span>
-                : book.stock > 0 ? <span className="text-emerald-600">● พร้อมส่ง · เหลือ {book.stock} เล่ม</span> : <span className="text-sub">● สินค้าหมด</span>}
+                  ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง · เหลือ")} {variant.stock} {t("product.unit_piece", "ชิ้น")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
+                  : <span className="text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
+                : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง · เหลือ")} {book.stock} {t("product.unit_book", "เล่ม")}</span> : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
             </p>
 
             {/* variant */}
             {hasVariants && (
               <div className="mt-4">
-                <p className="mb-2 text-[13px] font-medium text-ink">ตัวเลือก {variantErr && <span className="text-rose-500">· กรุณาเลือกก่อน</span>}</p>
+                <p className="mb-2 text-[13px] font-medium text-ink">{t("product.options_heading", "ตัวเลือก")} {variantErr && <span className="text-rose-500">· {t("product.select_first", "กรุณาเลือกก่อน")}</span>}</p>
                 <div className="flex flex-wrap gap-2">
                   {book.variants.map((v) => {
                     const active = v.id === variantId, out = v.stock <= 0;
@@ -212,37 +227,33 @@ export default function BookDetail() {
               </div>
               <button disabled={effStock != null && effStock <= 0} onClick={() => addToCart(false)}
                 className="flex-1 rounded-full bg-accent px-8 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40">
-                หยิบใส่ตะกร้า
+                {t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
-              <button disabled={effStock != null && effStock <= 0} onClick={() => addToCart(true)}
-                className="rounded-full border border-line px-8 py-3 text-[15px] font-medium text-ink transition hover:bg-mist disabled:opacity-40">
-                ซื้อเลย
-              </button>
+              {book.previewPdf && (
+                <button type="button" onClick={() => setFlipOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-line px-8 py-3 text-[15px] font-medium text-ink transition hover:bg-mist active:scale-[0.98] sm:w-auto">
+                  <BookOpenIcon /> {t("product.preview", "อ่านตัวอย่าง")}
+                </button>
+              )}
             </div>
-
-            {book.previewPdf && (
-              <a href={book.previewPdf} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent hover:underline">
-                📖 อ่านตัวอย่าง
-              </a>
-            )}
 
             {/* trust */}
             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-[13px] text-sub">
-              <div className="flex items-center gap-2">🚚 จัดส่งฟรีทั่วประเทศ</div>
-              <div className="flex items-center gap-2">✅ ของแท้ 100%</div>
+              <div className="flex items-center gap-2"><TruckIcon />{t("product.trust_shipping", "จัดส่งฟรีทั่วประเทศ")}</div>
+              <div className="flex items-center gap-2"><ShieldCheckIcon />{t("product.trust_authentic", "ของแท้ 100%")}</div>
             </div>
           </div>
 
           {/* description */}
           {book.description && (
             <div className="mt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">รายละเอียด</h2>
+              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>
               <p className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen && longDesc ? "line-clamp-[7]" : ""}`}>
                 {book.description}
               </p>
               {longDesc && (
-                <button onClick={() => setDescOpen((o) => !o)} className="mt-2 text-[14px] font-medium text-accent hover:underline">
-                  {descOpen ? "ย่อ ▴" : "อ่านเพิ่ม ▾"}
+                <button onClick={() => setDescOpen((o) => !o)} className="mt-2 text-[14px] font-medium text-accent">
+                  {descOpen ? `${t("product.read_less", "ย่อ")} ▴` : `${t("product.read_more", "อ่านเพิ่ม")} ▾`}
                 </button>
               )}
             </div>
@@ -251,7 +262,7 @@ export default function BookDetail() {
           {/* specs */}
           {meta.length > 0 && (
             <div className="mt-8 border-t border-line pt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">ข้อมูลจำเพาะ</h2>
+              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.specs_heading", "ข้อมูลจำเพาะ")}</h2>
               <dl className="grid gap-x-8 gap-y-2 text-[14px] sm:grid-cols-2">
                 {meta.map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-line/60 py-1.5">
@@ -268,12 +279,17 @@ export default function BookDetail() {
       {/* related */}
       {related?.length > 0 && (
         <section className="mt-20">
-          <p className="text-[13px] font-medium tracking-tight text-sub">เล่มใกล้เคียง</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">คุณอาจสนใจ</h2>
+          <p className="text-[13px] font-medium tracking-tight text-sub">{t("product.related_eyebrow", "เล่มใกล้เคียง")}</p>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">{t("product.related_heading", "คุณอาจสนใจ")}</h2>
           <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4">
             {related.map((b) => <BookCard key={b.id} book={b} />)}
           </div>
         </section>
+      )}
+
+      {/* flipbook ตัวอย่าง PDF */}
+      {book.previewPdf && (
+        <FlipBook pdfUrl={book.previewPdf} title={book.title} open={flipOpen} onClose={() => setFlipOpen(false)} />
       )}
 
       {/* lightbox */}
@@ -311,6 +327,43 @@ export default function BookDetail() {
         </div>
       )}
     </div>
+  );
+}
+
+/* ---- ไอคอนเส้นบางสไตล์มินิมอล ---- */
+function BookOpenIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+      <path d="M12 6.5C10.5 5.2 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13c1-.3 2-.4 3-.4 2.5 0 4.5.7 6 2 1.5-1.3 3.5-2 6-2 1 0 2 .1 3 .4v-13c-1-.3-2-.4-3-.4-2.5 0-4.5.7-6 2Z" />
+      <path d="M12 6.5v13" />
+    </svg>
+  );
+}
+function BuildingIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500">
+      <path d="M4 21V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v15" />
+      <path d="M15 9h3a2 2 0 0 1 2 2v10" /><path d="M3 21h18" />
+      <path d="M8 8h.01M11 8h.01M8 12h.01M11 12h.01M8 16h.01M11 16h.01" />
+    </svg>
+  );
+}
+function TruckIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+      <path d="M2 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v9H3a1 1 0 0 1-1-1V7Z" />
+      <path d="M14 9h3.5a1 1 0 0 1 .8.4l2.4 3.1a1 1 0 0 1 .2.6V15a1 1 0 0 1-1 1h-1" />
+      <circle cx="7" cy="17.5" r="2" /><circle cx="17.5" cy="17.5" r="2" />
+      <path d="M9 17.5h6.5" />
+    </svg>
+  );
+}
+function ShieldCheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500">
+      <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
   );
 }
 

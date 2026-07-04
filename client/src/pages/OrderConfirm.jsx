@@ -48,7 +48,7 @@ export default function OrderConfirm() {
     return (
       <div className="py-24 text-center">
         <p className="text-sub">ไม่พบคำสั่งซื้อ</p>
-        <Link to="/" className="mt-4 inline-block text-[14px] text-accent hover:underline">
+        <Link to="/" className="mt-4 inline-block text-[14px] text-accent">
           กลับหน้าแรก
         </Link>
       </div>

@@ -37,7 +37,7 @@ export default function AdminCoupons() {
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${c.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                 {c.active ? "ใช้งาน" : "ปิด"}
               </span>
-              <button onClick={() => setEditing(c)} className="text-[13px] text-accent hover:underline">แก้ไข</button>
+              <button onClick={() => setEditing(c)} className="text-[13px] text-accent">แก้ไข</button>
               <button
                 onClick={() => confirm(`ลบโค้ด ${c.code}?`) && del.mutate(c.id)}
                 className="text-[13px] text-sub hover:text-red-600"

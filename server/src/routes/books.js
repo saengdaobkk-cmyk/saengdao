@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
+import { splitNames } from "../lib/terms.js";
 
 const router = Router();
 
@@ -11,7 +12,7 @@ router.get("/", async (req, res, next) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(48, Math.max(1, parseInt(req.query.limit) || 12));
 
-    const where = {};
+    const where = { active: true };
     if (q) {
       where.OR = [
         { title: { contains: q, mode: "insensitive" } },
@@ -23,6 +24,12 @@ router.get("/", async (req, res, next) => {
     }
     if (publisher) {
       where.publisher = publisher;
+    }
+    if (req.query.author) {
+      where.author = { contains: req.query.author, mode: "insensitive" };
+    }
+    if (req.query.translator) {
+      where.translator = { contains: req.query.translator, mode: "insensitive" };
     }
 
     const orderBy =
@@ -40,7 +47,10 @@ router.get("/", async (req, res, next) => {
         orderBy,
         skip: (page - 1) * limit,
         take: limit,
-        include: { category: { select: { name: true, slug: true } } },
+        include: {
+          category: { select: { name: true, slug: true } },
+          variants: { select: { stock: true } }, // ใช้รวมสต็อกในการ์ด
+        },
       }),
       prisma.book.count({ where }),
     ]);
@@ -62,7 +72,7 @@ router.get("/publishers", async (req, res, next) => {
   try {
     const rows = await prisma.book.groupBy({
       by: ["publisher"],
-      where: { publisher: { not: null } },
+      where: { publisher: { not: null }, active: true },
       _count: { publisher: true },
       orderBy: { _count: { publisher: "desc" } },
     });
@@ -81,13 +91,26 @@ router.get("/:id", async (req, res, next) => {
   try {
     const key = req.params.id;
     const book = await prisma.book.findFirst({
-      where: { OR: [{ id: key }, { slug: key }] },
+      where: { active: true, OR: [{ id: key }, { slug: key }] },
       include: {
         category: { select: { name: true, slug: true } },
         variants: { orderBy: { order: "asc" } },
       },
     });
     if (!book) return res.status(404).json({ error: "ไม่พบหนังสือเล่มนี้" });
+
+    // แนบ slug ของ สำนักพิมพ์/ผู้เขียน/ผู้แปล (ให้หน้าสินค้าลิงก์ไป collection)
+    const authorNames = splitNames(book.author);
+    const translatorNames = splitNames(book.translator);
+    const allNames = [book.publisher?.trim(), ...authorNames, ...translatorNames].filter(Boolean);
+    const terms = allNames.length
+      ? await prisma.term.findMany({ where: { name: { in: allNames } }, select: { type: true, name: true, slug: true } })
+      : [];
+    const slugOf = (type, name) => terms.find((t) => t.type === type && t.name === name)?.slug || encodeURIComponent(name);
+    book.publisherLink = book.publisher?.trim() ? { name: book.publisher.trim(), slug: slugOf("PUBLISHER", book.publisher.trim()) } : null;
+    book.authorLinks = authorNames.map((n) => ({ name: n, slug: slugOf("AUTHOR", n) }));
+    book.translatorLinks = translatorNames.map((n) => ({ name: n, slug: slugOf("TRANSLATOR", n) }));
+
     res.json(book);
   } catch (err) {
     next(err);
@@ -103,7 +126,7 @@ router.get("/:id/related", async (req, res, next) => {
     });
     if (!book) return res.json([]);
     const related = await prisma.book.findMany({
-      where: { id: { not: req.params.id }, categoryId: book.categoryId || undefined },
+      where: { id: { not: req.params.id }, categoryId: book.categoryId || undefined, active: true },
       orderBy: { soldCount: "desc" },
       take: 4,
       include: { category: { select: { name: true } } },

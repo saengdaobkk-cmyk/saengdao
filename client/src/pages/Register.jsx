@@ -53,7 +53,7 @@ export default function Register() {
 
       <p className="mt-6 text-center text-[13px] text-sub">
         มีบัญชีอยู่แล้ว?{" "}
-        <Link to="/login" state={location.state} className="text-accent hover:underline">
+        <Link to="/login" state={location.state} className="text-accent">
           เข้าสู่ระบบ
         </Link>
       </p>

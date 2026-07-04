@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
 import { formatPrice } from "../lib/format";
+import { useSettings } from "../api/settings";
 
 export default function BookCard({ book }) {
+  const { showCardCategory } = useSettings();
+  // มี variant → ใช้ผลรวมสต็อกของ variant, ไม่มี → ใช้สต็อกของเล่ม
+  const stock = book.variants?.length ? book.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0) : book.stock;
   return (
     <Link to={`/books/${book.id}`} className="group block">
       {/* ปก */}
@@ -17,13 +21,13 @@ export default function BookCard({ book }) {
             <span className="text-4xl opacity-25">𝐀</span>
           </div>
         )}
-        {book.stock <= 0 && (
+        {stock <= 0 && (
           <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">
             สินค้าหมด
           </span>
         )}
         {/* ป้ายลดราคา */}
-        {book.discountPrice != null && book.stock > 0 && (
+        {book.discountPrice != null && stock > 0 && (
           <span className="absolute right-3 top-3 rounded-full bg-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white">
             -{Math.round((1 - Number(book.discountPrice) / Number(book.price)) * 100)}%
           </span>
@@ -32,7 +36,7 @@ export default function BookCard({ book }) {
 
       {/* ข้อมูล */}
       <div className="px-1 pt-3">
-        {book.category && (
+        {showCardCategory && book.category && (
           <p className="text-[11px] font-medium tracking-tight text-sub">
             {book.category.name}
           </p>

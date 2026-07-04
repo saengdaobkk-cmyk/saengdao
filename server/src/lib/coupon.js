@@ -27,6 +27,7 @@ export async function computeDiscount(code, subtotal) {
       : Number(coupon.value);
 
   discount = Math.min(discount, subtotal); // ส่วนลดไม่เกินยอดรวม
+  discount = Math.floor(discount); // ปัดส่วนลดลงเป็นจำนวนเต็มบาท → ยอดรวมเป็นเลขเต็ม
 
   return { coupon, discount };
 }

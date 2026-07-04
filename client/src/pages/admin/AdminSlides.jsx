@@ -54,7 +54,7 @@ export default function AdminSlides() {
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${s.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                 {s.active ? "แสดง" : "ซ่อน"}
               </span>
-              <button onClick={() => setEditing(s)} className="text-[13px] text-accent hover:underline">แก้ไข</button>
+              <button onClick={() => setEditing(s)} className="text-[13px] text-accent">แก้ไข</button>
               <button
                 onClick={() => confirm("ลบสไลด์นี้?") && del.mutate(s.id)}
                 className="text-[13px] text-sub hover:text-red-600"
@@ -258,7 +258,7 @@ function ColorField({ label, value, fallback, onChange }) {
       <span className="mb-1.5 flex items-center justify-between text-[12px] font-medium text-sub">
         {label}
         {value && (
-          <button type="button" onClick={() => onChange("")} className="text-[11px] text-accent hover:underline">
+          <button type="button" onClick={() => onChange("")} className="text-[11px] text-accent">
             รีเซ็ต
           </button>
         )}

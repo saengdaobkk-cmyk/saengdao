@@ -8,6 +8,27 @@ export function splitNames(v) {
   return [...new Set(String(v || "").split(",").map((s) => s.trim()).filter(Boolean))];
 }
 
+export function slugify(name) {
+  return (
+    String(name).trim().toLowerCase()
+      .replace(/[^\w฀-๿]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 50) || "item"
+  );
+}
+
+// สร้าง slug ที่ไม่ซ้ำภายใน type (ต่อ -2, -3 ถ้าชน)
+export async function uniqueTermSlug(type, name, excludeId = null) {
+  const base = slugify(name);
+  let slug = base;
+  for (let i = 2; i < 100; i++) {
+    const hit = await prisma.term.findFirst({ where: { type, slug, NOT: excludeId ? { id: excludeId } : undefined } });
+    if (!hit) return slug;
+    slug = `${base}-${i}`;
+  }
+  return `${base}-${Date.now()}`;
+}
+
 // upsert รายชื่อจากหนังสือ 1 เล่มเข้า Term (auto-sync ตอนสร้าง/แก้หนังสือ)
 export async function syncTermsFromBook(book) {
   const items = [];
@@ -15,9 +36,10 @@ export async function syncTermsFromBook(book) {
   for (const n of splitNames(book.author)) items.push({ type: "AUTHOR", name: n });
   for (const n of splitNames(book.translator)) items.push({ type: "TRANSLATOR", name: n });
   for (const it of items) {
-    await prisma.term
-      .upsert({ where: { type_name: { type: it.type, name: it.name } }, update: {}, create: it })
-      .catch(() => {});
+    const existing = await prisma.term.findUnique({ where: { type_name: { type: it.type, name: it.name } } });
+    if (existing) continue;
+    const slug = await uniqueTermSlug(it.type, it.name);
+    await prisma.term.create({ data: { ...it, slug } }).catch(() => {});
   }
 }
 
@@ -31,7 +53,7 @@ export async function listTermsWithCount(type) {
     const names = MULTI[type] ? splitNames(b[field]) : b[field]?.trim() ? [b[field].trim()] : [];
     for (const n of names) count.set(n, (count.get(n) || 0) + 1);
   }
-  return terms.map((t) => ({ id: t.id, name: t.name, count: count.get(t.name) || 0 }));
+  return terms.map((t) => ({ id: t.id, name: t.name, slug: t.slug, count: count.get(t.name) || 0 }));
 }
 
 // เปลี่ยนชื่อ (to) หรือลบ (to=null) รายชื่อในหนังสือทุกเล่มที่ใช้ — คืนจำนวนเล่มที่อัปเดต

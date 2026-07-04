@@ -6,7 +6,7 @@ import ImportBooks from "./ImportBooks";
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
-  price: "", discountPrice: "", stock: "", featured: false, coverImage: "", backCoverImage: "",
+  price: "", discountPrice: "", stock: "", active: true, featured: false, coverImage: "", backCoverImage: "",
   galleryImages: [], previewPdf: "", publisher: "", edition: "", pageCount: "", dimensions: "",
   weight: "", paperType: "", coverType: "", isbn: "", sku: "", metaTitle: "", metaDescription: "",
   slug: "", importedAt: "", variants: [],
@@ -16,6 +16,7 @@ export default function AdminProducts() {
   const { data: books, isLoading } = useAdminBooks();
   const { data: categories } = useCategories();
   const del = useDeleteBook();
+  const save = useSaveBook();
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
   const [q, setQ] = useState("");
@@ -32,6 +33,8 @@ export default function AdminProducts() {
     if (status === "instock") list = list.filter((b) => b.stock > 0);
     if (status === "out") list = list.filter((b) => b.stock <= 0);
     if (status === "featured") list = list.filter((b) => b.featured);
+    if (status === "active") list = list.filter((b) => b.active !== false);
+    if (status === "inactive") list = list.filter((b) => b.active === false);
     return list;
   }, [books, q, cat, status]);
 
@@ -53,6 +56,8 @@ export default function AdminProducts() {
           <option value="instock">มีสต็อก</option>
           <option value="out">สินค้าหมด</option>
           <option value="featured">แนะนำหน้าแรก</option>
+          <option value="active">เปิดขายอยู่</option>
+          <option value="inactive">ปิดอยู่</option>
         </select>
         <div className="ml-auto flex gap-2">
           <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
@@ -83,16 +88,17 @@ export default function AdminProducts() {
             </thead>
             <tbody className="divide-y divide-line">
               {filtered.map((b) => (
-                <tr key={b.id} className="hover:bg-mist/30">
+                <tr key={b.id} className={`hover:bg-mist/30 ${b.active === false ? "bg-mist/20" : ""}`}>
                   <td className="px-4 py-3 text-[12px] text-sub">{b.isbn || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-mist">
+                      <div className={`flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-mist ${b.active === false ? "opacity-40" : ""}`}>
                         {b.coverImage ? <img src={b.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] opacity-30">𝐀</span>}
                       </div>
                       <div>
-                        <p className="font-medium text-ink">{b.title}</p>
+                        <p className={`font-medium ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
                         <div className="mt-0.5 flex flex-wrap gap-1">
+                          {b.active === false && <Tag color="gray">ปิดอยู่</Tag>}
                           {b.featured && <Tag color="indigo">แนะนำ</Tag>}
                           {b.discountPrice != null && <Tag color="rose">ลดราคา</Tag>}
                           {(b.tags || []).map((t) => <Tag key={t} color="gray">{t}</Tag>)}
@@ -106,9 +112,18 @@ export default function AdminProducts() {
                       <span><span className="text-ink">{formatPrice(b.discountPrice)}</span> <span className="text-[11px] text-sub line-through">{formatPrice(b.price)}</span></span>
                     ) : <span className="text-ink">{formatPrice(b.price)}</span>}
                   </td>
-                  <td className={`px-4 py-3 ${b.stock <= 5 ? "text-amber-600" : "text-ink"}`}>{b.stock}</td>
+                  {(() => {
+                    const hasVar = b.variants?.length > 0;
+                    const s = hasVar ? b.variants.reduce((a, v) => a + (Number(v.stock) || 0), 0) : b.stock;
+                    return (
+                      <td className={`px-4 py-3 ${s <= 5 ? "text-amber-600" : "text-ink"}`}>
+                        {s}{hasVar && <span className="ml-1 text-[11px] text-sub">({b.variants.length} แบบ)</span>}
+                      </td>
+                    );
+                  })()}
                   <td className="whitespace-nowrap px-4 py-3 text-right">
-                    <button onClick={() => setEditing(b)} className="rounded-lg border border-line px-3 py-1 text-[12px] text-ink hover:bg-mist">แก้ไข</button>
+                    <Toggle on={b.active !== false} onChange={() => save.mutate({ ...b, active: b.active === false })} title={b.active === false ? "เปิดขาย" : "ปิดขาย (ซ่อนจากหน้าร้าน)"} />
+                    <button onClick={() => setEditing(b)} className="ml-2 rounded-lg border border-line px-3 py-1 text-[12px] text-ink hover:bg-mist">แก้ไข</button>
                     <button onClick={() => confirm(`ลบ "${b.title}"?`) && del.mutate(b.id, { onError: (e) => alert(e.response?.data?.error || "ลบไม่สำเร็จ") })}
                       className="ml-2 rounded-lg border border-line px-3 py-1 text-[12px] text-sub hover:text-red-600">ลบ</button>
                   </td>
@@ -125,6 +140,16 @@ export default function AdminProducts() {
 function Tag({ children, color }) {
   const c = { indigo: "bg-indigo-50 text-indigo-600", rose: "bg-rose-50 text-rose-500", gray: "bg-gray-100 text-gray-500" }[color];
   return <span className={`rounded px-1.5 py-0.5 text-[10px] ${c}`}>{children}</span>;
+}
+
+// สวิตช์เปิด/ปิด
+function Toggle({ on, onChange, title }) {
+  return (
+    <button type="button" onClick={onChange} title={title} aria-label={title}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full align-middle transition ${on ? "bg-emerald-500" : "bg-line"}`}>
+      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition ${on ? "translate-x-4" : "translate-x-0.5"}`} />
+    </button>
+  );
 }
 
 /* ============ ฟอร์มเต็มหน้า ============ */
@@ -163,9 +188,15 @@ function BookForm({ book, categories, onClose }) {
   };
 
   // variants
-  const addVariant = () => setForm((f) => ({ ...f, variants: [...f.variants, { name: "", price: "", discountPrice: "", stock: "" }] }));
+  const addVariant = () => setForm((f) => ({ ...f, variants: [...f.variants, { name: "", isbn: "", price: "", discountPrice: "", stock: "", coverImage: "", backCoverImage: "" }] }));
   const setVariant = (i, k, v) => setForm((f) => ({ ...f, variants: f.variants.map((x, idx) => idx === i ? { ...x, [k]: v } : x) }));
   const delVariant = (i) => setForm((f) => ({ ...f, variants: f.variants.filter((_, idx) => idx !== i) }));
+  const onVariantImage = async (i, field, e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const key = `v${i}_${field}`;
+    setBusyFor(key, true);
+    try { const url = await uploadImage(file); setVariant(i, field, url); } catch { setError("อัปโหลดรูปไม่สำเร็จ"); } finally { setBusyFor(key, false); }
+  };
 
   const submit = (e) => {
     e.preventDefault();
@@ -232,7 +263,7 @@ function BookForm({ book, categories, onClose }) {
             <F label="Meta Description" hint="เว้นว่าง = ใช้รายละเอียด · ≤ 160 ตัวอักษร"><textarea value={form.metaDescription} onChange={set("metaDescription")} rows={2} className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[14px] outline-none focus:border-ink/30" /></F>
             <F label="Slug (URL หน้าหนังสือ)" hint="เว้นว่าง = ใช้ id · ใช้อังกฤษ-เลข"><Inp value={form.slug} onChange={set("slug")} placeholder="asia-vol1" /></F>
             <F label="ไฟล์ตัวอย่าง (PDF)" hint="อ่านตัวอย่างแบบ flip book · ≤ 25MB">
-              {form.previewPdf && <a href={form.previewPdf} target="_blank" rel="noreferrer" className="mb-2 block text-[12px] text-accent hover:underline">เปิดดู PDF ปัจจุบัน</a>}
+              {form.previewPdf && <a href={form.previewPdf} target="_blank" rel="noreferrer" className="mb-2 block text-[12px] text-accent">เปิดดู PDF ปัจจุบัน</a>}
               <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[13px] text-sub hover:text-ink">
                 {busy.pdf ? "กำลังอัปโหลด..." : "อัปโหลด PDF"}
                 <input type="file" accept="application/pdf" onChange={onPdf} className="hidden" />
@@ -242,17 +273,25 @@ function BookForm({ book, categories, onClose }) {
 
           <Card title="ตัวเลือกสินค้า (Variant)" subtitle="เช่น ปกอ่อน / ปกแข็ง / Boxset — แต่ละแบบมีราคาและสต็อกของตัวเอง">
             {form.variants.length > 0 && (
-              <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_90px_90px_70px_28px] gap-2 text-[11px] text-sub">
-                  <span>ชื่อแบบ</span><span>ราคา</span><span>ราคาลด</span><span>สต็อก</span><span />
-                </div>
+              <div className="space-y-3">
                 {form.variants.map((v, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_90px_90px_70px_28px] gap-2">
-                    <Inp value={v.name} onChange={(e) => setVariant(i, "name", e.target.value)} placeholder="ปกแข็ง" />
-                    <Inp type="number" value={v.price} onChange={(e) => setVariant(i, "price", e.target.value)} />
-                    <Inp type="number" value={v.discountPrice ?? ""} onChange={(e) => setVariant(i, "discountPrice", e.target.value)} />
-                    <Inp type="number" value={v.stock} onChange={(e) => setVariant(i, "stock", e.target.value)} />
-                    <button type="button" onClick={() => delVariant(i)} className="text-sub hover:text-red-600">✕</button>
+                  <div key={i} className="space-y-3 rounded-xl border border-line p-3">
+                    <div className="grid grid-cols-[1fr_130px_90px_90px_70px_28px] gap-2 text-[11px] text-sub">
+                      <span>ชื่อแบบ</span><span>ISBN</span><span>ราคา</span><span>ราคาลด</span><span>สต็อก</span><span />
+                    </div>
+                    <div className="grid grid-cols-[1fr_130px_90px_90px_70px_28px] items-center gap-2">
+                      <Inp value={v.name} onChange={(e) => setVariant(i, "name", e.target.value)} placeholder="ปกแข็ง" />
+                      <Inp value={v.isbn ?? ""} onChange={(e) => setVariant(i, "isbn", e.target.value)} placeholder="ISBN" />
+                      <Inp type="number" value={v.price} onChange={(e) => setVariant(i, "price", e.target.value)} />
+                      <Inp type="number" value={v.discountPrice ?? ""} onChange={(e) => setVariant(i, "discountPrice", e.target.value)} />
+                      <Inp type="number" value={v.stock} onChange={(e) => setVariant(i, "stock", e.target.value)} />
+                      <button type="button" onClick={() => delVariant(i)} className="text-sub hover:text-red-600">✕</button>
+                    </div>
+                    <div className="flex flex-wrap gap-4 border-t border-line pt-3">
+                      <VariantImg label="ปกหน้า" url={v.coverImage} busy={busy[`v${i}_coverImage`]} onChange={(e) => onVariantImage(i, "coverImage", e)} onClear={() => setVariant(i, "coverImage", "")} />
+                      <VariantImg label="ปกหลัง" url={v.backCoverImage} busy={busy[`v${i}_backCoverImage`]} onChange={(e) => onVariantImage(i, "backCoverImage", e)} onClear={() => setVariant(i, "backCoverImage", "")} />
+                      <p className="max-w-[180px] self-center text-[11px] text-sub">เว้นว่าง = ใช้ปกหลักของเล่ม · ใส่เฉพาะแบบที่ปกต่างกัน</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -283,6 +322,16 @@ function BookForm({ book, categories, onClose }) {
 
         {/* ขวา */}
         <div className="space-y-6 lg:sticky lg:top-20 lg:self-start">
+          <Card>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[13px] font-medium text-ink">สถานะการขาย</p>
+                <p className="text-[12px] text-sub">{form.active !== false ? "เปิดขาย — แสดงในหน้าร้าน" : "ปิดอยู่ — ซ่อนจากหน้าร้าน"}</p>
+              </div>
+              <Toggle on={form.active !== false} onChange={() => setForm((f) => ({ ...f, active: f.active === false }))} title="เปิด/ปิดการขาย" />
+            </div>
+          </Card>
+
           <Card>
             <F label="รูปปก" hint="สัดส่วน 145:210 (เช่น 600×870) · jpg/png/webp ≤ 4MB">
               <div className="mb-3 flex aspect-[145/210] items-center justify-center overflow-hidden rounded-xl bg-mist">
@@ -336,5 +385,24 @@ const UploadBtn = ({ busy, onChange, label, multiple }) => (
     <input type="file" accept="image/*" multiple={multiple} onChange={onChange} className="hidden" />
   </label>
 );
+
+// อัปโหลดปกเฉพาะ variant
+function VariantImg({ label, url, busy, onChange, onClear }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex h-16 w-11 shrink-0 items-center justify-center overflow-hidden rounded bg-mist">
+        {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="text-[9px] text-sub">{label}</span>}
+      </div>
+      <div className="text-[11px]">
+        <p className="mb-1 font-medium text-ink">{label}</p>
+        <label className="cursor-pointer text-accent hover:opacity-80">
+          {busy ? "กำลังอัปโหลด..." : url ? "เปลี่ยน" : "อัปโหลด"}
+          <input type="file" accept="image/*" onChange={onChange} className="hidden" />
+        </label>
+        {url && <button type="button" onClick={onClear} className="ml-2 text-sub hover:text-red-600">ลบ</button>}
+      </div>
+    </div>
+  );
+}
 
 

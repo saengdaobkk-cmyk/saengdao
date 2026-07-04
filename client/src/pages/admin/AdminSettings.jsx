@@ -18,6 +18,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ cartDrawerEnabled: v })}
           />
+          <ToggleRow
+            title="แสดงหมวดหมู่บนการ์ดสินค้า"
+            desc="เปิด: โชว์ชื่อหมวดหมู่เหนือชื่อหนังสือในการ์ด · ปิด: ซ่อนไว้"
+            checked={settings.showCardCategory}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showCardCategory: v })}
+          />
         </div>
       </section>
 

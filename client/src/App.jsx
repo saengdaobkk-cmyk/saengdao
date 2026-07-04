@@ -1,43 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Link, NavLink } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { useCart } from "./cart/CartContext";
 import { useSettings } from "./api/settings";
 import { useContent } from "./api/content";
+import { useNav } from "./api/nav";
 import CartDrawer from "./components/CartDrawer";
-
-const nav = [
-  { to: "/", label: "หน้าแรก", end: true },
-  { to: "/books", label: "หนังสือ" },
-  { to: "/?category=fiction", label: "นิยาย" },
-  { to: "/?category=business", label: "ธุรกิจ" },
-  { to: "/?category=children", label: "เด็ก" },
-  { to: "/about", label: "เกี่ยวกับเรา" },
-  { to: "/contact", label: "ติดต่อ" },
-];
 
 export default function App() {
   const { t } = useContent();
   const s = useSettings();
+  const { data: nav = [] } = useNav();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = ""; window.removeEventListener("keydown", onKey); };
+  }, [mobileOpen]);
+
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
       {/* เมนูกระจกฝ้า ลอยติดบน */}
       <header className="sticky top-0 z-50">
         <div className="border-b border-line/70 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
           <div className="mx-auto flex h-12 max-w-page items-center justify-between px-5">
-            <Link
-              to="/"
-              className="text-[16px] font-semibold tracking-[0.22em] text-ink"
-            >
-              SAENGDAO
-            </Link>
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setMobileOpen(true)}
+                aria-label="เมนู"
+                className="-ml-1 rounded-lg p-1 text-ink transition hover:bg-mist sm:hidden"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
+                </svg>
+              </button>
+              <Link
+                to="/"
+                className="text-[16px] font-semibold tracking-[0.22em] text-ink"
+              >
+                SAENGDAO
+              </Link>
+            </div>
 
             <nav className="hidden items-center gap-8 sm:flex">
               {nav.map((n) => (
                 <NavLink
-                  key={n.label}
-                  to={n.to}
-                  end={n.end}
+                  key={n.id}
+                  to={n.url}
+                  end={n.url === "/"}
                   className={({ isActive }) =>
                     `text-[13px] tracking-tight transition-colors ${
                       isActive ? "text-ink" : "text-sub hover:text-ink"
@@ -56,6 +70,40 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      {/* เมนู slide-out มือถือ */}
+      <div className={`fixed inset-0 z-[60] sm:hidden ${mobileOpen ? "" : "pointer-events-none"}`}>
+        <div
+          onClick={() => setMobileOpen(false)}
+          className={`absolute inset-0 bg-ink/30 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? "opacity-100" : "opacity-0"}`}
+        />
+        <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="flex h-12 items-center justify-between border-b border-line px-5">
+            <span className="text-[15px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
+            <button onClick={() => setMobileOpen(false)} aria-label="ปิด" className="rounded-lg p-1 text-sub hover:bg-mist hover:text-ink">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
+            </button>
+          </div>
+          <nav className="flex-1 overflow-y-auto p-3">
+            {nav.map((n) => (
+              <NavLink
+                key={n.id}
+                to={n.url}
+                end={n.url === "/"}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `block rounded-xl px-4 py-3 text-[15px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`
+                }
+              >
+                {n.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="border-t border-line p-3">
+            <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
+          </div>
+        </div>
+      </div>
 
       <main className="flex-1">
         <Outlet />

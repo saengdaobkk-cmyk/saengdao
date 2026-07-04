@@ -13,6 +13,8 @@ import couponsRouter from "./routes/coupons.js";
 import slidesRouter from "./routes/slides.js";
 import contentRouter from "./routes/content.js";
 import termsRouter from "./routes/terms.js";
+import navRouter from "./routes/nav.js";
+import previewRouter from "./routes/preview.js";
 import adminRouter from "./routes/admin.js";
 
 const app = express();
@@ -56,6 +58,8 @@ app.use("/api/coupons", couponsRouter);
 app.use("/api/slides", slidesRouter);
 app.use("/api/content", contentRouter);
 app.use("/api/terms", termsRouter);
+app.use("/api/nav", navRouter);
+app.use("/api/preview", previewRouter);
 app.use("/api/admin", adminRouter);
 
 // 404

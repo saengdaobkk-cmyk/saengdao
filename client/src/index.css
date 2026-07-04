@@ -15,28 +15,53 @@
   }
 }
 
+/* เวที flipbook ตัวอย่าง PDF (StPageFlip) */
+.flip-stage { display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.flip-stage .stf__parent { margin: 0 auto; background: transparent !important; }
+.flip-stage .stf__wrapper,
+.flip-stage .stf__block,
+.flip-stage .stf__item { background: transparent !important; }
+.flip-stage .stf__item {
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+}
+.flip-stage .stf__item img,
+.flip-stage img.stf__item {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
 /* ปกหนังสือพลิก 3D หน้า-หลัง (เหมือนร้าน PHP) */
 .flip-card {
+  -webkit-perspective: 1500px;
   perspective: 1500px;
 }
 .flip-inner {
   position: absolute;
   inset: 0;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 .flip-card.flipped .flip-inner {
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
 }
 .flip-face {
   position: absolute;
   inset: 0;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  overflow: hidden;
+  backface-visibility: hidden;
+  /* ไม่ใช้ overflow:hidden เพราะทำให้ iOS แบน 3D — clip รูปด้วย border-radius แทน */
 }
 .flip-face.flip-back {
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
+}
+.flip-face img {
+  border-radius: inherit;
 }
 
 /* ช่องที่กรอกผิด — ขอบแดงเรืองแสงนีออนจางๆ */

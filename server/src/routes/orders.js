@@ -91,7 +91,7 @@ router.post("/", async (req, res, next) => {
           if (variant.stock < qty)
             throw httpError(409, `"${book.title} (${variant.name})" มีไม่พอ (เหลือ ${variant.stock})`);
 
-          const price = variant.discountPrice != null ? Number(variant.discountPrice) : Number(variant.price);
+          const price = Math.ceil(variant.discountPrice != null ? Number(variant.discountPrice) : Number(variant.price));
           subtotal += price * qty;
           orderItems.push({ bookId: book.id, variantId: variant.id, variantName: variant.name, quantity: qty, price });
 
@@ -102,7 +102,7 @@ router.post("/", async (req, res, next) => {
             throw httpError(400, `กรุณาเลือกตัวเลือกของ "${book.title}" ก่อน`);
           if (book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
 
-          const price = book.discountPrice != null ? Number(book.discountPrice) : Number(book.price);
+          const price = Math.ceil(book.discountPrice != null ? Number(book.discountPrice) : Number(book.price));
           subtotal += price * qty;
           orderItems.push({ bookId: book.id, quantity: qty, price });
 
@@ -111,7 +111,7 @@ router.post("/", async (req, res, next) => {
       }
 
       // คิดส่วนลดฝั่ง server จากโค้ด (กันปลอม) — โยน error ถ้าโค้ดใช้ไม่ได้
-      const { coupon, discount } = await computeDiscount(discountCode, subtotal);
+      const { coupon, discount } = await computeDiscount(discountCode, subtotal); // ราคา/ส่วนลดเป็นจำนวนเต็มบาทแล้ว
       const total = subtotal - discount;
 
       return tx.order.create({

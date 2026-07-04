@@ -301,7 +301,7 @@ function OrderInfo({ order }) {
         <div>
           <div className="mb-1.5 flex items-center gap-2">
             <p className="text-[12px] font-semibold uppercase tracking-wide text-sub">ที่อยู่จัดส่ง</p>
-            <button onClick={startEdit} className="text-[12px] text-accent hover:underline">แก้ไข</button>
+            <button onClick={startEdit} className="text-[12px] text-accent">แก้ไข</button>
           </div>
           <p className="text-ink">{order.shipName} · {order.shipPhone}</p>
           <p className="text-sub">{order.shipAddress}</p>
@@ -352,7 +352,7 @@ function OrderInfo({ order }) {
           <button
             type="button"
             onClick={() => setForm((f) => ({ ...f, receiptName: f.shipName, receiptAddress: f.shipAddress }))}
-            className="text-[12px] text-accent hover:underline"
+            className="text-[12px] text-accent"
           >
             ↺ ใช้ข้อมูลเดียวกับที่อยู่จัดส่ง
           </button>
@@ -367,7 +367,7 @@ function OrderInfo({ order }) {
                   receiptAddress: order.user.receiptAddress || f.receiptAddress,
                 }))
               }
-              className="text-[12px] font-medium text-accent hover:underline"
+              className="text-[12px] font-medium text-accent"
             >
               ⬇ ดึงข้อมูลใบเสร็จของลูกค้า
             </button>
