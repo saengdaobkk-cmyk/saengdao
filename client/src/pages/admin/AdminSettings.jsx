@@ -25,6 +25,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showCardCategory: v })}
           />
+          <ToggleRow
+            title="แถบโลโก้สำนักพิมพ์ (หน้าแรก)"
+            desc="เปิด: โชว์แถบโลโก้สำนักพิมพ์เลื่อนวนก่อน footer · ปิด: ซ่อน"
+            checked={settings.showPublisherMarquee}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showPublisherMarquee: v })}
+          />
         </div>
       </section>
 

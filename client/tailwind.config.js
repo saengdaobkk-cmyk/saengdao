@@ -1,6 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
+  // hover: ทำงานเฉพาะอุปกรณ์ที่มีเมาส์จริง → กันสถานะ hover ค้างบนมือถือหลังแตะ
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
       fontFamily: {

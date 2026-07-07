@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
-import { authenticate, requireAdmin } from "../middleware/auth.js";
+import bcrypt from "bcryptjs";
+import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js";
 import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
@@ -9,7 +10,11 @@ import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, u
 import { ensureNav } from "../lib/navDefaults.js";
 
 const router = Router();
-router.use(authenticate, requireAdmin); // ทุก endpoint เฉพาะ admin
+router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
+// เมนูเฉพาะแอดมินเต็ม — STAFF เข้าไม่ได้ (พนักงานเห็นแค่ สินค้า/คำสั่งซื้อ/collection)
+["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users"].forEach((p) =>
+  router.use(p, requireAdmin)
+);
 
 const ORDER_STATUS = ["PENDING", "PAID", "SHIPPED", "COMPLETED", "CANCELLED"];
 const PAYMENT_STATUS = ["UNPAID", "PENDING_REVIEW", "PAID", "FAILED"];
@@ -248,7 +253,7 @@ router.post("/categories", async (req, res, next) => {
     const name = req.body.name?.trim();
     const slug = autoSlug(name, req.body.slug);
     if (!name || !slug) return res.status(400).json({ error: "กรอกชื่อหมวด" });
-    const cat = await prisma.category.create({ data: { name, slug } });
+    const cat = await prisma.category.create({ data: { name, slug, image: req.body.image?.trim() || null } });
     res.status(201).json(cat);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "ชื่อหมวดหรือ slug ซ้ำ" });
@@ -261,7 +266,9 @@ router.patch("/categories/:id", async (req, res, next) => {
     const name = req.body.name?.trim();
     const slug = autoSlug(name, req.body.slug);
     if (!name || !slug) return res.status(400).json({ error: "กรอกชื่อหมวด" });
-    const cat = await prisma.category.update({ where: { id: req.params.id }, data: { name, slug } });
+    const data = { name, slug };
+    if (req.body.image !== undefined) data.image = req.body.image?.trim() || null;
+    const cat = await prisma.category.update({ where: { id: req.params.id }, data });
     res.json(cat);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "ชื่อหมวดหรือ slug ซ้ำ" });
@@ -317,7 +324,9 @@ router.patch("/terms/:id", async (req, res, next) => {
     const updated = await renameTermInBooks(term.type, term.name, name); // อัปเดตหนังสือ
     try {
       const slug = await uniqueTermSlug(term.type, name, term.id);
-      const t = await prisma.term.update({ where: { id: term.id }, data: { name, slug } });
+      const data = { name, slug };
+      if (req.body.image !== undefined) data.image = req.body.image?.trim() || null;
+      const t = await prisma.term.update({ where: { id: term.id }, data });
       res.json({ ...t, updated });
     } catch (e) {
       // ชื่อใหม่ซ้ำกับ term ที่มีอยู่ → รวมกัน (ลบตัวเดิม)
@@ -732,6 +741,163 @@ router.post("/upload-pdf", (req, res) => {
       res.status(500).json({ error: e.message });
     }
   });
+});
+
+/* ---------- Users (จัดการผู้ใช้/สิทธิ์ — แอดมินเต็มเท่านั้น) ---------- */
+const ROLES = ["USER", "STAFF", "ADMIN"];
+const userPublic = (u) => ({ id: u.id, email: u.email, name: u.name, role: u.role, createdAt: u.createdAt });
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+router.get("/users", async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: { role: { in: ["STAFF", "ADMIN"] } }, // เฉพาะเจ้าหน้าที่ (ลูกค้าอยู่เมนู "ลูกค้า")
+      orderBy: [{ role: "desc" }, { createdAt: "asc" }],
+      select: { id: true, email: true, name: true, role: true, createdAt: true },
+    });
+    res.json(users.map(userPublic));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/users", async (req, res, next) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const password = String(req.body.password || "");
+    const name = String(req.body.name || "").trim() || null;
+    const role = ["STAFF", "ADMIN"].includes(req.body.role) ? req.body.role : "STAFF"; // เมนูนี้สร้างได้เฉพาะเจ้าหน้าที่
+    if (!emailRe.test(email)) return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
+    if (password.length < 6) return res.status(400).json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+    const user = await prisma.user.create({
+      data: { email, password: await bcrypt.hash(password, 10), name, role },
+    });
+    res.status(201).json(userPublic(user));
+  } catch (err) {
+    if (err.code === "P2002") return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
+    next(err);
+  }
+});
+
+router.patch("/users/:id", async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!target) return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+    const data = {};
+
+    if (req.body.name !== undefined) data.name = String(req.body.name).trim() || null;
+
+    if (req.body.role !== undefined && req.body.role !== target.role) {
+      if (!ROLES.includes(req.body.role)) return res.status(400).json({ error: "สิทธิ์ไม่ถูกต้อง" });
+      if (target.id === req.user.id) return res.status(400).json({ error: "เปลี่ยนสิทธิ์ของตัวเองไม่ได้" });
+      // กันถอด ADMIN คนสุดท้าย
+      if (target.role === "ADMIN" && req.body.role !== "ADMIN") {
+        const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+        if (admins <= 1) return res.status(400).json({ error: "ต้องมีแอดมินอย่างน้อย 1 คน" });
+      }
+      data.role = req.body.role;
+    }
+
+    if (req.body.password) {
+      if (String(req.body.password).length < 6)
+        return res.status(400).json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+      data.password = await bcrypt.hash(String(req.body.password), 10);
+    }
+
+    const user = await prisma.user.update({ where: { id: target.id }, data });
+    res.json(userPublic(user));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/users/:id", async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      include: { _count: { select: { orders: true } } },
+    });
+    if (!target) return res.json({ ok: true });
+    if (target.id === req.user.id) return res.status(400).json({ error: "ลบบัญชีตัวเองไม่ได้" });
+    if (target._count.orders > 0)
+      return res.status(409).json({ error: "ลบไม่ได้ — ผู้ใช้นี้มีคำสั่งซื้อแล้ว (ลดสิทธิ์เป็นลูกค้าแทนได้)" });
+    if (target.role === "ADMIN") {
+      const admins = await prisma.user.count({ where: { role: "ADMIN" } });
+      if (admins <= 1) return res.status(400).json({ error: "ต้องมีแอดมินอย่างน้อย 1 คน" });
+    }
+    await prisma.user.delete({ where: { id: target.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- Customers (ลูกค้า — เจ้าหน้าที่ดู/แก้ข้อมูลได้) ---------- */
+const customerPublic = (u) => ({
+  id: u.id, email: u.email, name: u.name, phone: u.phone, address: u.address,
+  receiptName: u.receiptName, receiptTaxId: u.receiptTaxId, receiptAddress: u.receiptAddress,
+  createdAt: u.createdAt,
+});
+
+router.get("/customers", async (req, res, next) => {
+  try {
+    const rows = await prisma.user.findMany({
+      where: { role: "USER" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, email: true, name: true, phone: true, address: true,
+        receiptName: true, receiptTaxId: true, receiptAddress: true, createdAt: true,
+        _count: { select: { orders: true } },
+      },
+    });
+    res.json(rows.map((c) => ({ ...customerPublic(c), orderCount: c._count.orders })));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/customers/:id", async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!target || target.role !== "USER") return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    const b = req.body || {};
+    const data = {};
+    for (const f of ["name", "phone", "address", "receiptName", "receiptAddress"]) {
+      if (b[f] !== undefined) data[f] = String(b[f]).trim() || null;
+    }
+    if (b.receiptTaxId !== undefined) {
+      const tid = String(b.receiptTaxId).trim() || null;
+      if (tid && !/^\d{13}$/.test(tid)) return res.status(400).json({ error: "เลขผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก" });
+      data.receiptTaxId = tid;
+    }
+    if (b.email !== undefined && b.email !== target.email) {
+      const email = String(b.email).trim().toLowerCase();
+      if (!emailRe.test(email)) return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
+      const exists = await prisma.user.findUnique({ where: { email } });
+      if (exists && exists.id !== target.id) return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
+      data.email = email;
+    }
+    const user = await prisma.user.update({ where: { id: target.id }, data });
+    res.json(customerPublic(user));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/customers/:id", async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({
+      where: { id: req.params.id },
+      include: { _count: { select: { orders: true } } },
+    });
+    if (!target || target.role !== "USER") return res.json({ ok: true });
+    if (target._count.orders > 0)
+      return res.status(409).json({ error: "ลบไม่ได้ — ลูกค้ามีคำสั่งซื้อแล้ว" });
+    await prisma.user.delete({ where: { id: target.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

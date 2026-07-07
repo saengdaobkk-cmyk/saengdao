@@ -15,6 +15,18 @@
   }
 }
 
+/* ซ่อน scrollbar แนวนอน (carousel) */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* โลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ (marquee) */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { display: flex; width: max-content; animation: marquee 35s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
 /* เวที flipbook ตัวอย่าง PDF (StPageFlip) */
 .flip-stage { display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .flip-stage .stf__parent { margin: 0 auto; background: transparent !important; }
@@ -40,10 +52,13 @@
 .flip-inner {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   -webkit-transition: -webkit-transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* ห้ามใส่ will-change: transform — iOS Safari จะสร้าง layer แล้วแบน 3D ทำให้ flip ไม่ทำงาน */
 }
 .flip-card.flipped .flip-inner {
   -webkit-transform: rotateY(180deg);
@@ -62,6 +77,14 @@
 }
 .flip-face img {
   border-radius: inherit;
+}
+/* ปุ่มพลิกปก — hover เฉพาะเครื่องที่มีเมาส์จริง (กันสีฟ้าค้างบนมือถือหลังแตะ) */
+@media (hover: hover) {
+  .flip-fab:hover {
+    background-color: #0071e3;
+    color: #fff;
+    transform: scale(1.05);
+  }
 }
 
 /* ช่องที่กรอกผิด — ขอบแดงเรืองแสงนีออนจางๆ */

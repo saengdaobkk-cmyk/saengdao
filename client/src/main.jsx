@@ -20,6 +20,7 @@ import OrderConfirm from "./pages/OrderConfirm.jsx";
 import Account from "./pages/Account.jsx";
 import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
+import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminProducts from "./pages/admin/AdminProducts.jsx";
@@ -31,6 +32,8 @@ import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
 import AdminCoupons from "./pages/admin/AdminCoupons.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
+import AdminUsers from "./pages/admin/AdminUsers.jsx";
+import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
 
 const queryClient = new QueryClient();
 
@@ -63,7 +66,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="contact" element={<Contact />} />
               </Route>
 
-              {/* หลังร้าน — layout แยกเอกเทศ */}
+              {/* หลังร้าน — login แยกจากลูกค้า + layout แยกเอกเทศ */}
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
@@ -79,6 +83,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="customers" element={<AdminCustomers />} />
+                <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Routes>

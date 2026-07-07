@@ -15,6 +15,7 @@ router.get("/", async (req, res, next) => {
         id: c.id,
         name: c.name,
         slug: c.slug,
+        image: c.image,
         bookCount: c._count.books,
       }))
     );

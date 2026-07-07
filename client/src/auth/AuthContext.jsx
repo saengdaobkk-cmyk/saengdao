@@ -29,6 +29,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
     saveSession(res.data);
+    return res.data.user;
   };
 
   const register = async (email, password, name) => {
@@ -41,9 +42,12 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const isAdmin = user?.role === "ADMIN";
+  const isStaff = user?.role === "STAFF" || isAdmin; // แอดมินนับเป็นเจ้าหน้าที่ด้วย
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, updateUser: setUser, isAdmin: user?.role === "ADMIN" }}
+      value={{ user, loading, login, register, logout, updateUser: setUser, isAdmin, isStaff }}
     >
       {children}
     </AuthContext.Provider>

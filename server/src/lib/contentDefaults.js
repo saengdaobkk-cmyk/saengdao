@@ -4,6 +4,7 @@ export const CONTENT_DEFAULTS = [
   // ===== ส่วนกลาง =====
   { key: "common.brand_tagline", section: "common", label: "สโลแกนใต้โลโก้ (footer)", value: "ร้านหนังสือแสงดาว คัดหนังสือดีมาเพื่อคุณ ส่งถึงบ้านทั่วประเทศ" },
   { key: "footer.copyright", section: "common", label: "ข้อความลิขสิทธิ์ (footer)", value: "© 2026 SAENGDAO — ร้านหนังสือออนไลน์" },
+  { key: "common.marquee_title", section: "common", label: "หัวข้อแถบโลโก้สำนักพิมพ์ (หน้าแรก)", value: "สำนักพิมพ์ที่ร่วมกับเรา" },
 
   // ===== ตะกร้า =====
   { key: "cart.empty_title", section: "cart", label: "หัวข้อเมื่อตะกร้าว่าง", value: "ตะกร้าว่างเปล่า" },
@@ -38,7 +39,7 @@ export const CONTENT_DEFAULTS = [
   { key: "product.by", section: "product", label: "คำนำหน้าผู้เขียน", value: "โดย", order: 3 },
   { key: "product.translated_by", section: "product", label: "คำนำหน้าผู้แปล", value: "แปลโดย", order: 4 },
   { key: "product.discount_label", section: "product", label: "ป้ายส่วนลด (นำหน้า %)", value: "ลด", order: 5 },
-  { key: "product.in_stock_prefix", section: "product", label: "สถานะพร้อมส่ง (นำหน้าจำนวน)", value: "พร้อมส่ง · เหลือ", order: 6 },
+  { key: "product.in_stock_prefix", section: "product", label: "สถานะพร้อมส่ง", value: "พร้อมส่ง", order: 6 },
   { key: "product.unit_book", section: "product", label: "หน่วยนับ: เล่ม", value: "เล่ม", order: 7 },
   { key: "product.unit_piece", section: "product", label: "หน่วยนับตัวเลือก: ชิ้น", value: "ชิ้น", order: 8 },
   { key: "product.out_of_stock", section: "product", label: "ข้อความสินค้าหมด", value: "สินค้าหมด", order: 9 },

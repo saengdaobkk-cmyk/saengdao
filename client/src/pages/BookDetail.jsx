@@ -134,7 +134,7 @@ export default function BookDetail() {
                 onClick={() => setFlipped((f) => !f)}
                 aria-label="พลิกดูปกหน้า/หลัง"
                 title="พลิกปกหน้า/หลัง"
-                className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition hover:scale-105 hover:bg-accent hover:text-white"
+                className="flip-fab absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 0 1 15-6.7L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" /><path d="M3 21v-5h5" />
@@ -169,14 +169,14 @@ export default function BookDetail() {
           {book.authorLinks?.length > 0 && (
             <p className="mt-2 text-[15px] text-sub">
               {t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
-                <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="text-accent transition-colors hover:text-accent/80">{a.name}</Link></span>
+                <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
               ))}
             </p>
           )}
           {book.translatorLinks?.length > 0 && (
             <p className="mt-0.5 text-[14px] text-sub">
               {t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
-                <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="text-accent transition-colors hover:text-accent/80">{a.name}</Link></span>
+                <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
               ))}
             </p>
           )}
@@ -195,9 +195,9 @@ export default function BookDetail() {
             <p className="mt-1.5 text-[13px]">
               {hasVariants
                 ? variant
-                  ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง · เหลือ")} {variant.stock} {t("product.unit_piece", "ชิ้น")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
+                  ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
                   : <span className="text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
-                : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง · เหลือ")} {book.stock} {t("product.unit_book", "เล่ม")}</span> : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
+                : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
             </p>
 
             {/* variant */}

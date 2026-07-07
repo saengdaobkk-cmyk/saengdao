@@ -66,7 +66,7 @@ export function useSaveTerm(type) {
   return useMutation({
     mutationFn: async (t) =>
       t.id
-        ? (await api.patch(`/admin/terms/${t.id}`, { name: t.name })).data
+        ? (await api.patch(`/admin/terms/${t.id}`, { name: t.name, image: t.image })).data
         : (await api.post("/admin/terms", { type, name: t.name })).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "terms", type] });
@@ -194,4 +194,45 @@ export async function uploadPdf(file) {
   const fd = new FormData();
   fd.append("pdf", file);
   return (await api.post("/admin/upload-pdf", fd)).data.url;
+}
+
+/* ---------- Users (จัดการผู้ใช้/สิทธิ์ — แอดมินเต็ม) ---------- */
+export const useAdminUsers = () =>
+  useQuery({ queryKey: ["admin", "users"], queryFn: async () => (await api.get("/admin/users")).data });
+
+export function useSaveUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }) =>
+      id ? (await api.patch(`/admin/users/${id}`, data)).data : (await api.post("/admin/users", data)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/users/${id}`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
+  });
+}
+
+/* ---------- Customers (ลูกค้า — เจ้าหน้าที่ดู/แก้ได้) ---------- */
+export const useAdminCustomers = () =>
+  useQuery({ queryKey: ["admin", "customers"], queryFn: async () => (await api.get("/admin/customers")).data });
+
+export function useSaveCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }) => (await api.patch(`/admin/customers/${id}`, data)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "customers"] }),
+  });
+}
+
+export function useDeleteCustomer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/customers/${id}`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "customers"] }),
+  });
 }

@@ -53,7 +53,7 @@ export async function listTermsWithCount(type) {
     const names = MULTI[type] ? splitNames(b[field]) : b[field]?.trim() ? [b[field].trim()] : [];
     for (const n of names) count.set(n, (count.get(n) || 0) + 1);
   }
-  return terms.map((t) => ({ id: t.id, name: t.name, slug: t.slug, count: count.get(t.name) || 0 }));
+  return terms.map((t) => ({ id: t.id, name: t.name, slug: t.slug, image: t.image, count: count.get(t.name) || 0 }));
 }
 
 // เปลี่ยนชื่อ (to) หรือลบ (to=null) รายชื่อในหนังสือทุกเล่มที่ใช้ — คืนจำนวนเล่มที่อัปเดต

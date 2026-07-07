@@ -12,8 +12,9 @@ datasource db {
 }
 
 enum Role {
-  USER
-  ADMIN
+  USER // ลูกค้า
+  STAFF // พนักงาน (เข้าหลังบ้านบางเมนู)
+  ADMIN // แอดมินเต็ม
 }
 
 // ตั้งค่าร้าน (key-value) เช่น เปิด/ปิด Cart Drawer
@@ -83,6 +84,7 @@ model Term {
   type      TermType
   name      String
   slug      String?
+  image     String? // โลโก้ (ใช้กับสำนักพิมพ์ — แสดง marquee หน้าแรก)
   createdAt DateTime @default(now())
 
   @@unique([type, name])
@@ -120,9 +122,10 @@ model User {
 }
 
 model Category {
-  id    String @id @default(uuid())
-  name  String @unique
-  slug  String @unique
+  id    String  @id @default(uuid())
+  name  String  @unique
+  slug  String  @unique
+  image String? // รูปการ์ดหมวดหมู่ (หน้าแรก)
   books Book[]
 }
 

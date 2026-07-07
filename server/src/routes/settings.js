@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee"];
 const STRING_KEYS = [
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
@@ -25,6 +25,7 @@ const STRING_KEYS = [
 const DEFAULTS = {
   cartDrawerEnabled: true,
   showCardCategory: false, // แสดงชื่อหมวดหมู่บนการ์ดสินค้า (ปิดไว้ตามที่เลือก)
+  showPublisherMarquee: true, // แถบโลโก้สำนักพิมพ์เลื่อนวน (หน้าแรก)
   promptpayId: "",
   promptpayName: "",
   bankName: "",

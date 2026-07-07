@@ -39,3 +39,11 @@ export function requireAdmin(req, res, next) {
   }
   next();
 }
+
+// ต้องเป็นพนักงานขึ้นไป (STAFF หรือ ADMIN) — เข้าหลังบ้านได้
+export function requireStaff(req, res, next) {
+  if (req.user?.role !== "ADMIN" && req.user?.role !== "STAFF") {
+    return res.status(403).json({ error: "เฉพาะเจ้าหน้าที่เท่านั้น" });
+  }
+  next();
+}

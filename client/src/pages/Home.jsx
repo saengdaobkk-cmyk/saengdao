@@ -2,6 +2,7 @@ import BookRow from "../components/BookRow";
 import HeroSlider from "../components/HeroSlider";
 import BrowseSections from "../components/BrowseSections";
 import BookCatalog from "../components/BookCatalog";
+import PublisherMarquee from "../components/PublisherMarquee";
 
 export default function Home() {
   return (
@@ -24,6 +25,9 @@ export default function Home() {
 
       {/* คอลเลกชันสินค้า */}
       <BookCatalog id="catalog" eyebrow="คอลเลกชัน" heading="คัดสรรมาเพื่อคุณ" limit={8} />
+
+      {/* โลโก้สำนักพิมพ์เลื่อนวน (ก่อน footer) */}
+      <PublisherMarquee />
     </>
   );
 }

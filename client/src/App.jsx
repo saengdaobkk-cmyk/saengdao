@@ -111,7 +111,7 @@ export default function App() {
 
       <CartDrawer />
 
-      <footer className="mt-24 border-t border-line bg-mist">
+      <footer className="mt-14 border-t border-line bg-mist">
         <div className="mx-auto max-w-page px-5 py-14">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {/* แบรนด์ */}
@@ -221,7 +221,7 @@ function CartButton() {
 }
 
 function AccountMenu() {
-  const { user, loading, logout, isAdmin } = useAuth();
+  const { user, loading, logout, isStaff } = useAuth();
   const [open, setOpen] = useState(false);
 
   if (loading) return <div className="h-[18px] w-[18px]" />;
@@ -257,7 +257,7 @@ function AccountMenu() {
             <Link to="/account" className="block px-4 py-2 text-ink hover:bg-mist">
               บัญชีของฉัน
             </Link>
-            {isAdmin && (
+            {isStaff && (
               <Link to="/admin" className="block px-4 py-2 text-ink hover:bg-mist">
                 จัดการร้าน
               </Link>

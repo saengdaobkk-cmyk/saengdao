@@ -26,7 +26,7 @@ router.get("/list/:type", async (req, res, next) => {
     const type = String(req.params.type || "").toUpperCase();
     if (!TERM_TYPES.includes(type)) return res.json([]);
     const terms = await listTermsWithCount(type);
-    res.json(terms.map((t) => ({ name: t.name, slug: t.slug, count: t.count })));
+    res.json(terms.map((t) => ({ name: t.name, slug: t.slug, image: t.image, count: t.count })));
   } catch (err) {
     next(err);
   }

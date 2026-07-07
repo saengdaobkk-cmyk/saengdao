@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 const FALLBACK = {
   cartDrawerEnabled: true,
   showCardCategory: false,
+  showPublisherMarquee: true,
   promptpayId: "",
   promptpayName: "",
   bankName: "",
