@@ -19,17 +19,21 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* โลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ (marquee) — 2 กลุ่มเลื่อน -100% (iOS-safe ไม่พึ่ง max-content) */
+/* โลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ (marquee) — 2 กลุ่มเลื่อน -100%
+   translate3d + backface + will-change = ดัน GPU layer กัน iOS repaint พริบ/กระตุก */
 @keyframes marquee {
-  from { -webkit-transform: translateX(0); transform: translateX(0); }
-  to { -webkit-transform: translateX(-100%); transform: translateX(-100%); }
+  from { -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); }
+  to { -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
 }
 .marquee { display: flex; overflow: hidden; }
 .marquee-group {
   display: flex;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   min-width: 100%;
   align-items: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
   -webkit-animation: marquee 35s linear infinite;
   animation: marquee 35s linear infinite;
 }
