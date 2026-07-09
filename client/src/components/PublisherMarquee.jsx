@@ -19,7 +19,7 @@ export default function PublisherMarquee() {
 
   return (
     <section className="mt-6 border-t border-line bg-white pb-6 pt-7">
-      <p className="mb-5 text-center text-[13px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")} <span className="text-[10px] text-rose-500">[build-0708b]</span></p>
+      <p className="mb-5 text-center text-[13px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")}</p>
       <div className="marquee relative">
         {/* ขอบซ้าย-ขวาไล่จางให้ดูลื่น */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent" />

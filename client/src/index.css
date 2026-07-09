@@ -31,9 +31,8 @@
   flex: 0 0 auto;
   min-width: 100%;
   align-items: center;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: transform;
+  /* ไม่ใส่ backface-visibility/will-change — iOS Safari มีบั๊กทำให้ element หายไป
+     translate3d ใน keyframe ก็ดัน GPU layer พอแล้ว (ลื่นไม่กระตุก) */
   -webkit-animation: marquee 35s linear infinite;
   animation: marquee 35s linear infinite;
 }
