@@ -112,7 +112,7 @@ export default function BookDetail() {
       <div className="mt-6 grid gap-12 md:grid-cols-[minmax(0,380px)_1fr] md:gap-16">
         {/* แกลเลอรี — ปกพลิกหน้า-หลัง */}
         <div className="md:sticky md:top-24 md:self-start">
-          <div className={`relative aspect-[145/210] w-full rounded-3xl ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
+          <div className={`relative aspect-[145/210] w-full ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
             {back ? (
               <div className="flip-inner">
                 <button onClick={() => openLb(front)} className="flip-face flip-front block rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]">

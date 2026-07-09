@@ -24,7 +24,7 @@
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.marquee-track { display: flex; width: max-content; animation: marquee 35s linear infinite; }
+.marquee-track { display: flex; width: -webkit-max-content; width: max-content; animation: marquee 35s linear infinite; }
 .marquee:hover .marquee-track { animation-play-state: paused; }
 
 /* เวที flipbook ตัวอย่าง PDF (StPageFlip) */
