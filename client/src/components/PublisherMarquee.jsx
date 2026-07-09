@@ -21,9 +21,6 @@ export default function PublisherMarquee() {
     <section className="mt-6 border-t border-line bg-white pb-6 pt-7">
       <p className="mb-5 text-center text-[13px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")}</p>
       <div className="marquee relative">
-        {/* ขอบซ้าย-ขวาไล่จางให้ดูลื่น */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent" />
         {[0, 1].map((g) => (
           <div key={g} className="marquee-group" style={{ animationDuration: duration }} aria-hidden={g === 1}>
             {group.map((p, i) => (

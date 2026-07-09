@@ -25,7 +25,13 @@
   from { -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); }
   to { -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
 }
-.marquee { display: flex; overflow: hidden; }
+.marquee {
+  display: flex;
+  overflow: hidden;
+  /* mask = fade ขอบ + บังคับ container เป็น composited layer → หยุด iOS flicker ที่ขอบ clip */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+}
 .marquee-group {
   display: flex;
   flex: 0 0 auto;
