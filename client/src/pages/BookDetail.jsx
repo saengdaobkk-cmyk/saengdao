@@ -115,13 +115,13 @@ export default function BookDetail() {
           <div className={`relative aspect-[145/210] w-full ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
             {back ? (
               <div className="flip-inner">
-                <button onClick={() => openLb(front)} aria-label="ดูปกหน้า"
-                  className="flip-face flip-front block rounded-3xl bg-mist bg-cover bg-center ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"
+                <div onClick={() => openLb(front)} role="button" aria-label="ดูปกหน้า"
+                  className="flip-face flip-front cursor-zoom-in rounded-3xl bg-mist bg-cover bg-center ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"
                   style={front ? { backgroundImage: `url("${front}")` } : undefined}>
                   {!front && <span className="flex h-full items-center justify-center text-6xl opacity-20">𝐀</span>}
-                </button>
-                <button onClick={() => openLb(back)} aria-label="ดูปกหลัง"
-                  className="flip-face flip-back block rounded-3xl bg-mist bg-cover bg-center ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"
+                </div>
+                <div onClick={() => openLb(back)} role="button" aria-label="ดูปกหลัง"
+                  className="flip-face flip-back cursor-zoom-in rounded-3xl bg-mist bg-cover bg-center ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"
                   style={{ backgroundImage: `url("${back}")` }} />
               </div>
             ) : (
