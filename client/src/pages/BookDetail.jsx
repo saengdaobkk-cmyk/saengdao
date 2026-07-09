@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useBook, useRelated } from "../api/books";
 import { useCart } from "../cart/CartContext";
@@ -18,6 +18,19 @@ export default function BookDetail() {
   const { data: related } = useRelated(id);
 
   const [flipped, setFlipped] = useState(false);
+  const flipInnerRef = useRef(null);
+  // พลิกด้วย Web Animations API (JS) — เลี่ยง CSS transition ที่ iOS ไม่ยอม animate
+  const doFlip = () => {
+    const inner = flipInnerRef.current;
+    const next = !flipped;
+    if (inner) {
+      inner.animate(
+        [{ transform: `rotateY(${flipped ? 180 : 0}deg)` }, { transform: `rotateY(${next ? 180 : 0}deg)` }],
+        { duration: 600, easing: "cubic-bezier(0.2,0.7,0.3,1)", fill: "forwards" }
+      );
+    }
+    setFlipped(next);
+  };
   const [variantId, setVariantId] = useState(null);
   const [variantErr, setVariantErr] = useState(false);
   const [qty, setQty] = useState(1);
@@ -114,7 +127,7 @@ export default function BookDetail() {
         <div className="md:sticky md:top-24 md:self-start">
           <div className={`relative aspect-[145/210] w-full ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
             {back ? (
-              <div className="flip-inner">
+              <div className="flip-inner" ref={flipInnerRef}>
                 <div onClick={() => openLb(front)} role="button" aria-label="ดูปกหน้า"
                   className="flip-face flip-front cursor-zoom-in rounded-3xl bg-mist bg-cover bg-center ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"
                   style={front ? { backgroundImage: `url("${front}")` } : undefined}>
@@ -133,7 +146,7 @@ export default function BookDetail() {
             {/* ปุ่มพลิก */}
             {back && (
               <button
-                onClick={() => setFlipped((f) => !f)}
+                onClick={doFlip}
                 aria-label="พลิกดูปกหน้า/หลัง"
                 title="พลิกปกหน้า/หลัง"
                 className="flip-fab absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-ink shadow-md transition"

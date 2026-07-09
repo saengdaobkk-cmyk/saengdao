@@ -19,30 +19,12 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* โลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ (marquee) — 2 กลุ่มเลื่อน -100%
-   translate3d + backface + will-change = ดัน GPU layer กัน iOS repaint พริบ/กระตุก */
-@keyframes marquee {
-  from { -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); }
-  to { -webkit-transform: translate3d(-100%, 0, 0); transform: translate3d(-100%, 0, 0); }
-}
+/* โลโก้สำนักพิมพ์เลื่อนวน — เลื่อนด้วย JS (rAF) · CSS แค่ clip + fade ขอบ */
 .marquee {
-  display: flex;
   overflow: hidden;
-  /* mask = fade ขอบ + บังคับ container เป็น composited layer → หยุด iOS flicker ที่ขอบ clip */
   -webkit-mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
   mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
 }
-.marquee-group {
-  display: flex;
-  flex: 0 0 auto;
-  min-width: 100%;
-  align-items: center;
-  /* ไม่ใส่ backface-visibility/will-change — iOS Safari มีบั๊กทำให้ element หายไป
-     translate3d ใน keyframe ก็ดัน GPU layer พอแล้ว (ลื่นไม่กระตุก) */
-  -webkit-animation: marquee 35s linear infinite;
-  animation: marquee 35s linear infinite;
-}
-.marquee:hover .marquee-group { -webkit-animation-play-state: paused; animation-play-state: paused; }
 
 /* เวที flipbook ตัวอย่าง PDF (StPageFlip) */
 .flip-stage { display: flex; align-items: center; justify-content: center; margin: 0 auto; }
@@ -70,10 +52,7 @@
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-.flip-card.flipped .flip-inner {
-  transform: rotateY(180deg);
+  /* transform ขับด้วย Web Animations API (JS) ใน BookDetail — iOS ไม่ยอม animate CSS transition */
 }
 .flip-face {
   position: absolute;
