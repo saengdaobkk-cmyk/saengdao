@@ -8,12 +8,29 @@
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
   }
+  /* กรอบ focus ขึ้นเฉพาะตอนใช้คีย์บอร์ด (Tab) — ไม่ขึ้น/ไม่ค้างตอนแตะบนมือถือ */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  /* iOS: ปิดเงาไฮไลต์ตอนแตะลิงก์/ปุ่ม */
+  a, button {
+    -webkit-tap-highlight-color: transparent;
+  }
   body {
     font-family: "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
     background-color: #ffffff;
     color: #1d1d1f;
   }
 }
+
+/* ปุ่มหยิบใส่ตะกร้าบนการ์ด — เด้งตอนกด */
+@keyframes cartAdded {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1.08); }
+}
+.cart-added { animation: cartAdded 0.45s ease both; }
 
 /* ซ่อน scrollbar แนวนอน (carousel) */
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

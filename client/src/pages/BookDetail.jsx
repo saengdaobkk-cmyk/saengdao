@@ -7,6 +7,7 @@ import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import FlipBook from "../components/FlipBook";
 import { formatPrice } from "../lib/format";
+import { priceInfo } from "../lib/pricing";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -95,9 +96,11 @@ export default function BookDetail() {
       </div>
     );
 
-  const showPrice = variant ? Number(variant.discountPrice ?? variant.price) : Number(book.discountPrice ?? book.price);
-  const showFull = variant ? Number(variant.price) : Number(book.price);
-  const showDiscount = variant ? variant.discountPrice != null : book.discountPrice != null;
+  const pi = priceInfo(book);
+  const isHot = !variant && pi.hot;
+  const showPrice = variant ? Number(variant.discountPrice ?? variant.price) : pi.price;
+  const showFull = variant ? Number(variant.price) : pi.original;
+  const showDiscount = variant ? variant.discountPrice != null : pi.price < pi.original;
   const pct = showDiscount ? Math.round((1 - showPrice / showFull) * 100) : 0;
 
   const meta = [
@@ -197,13 +200,18 @@ export default function BookDetail() {
           )}
 
           {/* buybox */}
-          <div className="mt-6 rounded-2xl border border-line p-5">
+          <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
+            {isHot && (
+              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
+                🔥 Hot Deal{book.hotDealEnd ? ` · ถึง ${new Date(book.hotDealEnd).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}` : ""}
+              </p>
+            )}
             <div className="flex items-end gap-3">
-              <span className={`text-3xl font-semibold tracking-tight ${showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
+              <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
               {showDiscount && (
                 <>
                   <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
-                  <span className="mb-1.5 rounded-full bg-rose-500 px-2 py-0.5 text-[12px] font-semibold text-white">{t("product.discount_label", "ลด")} {pct}%</span>
+                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold text-white ${isHot ? "bg-orange-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
                 </>
               )}
             </div>

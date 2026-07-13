@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { useCategories, usePublishers } from "../api/books";
+import { useCategories } from "../api/books";
 
 // โทนสีพื้นการ์ดหมวดหมู่ (fallback เมื่อยังไม่มีรูป — วนลูป)
 const TILES = [
@@ -14,7 +14,6 @@ const TILES = [
 
 export default function BrowseSections() {
   const { data: categories } = useCategories();
-  const { data: publishers } = usePublishers();
   const scroller = useRef(null);
   const scroll = (dir) => scroller.current?.scrollBy({ left: dir * 360, behavior: "smooth" });
 
@@ -36,7 +35,7 @@ export default function BrowseSections() {
               {categories.map((c, i) => (
                 <Link
                   key={c.id}
-                  to={`/?category=${c.slug}#catalog`}
+                  to={`/books?category=${c.slug}`}
                   className="group relative aspect-[16/10] w-[260px] shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[340px]"
                 >
                   {c.image ? (
@@ -64,28 +63,6 @@ export default function BrowseSections() {
               className="absolute right-1 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white/90 text-ink shadow-md backdrop-blur transition hover:bg-white sm:flex">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* สำนักพิมพ์ */}
-      {publishers?.length > 0 && (
-        <div className="mt-14">
-          <div className="mb-6">
-            <p className="text-[13px] font-medium tracking-tight text-sub">เลือกตามสำนักพิมพ์</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">สำนักพิมพ์</h2>
-          </div>
-          <div className="flex flex-wrap gap-2.5">
-            {publishers.map((p) => (
-              <Link
-                key={p.name}
-                to={`/?publisher=${encodeURIComponent(p.name)}#catalog`}
-                className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-[14px] text-ink transition hover:border-ink/40"
-              >
-                {p.name}
-                <span className="rounded-full bg-mist px-1.5 text-[11px] text-sub">{p.count}</span>
-              </Link>
-            ))}
           </div>
         </div>
       )}

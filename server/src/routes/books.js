@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { splitNames } from "../lib/terms.js";
+import { hotDealWhere } from "../lib/pricing.js";
 
 const router = Router();
 
@@ -62,6 +63,24 @@ router.get("/", async (req, res, next) => {
       pageSize: limit,
       totalPages: Math.ceil(total / limit),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/books/hot-deals — หนังสือที่มี Hot Deal กำลัง active (สำหรับ section หน้าแรก)
+router.get("/hot-deals", async (req, res, next) => {
+  try {
+    const items = await prisma.book.findMany({
+      where: { active: true, ...hotDealWhere() },
+      orderBy: { hotDealEnd: "asc" }, // ใกล้หมดโปรก่อน
+      take: 16,
+      include: {
+        category: { select: { name: true, slug: true } },
+        variants: { select: { stock: true } },
+      },
+    });
+    res.json(items);
   } catch (err) {
     next(err);
   }

@@ -1,13 +1,16 @@
 import BookRow from "../components/BookRow";
 import HeroSlider from "../components/HeroSlider";
 import BrowseSections from "../components/BrowseSections";
-import BookCatalog from "../components/BookCatalog";
 import PublisherMarquee from "../components/PublisherMarquee";
+import HotDealSection from "../components/HotDealSection";
 
 export default function Home() {
   return (
     <>
       <HeroSlider />
+
+      {/* Hot Deal — section แรก (ซ่อนถ้าไม่มีสินค้าราคาพิเศษ) */}
+      <HotDealSection />
 
       {/* แถวแนะนำ — เลื่อนแนวนอน */}
       <div className="pt-10 sm:pt-14">
@@ -18,13 +21,8 @@ export default function Home() {
         <BookRow eyebrow="ยอดนิยม" title="ขายดี" sort="popular" />
       </div>
 
-      {/* หมวดหมู่ + สำนักพิมพ์ */}
+      {/* หมวดหมู่ */}
       <BrowseSections />
-
-      <div className="mt-2 bg-mist py-2" />
-
-      {/* คอลเลกชันสินค้า */}
-      <BookCatalog id="catalog" eyebrow="คอลเลกชัน" heading="คัดสรรมาเพื่อคุณ" limit={8} />
 
       {/* โลโก้สำนักพิมพ์เลื่อนวน (ก่อน footer) */}
       <PublisherMarquee />

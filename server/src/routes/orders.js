@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
 import { authenticate } from "../middleware/auth.js";
 import { computeDiscount } from "../lib/coupon.js";
+import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 
@@ -102,7 +103,7 @@ router.post("/", async (req, res, next) => {
             throw httpError(400, `กรุณาเลือกตัวเลือกของ "${book.title}" ก่อน`);
           if (book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
 
-          const price = Math.ceil(book.discountPrice != null ? Number(book.discountPrice) : Number(book.price));
+          const price = Math.ceil(effectivePrice(book)); // Hot Deal (ถ้า active) > ลด > ปกติ
           subtotal += price * qty;
           orderItems.push({ bookId: book.id, quantity: qty, price });
 

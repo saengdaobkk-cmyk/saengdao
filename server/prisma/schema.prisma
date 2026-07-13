@@ -138,6 +138,9 @@ model Book {
   description   String?
   price         Decimal     @db.Decimal(10, 2)
   discountPrice Decimal?    @db.Decimal(10, 2) // ราคาลด
+  hotDealPrice  Decimal?    @db.Decimal(10, 2) // ราคา Hot Deal (พิเศษตามช่วงเวลา)
+  hotDealStart  DateTime? // เริ่มโปร (เว้นว่าง = เริ่มทันที)
+  hotDealEnd    DateTime? // สิ้นสุดโปร (เว้นว่าง = ไม่หมดอายุ)
   stock         Int         @default(0)
   soldCount     Int         @default(0)
   active        Boolean     @default(true) // เปิดขาย (false = ซ่อนจากหน้าร้าน)

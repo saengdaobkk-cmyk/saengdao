@@ -10,6 +10,17 @@ export function useBooks(params) {
   });
 }
 
+// Hot Deal ที่กำลัง active (section หน้าแรก) — refetch เป็นระยะให้ทันโปรที่เพิ่ง/หมด
+export function useHotDeals() {
+  return useQuery({
+    queryKey: ["hot-deals"],
+    queryFn: async () => (await api.get("/books/hot-deals")).data,
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 60,
+    refetchOnWindowFocus: true,
+  });
+}
+
 // หนังสือเล่มเดียว
 export function useBook(id) {
   return useQuery({

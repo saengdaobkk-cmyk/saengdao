@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { priceInfo } from "../lib/pricing";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "saengdao_cart";
@@ -27,9 +28,9 @@ export function CartProvider({ children }) {
   // เพิ่มลงตะกร้า — รองรับ variant (book.id + variantId เป็น key แยกบรรทัด)
   const add = (book, qty = 1, variant = null) => {
     const key = variant ? `${book.id}:${variant.id}` : book.id;
-    // ปัดราคาต่อหน่วยขึ้นเป็นจำนวนเต็มบาท (ให้ตรงกับที่แสดง/คิดเงินจริง)
+    // ปัดราคาต่อหน่วยขึ้นเป็นจำนวนเต็มบาท (Hot Deal/ลด/ปกติ ให้ตรงกับที่แสดง/คิดเงินจริง)
     const price = Math.ceil(
-      variant ? Number(variant.discountPrice ?? variant.price) : Number(book.discountPrice ?? book.price)
+      variant ? Number(variant.discountPrice ?? variant.price) : priceInfo(book).price
     );
     const stock = variant ? variant.stock : book.stock;
 

@@ -6,7 +6,7 @@ import ImportBooks from "./ImportBooks";
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
-  price: "", discountPrice: "", stock: "", active: true, featured: false, coverImage: "", backCoverImage: "",
+  price: "", discountPrice: "", hotDealPrice: "", hotDealStart: "", hotDealEnd: "", stock: "", active: true, featured: false, coverImage: "", backCoverImage: "",
   galleryImages: [], previewPdf: "", publisher: "", edition: "", pageCount: "", dimensions: "",
   weight: "", paperType: "", coverType: "", isbn: "", sku: "", metaTitle: "", metaDescription: "",
   slug: "", importedAt: "", variants: [],
@@ -152,13 +152,21 @@ function Toggle({ on, onChange, title }) {
   );
 }
 
+// ISO → ค่าสำหรับ input datetime-local (เวลาท้องถิ่น "YYYY-MM-DDTHH:mm")
+function toLocalInput(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
 /* ============ ฟอร์มเต็มหน้า ============ */
 function BookForm({ book, categories, onClose }) {
   const save = useSaveBook();
   const pubs = useTermList("PUBLISHER").data || [];
   const authors = useTermList("AUTHOR").data || [];
   const translators = useTermList("TRANSLATOR").data || [];
-  const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "" });
+  const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "", hotDealPrice: book.hotDealPrice ?? "", hotDealStart: toLocalInput(book.hotDealStart), hotDealEnd: toLocalInput(book.hotDealEnd) });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState({});
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -201,7 +209,13 @@ function BookForm({ book, categories, onClose }) {
   const submit = (e) => {
     e.preventDefault();
     setError("");
-    save.mutate(form, { onSuccess: onClose, onError: (err) => setError(err.response?.data?.error || "บันทึกไม่สำเร็จ") });
+    // แปลงเวลา Hot Deal (local input) → ISO ก่อนส่ง
+    const payload = {
+      ...form,
+      hotDealStart: form.hotDealStart ? new Date(form.hotDealStart).toISOString() : null,
+      hotDealEnd: form.hotDealEnd ? new Date(form.hotDealEnd).toISOString() : null,
+    };
+    save.mutate(payload, { onSuccess: onClose, onError: (err) => setError(err.response?.data?.error || "บันทึกไม่สำเร็จ") });
   };
 
   return (
@@ -239,6 +253,14 @@ function BookForm({ book, categories, onClose }) {
               <F label="ราคาปกติ (บาท) *"><Inp type="number" value={form.price} onChange={set("price")} /></F>
               <F label="ราคาลด (บาท)"><Inp type="number" value={form.discountPrice ?? ""} onChange={set("discountPrice")} /></F>
               <F label="หรือลดเป็น %" hint="กรอก % แล้วคำนวณราคาลดให้"><Inp type="number" placeholder="เช่น 20" onChange={(e) => setDiscountPct(e.target.value)} /></F>
+            </div>
+          </Card>
+
+          <Card title="🔥 Hot Deal (ราคาพิเศษตามช่วงเวลา)" subtitle="กรอกราคา Hot Deal → หนังสือจะไปโชว์ section Hot Deal หน้าแรก · ใช้แทนราคาปกติ/ราคาลด เฉพาะช่วงเวลาที่กำหนด">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <F label="ราคา Hot Deal (บาท)"><Inp type="number" value={form.hotDealPrice ?? ""} onChange={set("hotDealPrice")} /></F>
+              <F label="เริ่มโปร" hint="เว้นว่าง = เริ่มทันที"><Inp type="datetime-local" value={form.hotDealStart ?? ""} onChange={set("hotDealStart")} /></F>
+              <F label="สิ้นสุดโปร" hint="เว้นว่าง = ไม่หมดอายุ"><Inp type="datetime-local" value={form.hotDealEnd ?? ""} onChange={set("hotDealEnd")} /></F>
             </div>
           </Card>
 
