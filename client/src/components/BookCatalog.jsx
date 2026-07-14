@@ -3,14 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "../api/books";
 import BookCard from "./BookCard";
 
-// ส่วนค้นหา/กรอง/grid/แบ่งหน้า — ใช้ทั้งหน้าแรก (section) และหน้า /books
+// ส่วนกรอง/grid/แบ่งหน้า — ค้นหาย้ายไปที่ไอคอนบนแถบเมนู (SearchModal → ?q=)
 export default function BookCatalog({ eyebrow = "คอลเลกชัน", heading = "คัดสรรมาเพื่อคุณ", limit = 12, id }) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const urlCategory = searchParams.get("category") || "";
   const urlPublisher = searchParams.get("publisher") || "";
+  const q = searchParams.get("q") || "";
 
-  const [search, setSearch] = useState("");
-  const [q, setQ] = useState("");
   const [category, setCategory] = useState(urlCategory);
   const [publisher, setPublisher] = useState(urlPublisher);
   const [sort, setSort] = useState("newest");
@@ -20,7 +19,13 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     setCategory(urlCategory);
     setPublisher(urlPublisher);
     setPage(1);
-  }, [urlCategory, urlPublisher]);
+  }, [urlCategory, urlPublisher, q]);
+
+  const clearSearch = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("q");
+    setSearchParams(next);
+  };
 
   const { data: categories } = useCategories();
   const { data, isLoading, isError } = useBooks({
@@ -32,11 +37,6 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     limit,
   });
 
-  const submitSearch = (e) => {
-    e.preventDefault();
-    setQ(search);
-    setPage(1);
-  };
   const pickCategory = (slug) => {
     setCategory(slug);
     setPublisher("");
@@ -45,27 +45,24 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 
   return (
     <section id={id} className="mx-auto max-w-page px-5 py-16 sm:py-20">
-      {/* หัว + ค้นหา */}
-      <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
-          <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
-          {data && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
-        </div>
-        <form onSubmit={submitSearch} className="relative w-full sm:w-72">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="ค้นหาหนังสือ หรือผู้แต่ง"
-            className="w-full rounded-full border border-line bg-mist px-4 py-2.5 pr-10 text-[14px] text-ink outline-none transition focus:border-ink/30 focus:bg-white"
-          />
-          <button type="submit" aria-label="ค้นหา" className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-sub hover:text-ink">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
-            </svg>
-          </button>
-        </form>
+      {/* หัว */}
+      <div className="mb-10">
+        {q ? (
+          <>
+            <p className="text-[13px] font-medium tracking-tight text-sub">ผลการค้นหา</p>
+            <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">“{q}”</h2>
+            <p className="mt-2 flex items-center gap-3 text-[13px] text-sub">
+              {data && <span>{data.total} เล่ม</span>}
+              <button onClick={clearSearch} className="text-accent hover:underline">ล้างการค้นหา</button>
+            </p>
+          </>
+        ) : (
+          <>
+            {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
+            <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
+            {data && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+          </>
+        )}
       </div>
 
       {/* ตัวกรอง */}

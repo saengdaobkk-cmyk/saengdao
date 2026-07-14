@@ -18,6 +18,9 @@ router.get("/", async (req, res, next) => {
       where.OR = [
         { title: { contains: q, mode: "insensitive" } },
         { author: { contains: q, mode: "insensitive" } },
+        { translator: { contains: q, mode: "insensitive" } },
+        { isbn: { contains: q, mode: "insensitive" } },
+        { variants: { some: { isbn: { contains: q, mode: "insensitive" } } } },
       ];
     }
     if (category) {

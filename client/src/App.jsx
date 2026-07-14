@@ -6,12 +6,14 @@ import { useSettings } from "./api/settings";
 import { useContent } from "./api/content";
 import { useNav } from "./api/nav";
 import CartDrawer from "./components/CartDrawer";
+import SearchModal from "./components/SearchModal";
 
 export default function App() {
   const { t } = useContent();
   const s = useSettings();
   const { data: nav = [] } = useNav();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
@@ -64,6 +66,15 @@ export default function App() {
             </nav>
 
             <div className="flex items-center gap-5 text-ink">
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="ค้นหา"
+                className="rounded-lg p-1 text-ink transition hover:bg-mist"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                </svg>
+              </button>
               <CartButton />
               <AccountMenu />
             </div>
@@ -110,6 +121,7 @@ export default function App() {
       </main>
 
       <CartDrawer />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <footer className="mt-14 border-t border-line bg-mist">
         <div className="mx-auto max-w-page px-5 py-14">
