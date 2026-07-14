@@ -5,7 +5,7 @@ import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js"
 import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
-import { ZK, ZORT_DEFAULT_BASE, getZortConfig, testZortConnection, pushOrderToZort } from "../lib/zort.js";
+import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort } from "../lib/zort.js";
 import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
@@ -753,12 +753,21 @@ function publicThpost(c) {
   return { enabled: c.enabled, hasKey: !!c.apikey, connected: c.enabled && !!c.apikey };
 }
 
+async function integrationsPayload() {
+  const [zort, thpost, syncedRow] = await Promise.all([
+    getZortConfig(),
+    getThaipostConfig(),
+    prisma.setting.findUnique({ where: { key: ZORT_STOCK_SYNCED_AT } }),
+  ]);
+  return {
+    zort: { ...publicZort(zort), stockSyncedAt: syncedRow?.value || null },
+    thpost: publicThpost(thpost),
+  };
+}
+
 router.get("/integrations", async (req, res, next) => {
   try {
-    res.json({
-      zort: publicZort(await getZortConfig()),
-      thpost: publicThpost(await getThaipostConfig()),
-    });
+    res.json(await integrationsPayload());
   } catch (err) {
     next(err);
   }
@@ -782,10 +791,7 @@ router.patch("/integrations", async (req, res, next) => {
     if ("enabled" in tp) await set(TPK.enabled, !!tp.enabled);
     if (tp.apikey) await set(TPK.apikey, tp.apikey.trim()); // เว้นว่าง = คงของเดิม
 
-    res.json({
-      zort: publicZort(await getZortConfig()),
-      thpost: publicThpost(await getThaipostConfig()),
-    });
+    res.json(await integrationsPayload());
   } catch (err) {
     next(err);
   }
@@ -806,6 +812,15 @@ router.post("/integrations/thpost/test", async (req, res, next) => {
     res.json(await testThaipostConnection());
   } catch (err) {
     res.json({ ok: false, error: "เชื่อมต่อไม่ได้: " + err.message });
+  }
+});
+
+// ดึงสต็อกจาก ZORT มาอัปเดตเว็บ (ตาม SKU=ISBN)
+router.post("/integrations/zort/sync-stock", async (req, res, next) => {
+  try {
+    res.json(await syncStockFromZort());
+  } catch (err) {
+    res.json({ ok: false, error: "ดึงสต็อกไม่สำเร็จ: " + err.message });
   }
 });
 

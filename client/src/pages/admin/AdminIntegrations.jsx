@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { useIntegrations, useSaveIntegrations, testZort, testThpost } from "../../api/admin";
+import { useQueryClient } from "@tanstack/react-query";
+import { useIntegrations, useSaveIntegrations, testZort, testThpost, syncZortStock } from "../../api/admin";
+
+function fmtDateTime(d) {
+  if (!d) return "";
+  const t = new Date(d);
+  return isNaN(t) ? "" : t.toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
 export default function AdminIntegrations() {
   const { data, isLoading } = useIntegrations();
@@ -23,10 +30,29 @@ export default function AdminIntegrations() {
 
 function ZortCard({ zort }) {
   const save = useSaveIntegrations();
+  const qc = useQueryClient();
   const [form, setForm] = useState({ storename: "", apikey: "", apisecret: "", baseUrl: "", enabled: false });
   const [savedMsg, setSavedMsg] = useState("");
   const [test, setTest] = useState(null); // { ok, message/error }
   const [testing, setTesting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null);
+
+  const runSync = async () => {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const r = await syncZortStock();
+      setSyncMsg(r.ok
+        ? { ok: true, text: `อัปเดตสต็อก ${r.updated} รายการ (จับคู่ ISBN ได้ ${r.matched} จาก ZORT ${r.zortProducts} สินค้า)` }
+        : { ok: false, text: r.error || "ดึงสต็อกไม่สำเร็จ" });
+      qc.invalidateQueries({ queryKey: ["admin", "integrations"] });
+    } catch (err) {
+      setSyncMsg({ ok: false, text: err.response?.data?.error || "ดึงสต็อกไม่สำเร็จ" });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     setForm({
@@ -112,8 +138,31 @@ function ZortCard({ zort }) {
         )}
       </form>
 
+      {/* ดึงสต็อกจาก ZORT */}
+      <div className="mt-5 border-t border-line pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[13px] font-medium text-ink">สต็อกจาก ZORT</p>
+            <p className="text-[12px] text-sub">
+              ZORT เป็นคลังหลัก · จับคู่ตาม SKU = ISBN · อัตโนมัติทุก 15 นาที
+              {zort.stockSyncedAt && ` · ล่าสุด ${fmtDateTime(zort.stockSyncedAt)}`}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={runSync}
+            disabled={syncing || !zort.connected}
+            title={!zort.connected ? "เชื่อมต่อ ZORT ให้สำเร็จก่อน" : ""}
+            className="shrink-0 rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+          >
+            {syncing ? "กำลังดึง..." : "ดึงสต็อกตอนนี้"}
+          </button>
+        </div>
+        {syncMsg && <p className={`mt-2 text-[12px] ${syncMsg.ok ? "text-emerald-600" : "text-red-600"}`}>{syncMsg.text}</p>}
+      </div>
+
       <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">
-        หา storename / apikey / apisecret ได้ใน ZORT → Settings → API · ขั้นต่อไปจะเพิ่มการส่งออเดอร์ไป ZORT อัตโนมัติเมื่อชำระเงินแล้ว
+        หา storename / apikey / apisecret ได้ใน ZORT → Settings → API · เมื่ออนุมัติการชำระเงิน ระบบส่งออเดอร์ไป ZORT อัตโนมัติ
       </p>
     </div>
   );

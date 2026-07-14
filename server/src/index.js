@@ -17,6 +17,7 @@ import navRouter from "./routes/nav.js";
 import shippingRouter from "./routes/shipping.js";
 import previewRouter from "./routes/preview.js";
 import adminRouter from "./routes/admin.js";
+import { syncStockFromZort } from "./lib/zort.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -78,3 +79,16 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+
+// ดึงสต็อกจาก ZORT อัตโนมัติทุก 15 นาที (best-effort; ข้ามเองถ้า ZORT ปิด/ไม่ได้ตั้งค่า)
+const STOCK_SYNC_MS = 15 * 60 * 1000;
+async function autoSyncStock() {
+  try {
+    const r = await syncStockFromZort();
+    if (r.ok) console.log(`[zort] sync สต็อก: อัปเดต ${r.updated}/${r.matched} รายการ`);
+  } catch (e) {
+    console.error("[zort] auto sync error:", e.message);
+  }
+}
+setTimeout(autoSyncStock, 30 * 1000); // รอบแรกหลังสตาร์ท 30 วิ
+setInterval(autoSyncStock, STOCK_SYNC_MS);

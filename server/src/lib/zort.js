@@ -9,6 +9,18 @@ export const ZK = {
   baseUrl: "zort.baseUrl",
 };
 export const ZORT_DEFAULT_BASE = "https://open-api.zortout.com/v4";
+export const ZORT_STOCK_SYNCED_AT = "zort.stockSyncedAt";
+
+// fetch พร้อม timeout กัน ZORT ค้าง
+async function fetchT(url, options = {}, ms = 15000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 const PAYMENT_LABEL = {
   PROMPTPAY: "พร้อมเพย์",
@@ -43,7 +55,7 @@ export async function testZortConnection() {
   if (!cfg.storename || !cfg.apikey || !cfg.apisecret)
     return { ok: false, error: "กรอก storename / apikey / apisecret ให้ครบก่อน" };
   try {
-    const resp = await fetch(`${cfg.baseUrl}/Product/GetProducts?page=1&limit=1`, { headers: zortHeaders(cfg) });
+    const resp = await fetchT(`${cfg.baseUrl}/Product/GetProducts?page=1&limit=1`, { headers: zortHeaders(cfg) });
     const data = await resp.json().catch(() => null);
 
     // สำเร็จ = HTTP 200 + มีข้อมูลสินค้า (GetProducts บาง response ไม่มีฟิลด์ res)
@@ -133,5 +145,84 @@ export async function pushOrderToZort(orderId) {
     return { ok: true, zortOrderId };
   } catch (err) {
     return { ok: false, error: "ส่งไป ZORT ไม่สำเร็จ: " + err.message };
+  }
+}
+
+/* ---------- Sync สต็อกจาก ZORT (ZORT = ตัวตั้ง, จับคู่ตาม SKU=ISBN) ---------- */
+
+// ดึงสินค้าทั้งหมดจาก ZORT (แบ่งหน้า)
+async function fetchAllZortProducts(cfg) {
+  const all = [];
+  const limit = 200;
+  for (let page = 1; page <= 200; page++) {
+    const resp = await fetchT(`${cfg.baseUrl}/Product/GetProducts?page=${page}&limit=${limit}`, { headers: zortHeaders(cfg) });
+    const data = await resp.json().catch(() => null);
+    const list = data?.list;
+    if (!Array.isArray(list) || list.length === 0) break;
+    all.push(...list);
+    const total = Number(data?.count ?? 0);
+    if ((total && all.length >= total) || list.length < limit) break;
+  }
+  return all;
+}
+
+// อ่านจำนวนสต็อกจาก product ของ ZORT (รองรับหลายชื่อฟิลด์)
+function zortStockOf(p) {
+  const raw = p.availablestock ?? p.stock ?? p.balance ?? p.onhand ?? 0;
+  const n = Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0;
+}
+
+// ดึงสต็อกจาก ZORT มาอัปเดตเว็บ (Book + Variant) ตาม ISBN
+export async function syncStockFromZort() {
+  const cfg = await getZortConfig();
+  if (!cfg.enabled) return { ok: false, error: "ZORT ปิดใช้งาน" };
+  if (!cfg.storename || !cfg.apikey || !cfg.apisecret)
+    return { ok: false, error: "ยังไม่ได้ตั้งค่า ZORT ให้ครบ" };
+
+  try {
+    const products = await fetchAllZortProducts(cfg);
+    // map: SKU(=ISBN) → stock
+    const stockBySku = new Map();
+    for (const p of products) {
+      const sku = String(p.sku ?? "").trim().toUpperCase();
+      if (sku) stockBySku.set(sku, zortStockOf(p));
+    }
+    if (stockBySku.size === 0)
+      return { ok: false, error: "ไม่พบสินค้าที่มี SKU ใน ZORT" };
+
+    const [books, variants] = await Promise.all([
+      prisma.book.findMany({ where: { isbn: { not: null } }, select: { id: true, isbn: true, stock: true } }),
+      prisma.variant.findMany({ where: { isbn: { not: null } }, select: { id: true, isbn: true, stock: true } }),
+    ]);
+
+    const ops = [];
+    let matched = 0;
+    for (const b of books) {
+      const s = stockBySku.get(b.isbn.trim().toUpperCase());
+      if (s === undefined) continue;
+      matched++;
+      if (s !== b.stock) ops.push(prisma.book.update({ where: { id: b.id }, data: { stock: s } }));
+    }
+    for (const v of variants) {
+      const s = stockBySku.get(v.isbn.trim().toUpperCase());
+      if (s === undefined) continue;
+      matched++;
+      if (s !== v.stock) ops.push(prisma.variant.update({ where: { id: v.id }, data: { stock: s } }));
+    }
+
+    // ทยอยอัปเดตทีละชุด กันคำสั่งเยอะเกิน
+    for (let i = 0; i < ops.length; i += 50) await prisma.$transaction(ops.slice(i, i + 50));
+
+    const now = new Date().toISOString();
+    await prisma.setting.upsert({
+      where: { key: ZORT_STOCK_SYNCED_AT },
+      update: { value: now },
+      create: { key: ZORT_STOCK_SYNCED_AT, value: now },
+    });
+
+    return { ok: true, zortProducts: products.length, matched, updated: ops.length };
+  } catch (err) {
+    return { ok: false, error: "ดึงสต็อกไม่สำเร็จ: " + err.message };
   }
 }
