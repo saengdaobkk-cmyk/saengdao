@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "../api/books";
+import { useSettings } from "../api/settings";
 import BookCard from "./BookCard";
 
 // ส่วนกรอง/grid/แบ่งหน้า — ค้นหาย้ายไปที่ไอคอนบนแถบเมนู (SearchModal → ?q=)
@@ -27,6 +28,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     setSearchParams(next);
   };
 
+  const { showCollectionCount } = useSettings();
   const { data: categories } = useCategories();
   const { data, isLoading, isError } = useBooks({
     q: q || undefined,
@@ -60,27 +62,31 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
           <>
             {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
             <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
-            {data && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+            {data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
           </>
         )}
       </div>
 
-      {/* ตัวกรอง */}
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => pickCategory("")} className={chip(category === "" && !publisher)}>ทั้งหมด</button>
-          {categories?.map((c) => (
-            <button key={c.id} onClick={() => pickCategory(c.slug)} className={chip(category === c.slug)}>{c.name}</button>
-          ))}
-          {publisher && (
-            <span className="flex items-center gap-1.5 rounded-full bg-ink px-3 py-2 text-[13px] text-white">
-              สำนักพิมพ์: {publisher}
-              <button onClick={() => { setPublisher(""); setPage(1); }} aria-label="ล้าง" className="text-white/70 hover:text-white">✕</button>
-            </span>
-          )}
+      {/* ตัวกรอง — หมวดหมู่เลื่อนแนวนอนได้ (รองรับหมวดเยอะๆ) */}
+      <div className="mb-10 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <div className="no-scrollbar flex gap-2 overflow-x-auto scroll-smooth py-0.5 pr-8">
+            <button onClick={() => pickCategory("")} className={chip(category === "" && !publisher)}>ทั้งหมด</button>
+            {categories?.map((c) => (
+              <button key={c.id} onClick={() => pickCategory(c.slug)} className={chip(category === c.slug)}>{c.name}</button>
+            ))}
+            {publisher && (
+              <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-3.5 py-2 text-[13px] text-white">
+                สำนักพิมพ์: {publisher}
+                <button onClick={() => { setPublisher(""); setPage(1); }} aria-label="ล้าง" className="text-white/70 hover:text-white">✕</button>
+              </span>
+            )}
+          </div>
+          {/* fade ขวา บอกว่ามีหมวดต่อ */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent" />
         </div>
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
-          className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
+          className="shrink-0 rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
           <option value="newest">มาใหม่ล่าสุด</option>
           <option value="popular">ขายดี</option>
           <option value="price_asc">ราคาน้อย → มาก</option>
@@ -112,7 +118,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 }
 
 function chip(active) {
-  return `rounded-full px-4 py-2 text-[13px] tracking-tight transition ${active ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"}`;
+  return `shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13px] tracking-tight transition ${active ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"}`;
 }
 
 function GridSkeleton({ n = 8 }) {

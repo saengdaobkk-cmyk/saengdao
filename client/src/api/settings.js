@@ -6,6 +6,7 @@ const FALLBACK = {
   cartDrawerEnabled: true,
   showCardCategory: false,
   showPublisherMarquee: true,
+  showCollectionCount: true,
   promptpayId: "",
   promptpayName: "",
   bankName: "",

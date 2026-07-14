@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, Outlet, Link } from "react-router-dom";
 import { useCategories } from "../../api/books";
+import { useSettings, useUpdateSettings } from "../../api/settings";
 import {
   useSaveCategory, useDeleteCategory,
   useAdminTerms, useSaveTerm, useDeleteTerm,
@@ -60,7 +61,11 @@ export function CategoryManager() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="space-y-6">
+      {/* การแสดงผลหน้าร้าน */}
+      <CollectionDisplaySettings />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
       {/* ตาราง */}
       <div className="w-full overflow-x-auto rounded-2xl border border-line bg-white">
         <table className="w-full text-left text-[14px]">
@@ -129,6 +134,31 @@ export function CategoryManager() {
           {editing && <button type="button" onClick={reset} className="rounded-full border border-line px-4 py-2 text-[13px] text-ink hover:bg-mist">ยกเลิก</button>}
         </div>
       </form>
+      </div>
+    </div>
+  );
+}
+
+// การแสดงผลหน้ารวมหนังสือ (หน้าร้าน)
+function CollectionDisplaySettings() {
+  const settings = useSettings();
+  const update = useUpdateSettings();
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4">
+      <div>
+        <p className="text-[14px] font-medium text-ink">แสดงจำนวนเล่มทั้งหมด</p>
+        <p className="text-[12px] text-sub">เปิด: โชว์ “N เล่ม” ใต้หัวข้อหน้ารวมหนังสือ · ปิด: ซ่อน</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={settings.showCollectionCount}
+        disabled={update.isPending}
+        onClick={() => update.mutate({ showCollectionCount: !settings.showCollectionCount })}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition ${settings.showCollectionCount ? "bg-accent" : "bg-line"} disabled:opacity-50`}
+      >
+        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${settings.showCollectionCount ? "left-[22px]" : "left-0.5"}`} />
+      </button>
     </div>
   );
 }
