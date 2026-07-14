@@ -5,13 +5,26 @@ import { useAuth } from "../auth/AuthContext";
 import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
 
-const STATUS_TH = {
-  PENDING: { label: "รอดำเนินการ", cls: "bg-gray-100 text-gray-600" },
-  PAID: { label: "ชำระแล้ว", cls: "bg-emerald-100 text-emerald-700" },
+// จ่ายแล้ว → โชว์สถานะจัดการออเดอร์ · ยังไม่จ่าย → โชว์สถานะการชำระเงิน (ให้ลูกค้ารู้ว่ายังต้องจ่าย)
+const ORDER_STATUS_TH = {
+  PENDING: { label: "กำลังดำเนินการ", cls: "bg-gray-100 text-gray-600" },
+  PAID: { label: "กำลังดำเนินการ", cls: "bg-gray-100 text-gray-600" },
   SHIPPED: { label: "จัดส่งแล้ว", cls: "bg-blue-100 text-blue-700" },
   COMPLETED: { label: "สำเร็จ", cls: "bg-emerald-100 text-emerald-700" },
   CANCELLED: { label: "ยกเลิก", cls: "bg-red-100 text-red-600" },
 };
+
+const PAYMENT_STATUS_TH = {
+  UNPAID: { label: "รอชำระเงิน", cls: "bg-amber-100 text-amber-700" },
+  PENDING_REVIEW: { label: "รอตรวจสอบสลิป", cls: "bg-amber-100 text-amber-700" },
+  FAILED: { label: "ชำระไม่สำเร็จ", cls: "bg-red-100 text-red-600" },
+};
+
+function orderBadge(o) {
+  if (o.paymentStatus && o.paymentStatus !== "PAID")
+    return PAYMENT_STATUS_TH[o.paymentStatus] || { label: o.paymentStatus, cls: "bg-gray-100 text-gray-600" };
+  return ORDER_STATUS_TH[o.status] || ORDER_STATUS_TH.PENDING;
+}
 
 export default function Account() {
   const { user, loading, updateUser, logout } = useAuth();
@@ -216,24 +229,28 @@ function OrdersSection() {
       ) : (
         <div className="space-y-3">
           {orders.map((o) => {
-            const st = STATUS_TH[o.status] || STATUS_TH.PENDING;
+            const st = orderBadge(o);
+            const needPay = o.paymentStatus === "UNPAID";
             return (
               <Link
                 key={o.id}
                 to={`/orders/${o.id}`}
                 className="flex items-center gap-4 rounded-2xl border border-line p-4 transition hover:border-ink/20"
               >
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-[14px] font-medium text-ink">
                     #{o.id.slice(0, 8).toUpperCase()}
                     <span className="ml-2 text-[12px] font-normal text-sub">
                       {new Date(o.createdAt).toLocaleDateString("th-TH", { dateStyle: "medium" })}
                     </span>
                   </p>
-                  <p className="text-[12px] text-sub">{o.items.length} รายการ</p>
+                  <p className="text-[12px] text-sub">
+                    {o.items.length} รายการ
+                    {needPay && <span className="ml-2 text-accent">· ชำระเงิน/แนบสลิป →</span>}
+                  </p>
                 </div>
-                <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${st.cls}`}>{st.label}</span>
-                <span className="w-20 text-right text-[14px] font-semibold text-ink">{formatPrice(o.total)}</span>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${st.cls}`}>{st.label}</span>
+                <span className="w-20 shrink-0 text-right text-[14px] font-semibold text-ink">{formatPrice(o.total)}</span>
               </Link>
             );
           })}

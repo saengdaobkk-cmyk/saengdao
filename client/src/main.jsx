@@ -17,6 +17,7 @@ import Register from "./pages/Register.jsx";
 import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderConfirm from "./pages/OrderConfirm.jsx";
+import OrderTrack from "./pages/OrderTrack.jsx";
 import Account from "./pages/Account.jsx";
 import About from "./pages/About.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -31,6 +32,7 @@ import AdminContent from "./pages/admin/AdminContent.jsx";
 import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
 import AdminCoupons from "./pages/admin/AdminCoupons.jsx";
+import AdminShipping from "./pages/admin/AdminShipping.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
@@ -61,6 +63,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="cart" element={<Cart />} />
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="orders/:id" element={<OrderConfirm />} />
+                <Route path="track" element={<OrderTrack />} />
               <Route path="account" element={<Account />} />
               <Route path="about" element={<About />} />
               <Route path="contact" element={<Contact />} />
@@ -83,6 +86,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="shipping" element={<AdminShipping />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />

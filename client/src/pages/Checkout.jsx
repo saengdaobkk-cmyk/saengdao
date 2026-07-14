@@ -6,6 +6,7 @@ import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { messageFor } from "../lib/validation";
 import { useContent } from "../api/content";
+import { useShipping } from "../api/shipping";
 
 const PAYMENTS = [
   { value: "PROMPTPAY", label: "พร้อมเพย์ (PromptPay)", desc: "สแกน QR จ่ายเงิน แล้วแนบสลิป" },
@@ -22,6 +23,10 @@ export default function Checkout() {
   const [form, setForm] = useState({ shipName: "", shipPhone: "", shipAddress: "", email: "" });
   const [paymentMethod, setPaymentMethod] = useState("PROMPTPAY");
   const [note, setNote] = useState("");
+
+  // ช่องทางจัดส่ง
+  const { data: shippingMethods = [] } = useShipping();
+  const [shippingMethodId, setShippingMethodId] = useState("");
 
   // ใบเสร็จ
   const [needReceipt, setNeedReceipt] = useState(false);
@@ -56,6 +61,12 @@ export default function Checkout() {
       }));
   }, [user]);
 
+  // เลือกช่องทางแรกให้อัตโนมัติ
+  useEffect(() => {
+    if (shippingMethods.length && !shippingMethods.some((m) => m.id === shippingMethodId))
+      setShippingMethodId(shippingMethods[0].id);
+  }, [shippingMethods, shippingMethodId]);
+
   if (loading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (!user) return <Navigate to="/login" state={{ from: "/checkout" }} replace />;
   if (items.length === 0 && !placedRef.current) return <Navigate to="/cart" replace />;
@@ -64,7 +75,9 @@ export default function Checkout() {
   const setR = (k) => (e) => setReceipt((r) => ({ ...r, [k]: e.target.value }));
 
   const discount = coupon?.discount || 0;
-  const total = Math.max(0, subtotal - discount);
+  const selectedShipping = shippingMethods.find((m) => m.id === shippingMethodId) || null;
+  const shippingFee = selectedShipping ? Math.max(0, Math.round(Number(selectedShipping.fee))) : 0;
+  const total = Math.max(0, subtotal - discount + shippingFee);
 
   const applyCoupon = async () => {
     setCouponError("");
@@ -96,6 +109,7 @@ export default function Checkout() {
         items: items.map((i) => ({ bookId: i.id, variantId: i.variantId || null, quantity: i.quantity })),
         ...form,
         paymentMethod,
+        shippingMethodId: shippingMethodId || null,
         note,
         discountCode: coupon?.code || null,
         needReceipt,
@@ -130,6 +144,39 @@ export default function Checkout() {
               <Textarea label={t("checkout.field_address", "ที่อยู่")} value={form.shipAddress} onChange={set("shipAddress")} />
             </div>
           </section>
+
+          {/* ช่องทางจัดส่ง */}
+          {shippingMethods.length > 0 && (
+            <section>
+              <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.shipping_method_heading", "ช่องทางจัดส่ง")}</h2>
+              <div className="space-y-3">
+                {shippingMethods.map((m) => (
+                  <label
+                    key={m.id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+                      shippingMethodId === m.id ? "border-ink/40 bg-mist/60" : "border-line hover:border-ink/20"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="shipping"
+                      value={m.id}
+                      checked={shippingMethodId === m.id}
+                      onChange={(e) => setShippingMethodId(e.target.value)}
+                      className="mt-1 accent-accent"
+                    />
+                    <div className="flex-1">
+                      <p className="text-[14px] font-medium text-ink">{m.name}</p>
+                      {m.note && <p className="text-[12px] text-sub">{m.note}</p>}
+                    </div>
+                    <span className="text-[14px] font-semibold text-ink">
+                      {Number(m.fee) === 0 ? <span className="text-emerald-600">ฟรี</span> : formatPrice(m.fee)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* ใบเสร็จรับเงิน */}
           <section>
@@ -285,8 +332,12 @@ export default function Checkout() {
               </div>
             )}
             <div className="flex justify-between text-sub">
-              <span>{t("checkout.shipping_fee", "ค่าจัดส่ง")}</span>
-              <span className="text-emerald-600">{t("checkout.shipping_free", "ฟรี")}</span>
+              <span>{t("checkout.shipping_fee", "ค่าจัดส่ง")}{selectedShipping && ` · ${selectedShipping.name}`}</span>
+              {shippingFee === 0 ? (
+                <span className="text-emerald-600">{t("checkout.shipping_free", "ฟรี")}</span>
+              ) : (
+                <span className="text-ink">{formatPrice(shippingFee)}</span>
+              )}
             </div>
           </div>
           <div className="mt-4 flex justify-between border-t border-line pt-4 text-[16px] font-semibold text-ink">

@@ -1,0 +1,145 @@
+import { prisma } from "./prisma.js";
+
+// keys ใน Setting สำหรับ Thailand Post Track & Trace
+export const TPK = {
+  enabled: "thpost.enabled",
+  apikey: "thpost.apikey", // 🔒 ความลับ (API key จาก track.thailandpost.co.th)
+};
+
+const AUTH_URL = "https://trackapi.thailandpost.co.th/post/api/v1/authenticate/token";
+const TRACK_URL = "https://trackapi.thailandpost.co.th/post/api/v1/track";
+
+// fetch พร้อม timeout — กัน API ค้างจนหน้าเว็บโหลดนาน
+async function fetchT(url, options = {}, ms = 8000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+export async function getThaipostConfig() {
+  const rows = await prisma.setting.findMany({ where: { key: { in: Object.values(TPK) } } });
+  const m = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  return {
+    enabled: m[TPK.enabled] === "true",
+    apikey: m[TPK.apikey] || "",
+  };
+}
+
+// cache JWT token ในหน่วยความจำ (ต่อ apikey) — ขอใหม่เมื่อใกล้หมดอายุ
+const tokenCache = new Map(); // apikey -> { token, expireMs }
+
+async function getToken(apikey) {
+  const cached = tokenCache.get(apikey);
+  if (cached && cached.expireMs - Date.now() > 60_000) return cached.token;
+
+  const resp = await fetchT(AUTH_URL, {
+    method: "POST",
+    headers: { Authorization: `Token ${apikey}`, "Content-Type": "application/json" },
+  });
+  const data = await resp.json().catch(() => null);
+  if (!resp.ok || !data?.token)
+    throw new Error(data?.message || `ขอ token ไม่สำเร็จ (สถานะ ${resp.status})`);
+
+  const expireMs = data.expire ? new Date(data.expire).getTime() : Date.now() + 60 * 60 * 1000;
+  tokenCache.set(apikey, { token: data.token, expireMs });
+  return data.token;
+}
+
+// ทดสอบการเชื่อมต่อ — แค่ขอ token ได้ก็ถือว่า key ใช้ได้
+export async function testThaipostConnection() {
+  const cfg = await getThaipostConfig();
+  if (!cfg.apikey) return { ok: false, error: "กรอก API key ของไปรษณีย์ไทยก่อน" };
+  try {
+    tokenCache.delete(cfg.apikey); // บังคับขอใหม่
+    await getToken(cfg.apikey);
+    return { ok: true, message: "เชื่อมต่อไปรษณีย์ไทยสำเร็จ" };
+  } catch (err) {
+    return { ok: false, error: "เชื่อมต่อไม่ได้: " + err.message };
+  }
+}
+
+// ดึงสถานะพัสดุจาก barcode → คืน { ok, latest, history } หรือ { ok:false, error }
+export async function trackBarcode(barcode, apikeyOverride) {
+  const cfg = apikeyOverride ? { apikey: apikeyOverride } : await getThaipostConfig();
+  if (!cfg.apikey) return { ok: false, error: "ยังไม่ได้ตั้งค่า API key ไปรษณีย์ไทย" };
+  const code = String(barcode || "").trim().toUpperCase();
+  if (!code) return { ok: false, error: "ไม่มีเลขพัสดุ" };
+
+  const doTrack = async (token) => {
+    const resp = await fetchT(TRACK_URL, {
+      method: "POST",
+      headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "all", language: "TH", barcode: [code] }),
+    });
+    return resp;
+  };
+
+  try {
+    let token = await getToken(cfg.apikey);
+    let resp = await doTrack(token);
+    // token หมดอายุ/ถูกปฏิเสธ → ขอใหม่ครั้งเดียว
+    if (resp.status === 401 || resp.status === 403) {
+      tokenCache.delete(cfg.apikey);
+      token = await getToken(cfg.apikey);
+      resp = await doTrack(token);
+    }
+    const data = await resp.json().catch(() => null);
+    if (!resp.ok || data?.status === false)
+      return { ok: false, error: data?.message || `ไปรษณีย์ไทยตอบกลับ ${resp.status}` };
+
+    const items = data?.response?.items?.[code];
+    if (!Array.isArray(items) || items.length === 0)
+      return { ok: false, error: "ยังไม่มีข้อมูลพัสดุนี้ (ตรวจสอบเลขพัสดุอีกครั้ง)" };
+
+    // API เรียงจากเก่า→ใหม่; ล่าสุด = ตัวสุดท้าย
+    const history = items.map((it) => ({
+      status: it.status_description || it.status || "",
+      date: it.status_date || null,
+      location: it.location || "",
+    }));
+    const last = items[items.length - 1];
+    return {
+      ok: true,
+      latest: {
+        status: last.status_description || last.status || "",
+        date: last.status_date || null,
+        location: last.location || "",
+      },
+      history,
+    };
+  } catch (err) {
+    return { ok: false, error: "ดึงสถานะไม่สำเร็จ: " + err.message };
+  }
+}
+
+// อัปเดตสถานะพัสดุของออเดอร์ลง DB — best-effort
+export async function updateOrderTracking(orderId) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, trackingNumber: true },
+  });
+  if (!order) return { ok: false, error: "ไม่พบออเดอร์" };
+  if (!order.trackingNumber) return { ok: false, error: "ออเดอร์นี้ยังไม่มีเลขพัสดุ" };
+
+  const res = await trackBarcode(order.trackingNumber);
+  if (!res.ok) {
+    // บันทึกเวลาที่ลองดึง เพื่อ throttle การเรียกซ้ำ
+    await prisma.order.update({ where: { id: orderId }, data: { trackingUpdatedAt: new Date() } });
+    return res;
+  }
+
+  const updated = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      trackingStatus: res.latest.status,
+      trackingStatusDate: res.latest.date ? new Date(res.latest.date) : null,
+      trackingUpdatedAt: new Date(),
+      trackingHistory: res.history,
+    },
+  });
+  return { ok: true, order: updated, latest: res.latest, history: res.history };
+}

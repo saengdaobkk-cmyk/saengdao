@@ -7,13 +7,130 @@ import { computeDiscount } from "../lib/coupon.js";
 import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
+import { updateOrderTracking } from "../lib/thaipost.js";
 
 const router = Router();
 
 const PAYMENT_METHODS = ["PROMPTPAY", "CARD", "TRANSFER"];
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ทุก route ในนี้ต้องล็อกอิน
+// ── ติดตามคำสั่งซื้อแบบ guest (ไม่ต้องล็อกอิน) ──────────────────────────
+// ยืนยันตัวตนด้วย "เลขคำสั่งซื้อ + เบอร์โทร" (เบอร์ทำหน้าที่เหมือนรหัส)
+async function findByCodePhone(code, phone) {
+  const c = String(code || "").trim().replace(/^#/, "").toLowerCase();
+  const p = String(phone || "").trim();
+  if (!c || !p) return null;
+  // ลูกค้าเห็นเลขคำสั่งซื้อเป็น 8 ตัวแรกของ id → จับคู่แบบ prefix (หรือ id เต็ม)
+  return prisma.order.findFirst({
+    where: { shipPhone: p, id: { startsWith: c } },
+    orderBy: { createdAt: "desc" },
+    include: { items: { include: { book: { select: { title: true, author: true } } } } },
+  });
+}
+
+// ดึงสถานะพัสดุใหม่ถ้าเก่าเกิน 30 นาที (throttle กัน API ไปรษณีย์โดนถล่ม)
+// อัปเดตฟิลด์ tracking บน object ที่ส่งมา (ยังคง items ไว้)
+async function maybeRefreshTracking(order) {
+  if (!order?.trackingNumber) return order;
+  const last = order.trackingUpdatedAt ? new Date(order.trackingUpdatedAt).getTime() : 0;
+  if (Date.now() - last < 30 * 60 * 1000) return order;
+  const r = await updateOrderTracking(order.id).catch(() => null);
+  if (r?.ok && r.order) {
+    order.trackingStatus = r.order.trackingStatus;
+    order.trackingStatusDate = r.order.trackingStatusDate;
+    order.trackingHistory = r.order.trackingHistory;
+    order.trackingUpdatedAt = r.order.trackingUpdatedAt;
+  } else {
+    order.trackingUpdatedAt = new Date(); // updateOrderTracking บันทึกเวลาไว้แล้ว
+  }
+  return order;
+}
+
+// มุมมองที่ปลอดภัยสำหรับ guest (ไม่หลุด userId/ข้อมูลภายใน)
+function publicOrder(o) {
+  return {
+    id: o.id,
+    createdAt: o.createdAt,
+    status: o.status,
+    paymentStatus: o.paymentStatus,
+    paymentMethod: o.paymentMethod,
+    discount: o.discount,
+    shippingMethod: o.shippingMethod,
+    shippingFee: o.shippingFee,
+    total: o.total,
+    shipName: o.shipName,
+    shipPhone: o.shipPhone,
+    shipAddress: o.shipAddress,
+    note: o.note,
+    slipImage: o.slipImage,
+    trackingNumber: o.trackingNumber,
+    trackingStatus: o.trackingStatus,
+    trackingStatusDate: o.trackingStatusDate,
+    trackingHistory: o.trackingHistory,
+    trackingUpdatedAt: o.trackingUpdatedAt,
+    items: (o.items || []).map((it) => ({
+      id: it.id,
+      quantity: it.quantity,
+      price: it.price,
+      title: it.book?.title,
+      author: it.book?.author,
+      variantName: it.variantName,
+    })),
+  };
+}
+
+// POST /api/orders/track — ค้นหาคำสั่งซื้อด้วยเลข+เบอร์ (พร้อม QR ถ้ายังไม่จ่าย)
+router.post("/track", async (req, res, next) => {
+  try {
+    const order = await findByCodePhone(req.body.code, req.body.phone);
+    if (!order)
+      return res.status(404).json({
+        error: "ไม่พบคำสั่งซื้อ — ตรวจสอบเลขคำสั่งซื้อและเบอร์โทรว่าตรงกับตอนสั่งซื้อ",
+      });
+
+    await maybeRefreshTracking(order); // ดึงสถานะพัสดุล่าสุด (throttled)
+
+    let promptpay = null;
+    if (order.paymentMethod === "PROMPTPAY" && order.paymentStatus !== "PAID") {
+      const promptpayId = await getSetting("promptpayId");
+      if (promptpayId) {
+        const payload = generatePayload(promptpayId, { amount: Number(order.total) });
+        promptpay = {
+          qr: await QRCode.toDataURL(payload, { margin: 1, width: 480 }),
+          amount: Number(order.total),
+          promptpayId,
+          promptpayName: await getSetting("promptpayName"),
+        };
+      }
+    }
+    res.json({ order: publicOrder(order), promptpay });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/orders/track/slip — แนบสลิปแบบ guest (ยืนยันด้วยเลข+เบอร์)
+router.post("/track/slip", (req, res, next) => {
+  uploadSlip(req, res, async (uploadErr) => {
+    try {
+      if (uploadErr) return res.status(400).json({ error: uploadErr.message });
+      const order = await findByCodePhone(req.body.code, req.body.phone);
+      if (!order) return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
+      if (!req.file) return res.status(400).json({ error: "กรุณาแนบไฟล์สลิป" });
+
+      const slipUrl = await storeFile(req.file, "slip");
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { slipImage: slipUrl, paymentStatus: "PENDING_REVIEW" },
+      });
+      res.json({ ok: true, slipImage: slipUrl, paymentStatus: "PENDING_REVIEW" });
+    } catch (err) {
+      next(err);
+    }
+  });
+});
+
+// ทุก route ต่อจากนี้ต้องล็อกอิน
 router.use(authenticate);
 
 // POST /api/orders — สร้างคำสั่งซื้อ
@@ -27,6 +144,7 @@ router.post("/", async (req, res, next) => {
       shipAddress,
       email,
       paymentMethod,
+      shippingMethodId,
       note,
       discountCode,
       needReceipt,
@@ -113,7 +231,19 @@ router.post("/", async (req, res, next) => {
 
       // คิดส่วนลดฝั่ง server จากโค้ด (กันปลอม) — โยน error ถ้าโค้ดใช้ไม่ได้
       const { coupon, discount } = await computeDiscount(discountCode, subtotal); // ราคา/ส่วนลดเป็นจำนวนเต็มบาทแล้ว
-      const total = subtotal - discount;
+
+      // ค่าจัดส่ง — ดึงจาก DB ตามช่องทางที่เลือก (กันปลอมค่าส่ง)
+      let shippingFee = 0;
+      let shippingName = null;
+      if (shippingMethodId) {
+        const method = await tx.shippingMethod.findUnique({ where: { id: shippingMethodId } });
+        if (!method || !method.active)
+          throw httpError(400, "ช่องทางจัดส่งที่เลือกไม่พร้อมใช้งาน กรุณาเลือกใหม่");
+        shippingFee = Math.max(0, Math.round(Number(method.fee)));
+        shippingName = method.name;
+      }
+
+      const total = subtotal - discount + shippingFee;
 
       return tx.order.create({
         data: {
@@ -121,6 +251,8 @@ router.post("/", async (req, res, next) => {
           total,
           discount,
           discountCode: coupon?.code || null,
+          shippingMethod: shippingName,
+          shippingFee,
           status: "PENDING",
           paymentMethod,
           paymentStatus: "UNPAID",
@@ -165,6 +297,7 @@ router.get("/:id", async (req, res, next) => {
     });
     if (!order || order.userId !== req.user.id)
       return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
+    await maybeRefreshTracking(order); // ดึงสถานะพัสดุล่าสุด (throttled)
     res.json(order);
   } catch (err) {
     next(err);

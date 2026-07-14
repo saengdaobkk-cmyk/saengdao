@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useIntegrations, useSaveIntegrations, testZort } from "../../api/admin";
+import { useIntegrations, useSaveIntegrations, testZort, testThpost } from "../../api/admin";
 
 export default function AdminIntegrations() {
   const { data, isLoading } = useIntegrations();
@@ -10,6 +10,7 @@ export default function AdminIntegrations() {
     <div className="space-y-6">
       <p className="text-[13px] text-sub">เชื่อม SAENGDAO กับแอปภายนอกผ่าน API</p>
       <ZortCard zort={data.zort} />
+      <ThaipostCard thpost={data.thpost} />
 
       {/* ช่องทางอื่นในอนาคต */}
       <div className="rounded-2xl border border-dashed border-line bg-white p-6 text-center">
@@ -113,6 +114,94 @@ function ZortCard({ zort }) {
 
       <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">
         หา storename / apikey / apisecret ได้ใน ZORT → Settings → API · ขั้นต่อไปจะเพิ่มการส่งออเดอร์ไป ZORT อัตโนมัติเมื่อชำระเงินแล้ว
+      </p>
+    </div>
+  );
+}
+
+function ThaipostCard({ thpost }) {
+  const save = useSaveIntegrations();
+  const [apikey, setApikey] = useState("");
+  const [enabled, setEnabled] = useState(false);
+  const [savedMsg, setSavedMsg] = useState("");
+  const [test, setTest] = useState(null);
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    setApikey(""); // ไม่ดึง key กลับมา
+    setEnabled(thpost.enabled);
+  }, [thpost]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSavedMsg("");
+    setTest(null);
+    const payload = { enabled };
+    if (apikey.trim()) payload.apikey = apikey.trim();
+    save.mutate({ thpost: payload }, { onSuccess: () => { setSavedMsg("บันทึกแล้ว"); setApikey(""); } });
+  };
+
+  const runTest = async () => {
+    setTesting(true);
+    setTest(null);
+    try {
+      setTest(await testThpost());
+    } catch (err) {
+      setTest({ ok: false, error: err.response?.data?.error || "ทดสอบไม่สำเร็จ" });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-line bg-white p-6">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ED1C24] text-[15px] font-bold text-white">฿</div>
+          <div>
+            <p className="text-[15px] font-semibold text-ink">ไปรษณีย์ไทย</p>
+            <p className="text-[12px] text-sub">ติดตามสถานะพัสดุ (Track &amp; Trace)</p>
+          </div>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${thpost.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+          {thpost.connected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"}
+        </span>
+      </div>
+
+      <form onSubmit={submit} className="space-y-4">
+        <Field
+          label="API Key (Token)"
+          type="password"
+          value={apikey}
+          onChange={(e) => setApikey(e.target.value)}
+          autoComplete="new-password"
+          placeholder={thpost.hasKey ? "•••••• (บันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)" : "วาง API key จากไปรษณีย์ไทย"}
+        />
+
+        <label className="flex items-center gap-2 text-[14px] text-ink">
+          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4 accent-accent" />
+          เปิดใช้งานการติดตามพัสดุ
+        </label>
+
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+            {testing ? "กำลังทดสอบ..." : "ทดสอบการเชื่อมต่อ"}
+          </button>
+          {savedMsg && <span className="text-[13px] text-emerald-600">{savedMsg}</span>}
+        </div>
+
+        {test && (
+          <p className={`text-[13px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>
+            {test.ok ? `✓ ${test.message}` : `✕ ${test.error}`}
+          </p>
+        )}
+      </form>
+
+      <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">
+        สมัคร API key ฟรีที่ track.thailandpost.co.th → Track &amp; Trace API · ใส่เลขพัสดุที่ออเดอร์แล้วระบบจะดึงสถานะล่าสุดให้ลูกค้าเห็นเองในหน้าติดตามคำสั่งซื้อ
       </p>
     </div>
   );

@@ -176,6 +176,8 @@ export function useSaveIntegrations() {
 }
 
 export const testZort = async () => (await api.post("/admin/integrations/zort/test")).data;
+export const testThpost = async () => (await api.post("/admin/integrations/thpost/test")).data;
+export const refreshTracking = async (id) => (await api.post(`/admin/orders/${id}/tracking-refresh`)).data;
 
 /* ---------- Upload ---------- */
 export async function uploadImage(file) {

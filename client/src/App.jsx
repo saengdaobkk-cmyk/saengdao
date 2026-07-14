@@ -137,6 +137,7 @@ export default function App() {
 
             {/* บริการ */}
             <FooterCol title="ร้านค้า" links={[
+              { to: "/track", label: "ติดตามคำสั่งซื้อ" },
               { to: "/about", label: "เกี่ยวกับเรา" },
               { to: "/contact", label: "ติดต่อเรา" },
               { to: "/account", label: "บัญชีของฉัน" },

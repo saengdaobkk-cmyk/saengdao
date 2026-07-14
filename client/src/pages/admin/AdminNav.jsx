@@ -13,6 +13,7 @@ const STATIC_PAGES = [
   { label: "ผู้แปลทั้งหมด", url: "/translators" },
   { label: "เกี่ยวกับเรา", url: "/about" },
   { label: "ติดต่อ", url: "/contact" },
+  { label: "ติดตามคำสั่งซื้อ", url: "/track" },
 ];
 
 export default function AdminNav() {
@@ -82,12 +83,12 @@ export default function AdminNav() {
         <ul className="divide-y divide-line">
           {items.map((n, i) => (
             <li key={n.id} className="flex items-center gap-3 px-2 py-2.5">
-              <div className="flex flex-col">
-                <button onClick={() => move(i, -1)} disabled={i === 0} className="text-sub hover:text-ink disabled:opacity-25" aria-label="ขึ้น">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <div className="flex flex-col gap-0.5">
+                <button onClick={() => move(i, -1)} disabled={i === 0} className="flex h-6 w-6 items-center justify-center rounded-md text-sub transition hover:bg-mist hover:text-ink disabled:opacity-20 disabled:hover:bg-transparent" aria-label="เลื่อนขึ้น" title="เลื่อนขึ้น">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
-                <button onClick={() => move(i, 1)} disabled={i === items.length - 1} className="text-sub hover:text-ink disabled:opacity-25" aria-label="ลง">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <button onClick={() => move(i, 1)} disabled={i === items.length - 1} className="flex h-6 w-6 items-center justify-center rounded-md text-sub transition hover:bg-mist hover:text-ink disabled:opacity-20 disabled:hover:bg-transparent" aria-label="เลื่อนลง" title="เลื่อนลง">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
               </div>
               <div className="min-w-0 flex-1">

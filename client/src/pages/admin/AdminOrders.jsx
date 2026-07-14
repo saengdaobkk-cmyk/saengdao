@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
-import { useAdminOrders, useUpdateOrder, useZortSyncOrder } from "../../api/admin";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAdminOrders, useUpdateOrder, useZortSyncOrder, refreshTracking } from "../../api/admin";
 import { formatPrice } from "../../lib/format";
+
+// รูปแบบวันที่-เวลาแบบไทยสั้นๆ สำหรับสถานะพัสดุ
+function fmtDate(d) {
+  if (!d) return "";
+  const t = new Date(d);
+  if (isNaN(t)) return "";
+  return t.toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
 const PAYMENT_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนเงิน", CARD: "บัตร" };
 
@@ -160,6 +169,12 @@ function OrderRow({ order, open, onToggle }) {
                     <span>−{formatPrice(order.discount)}</span>
                   </li>
                 )}
+                {Number(order.shippingFee) > 0 && (
+                  <li className="flex justify-between">
+                    <span>ค่าจัดส่ง{order.shippingMethod && ` · ${order.shippingMethod}`}</span>
+                    <span>{formatPrice(order.shippingFee)}</span>
+                  </li>
+                )}
                 <li className="flex justify-between border-t border-line pt-1.5 font-semibold text-ink">
                   <span>รวม</span>
                   <span>{formatPrice(order.total)}</span>
@@ -181,6 +196,8 @@ function OrderRow({ order, open, onToggle }) {
                 ))}
               </select>
             </Block>
+
+            <TrackingBlock order={order} />
           </div>
 
           {/* ขวา: สลิป + อนุมัติ */}
@@ -223,6 +240,107 @@ function OrderRow({ order, open, onToggle }) {
         </div>
       )}
     </div>
+  );
+}
+
+// เลขพัสดุ + ดึงสถานะไปรษณีย์ไทย
+function TrackingBlock({ order }) {
+  const update = useUpdateOrder();
+  const qc = useQueryClient();
+  const [num, setNum] = useState(order.trackingNumber || "");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const history = Array.isArray(order.trackingHistory) ? order.trackingHistory : [];
+  const dirty = num.trim() !== (order.trackingNumber || "");
+
+  const saveNum = () => {
+    setMsg(null);
+    update.mutate({ id: order.id, trackingNumber: num.trim() || null });
+  };
+
+  const refresh = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await refreshTracking(order.id);
+      if (r.ok) {
+        setMsg({ ok: true, text: "อัปเดตสถานะแล้ว" });
+        qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+      } else {
+        setMsg({ ok: false, text: r.error || "ดึงสถานะไม่สำเร็จ" });
+      }
+    } catch (err) {
+      setMsg({ ok: false, text: err.response?.data?.error || "ดึงสถานะไม่สำเร็จ" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Block title="ติดตามพัสดุ (ไปรษณีย์ไทย)">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={num}
+          onChange={(e) => setNum(e.target.value.toUpperCase())}
+          placeholder="เลขพัสดุ เช่น EF667142218TH"
+          className="min-w-52 flex-1 rounded-lg border border-line px-3 py-2 text-[13px] uppercase outline-none focus:border-ink/30"
+        />
+        <button
+          onClick={saveNum}
+          disabled={!dirty || update.isPending}
+          className="rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
+        >
+          บันทึกเลข
+        </button>
+        <button
+          onClick={refresh}
+          disabled={busy || !order.trackingNumber || dirty}
+          title={dirty ? "บันทึกเลขพัสดุก่อน" : ""}
+          className="rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-40"
+        >
+          {busy ? "กำลังดึง..." : "อัปเดตสถานะ"}
+        </button>
+      </div>
+
+      {order.trackingStatus && (
+        <div className="mt-3 rounded-xl bg-mist px-3 py-2.5 text-[13px]">
+          <p className="font-medium text-ink">{order.trackingStatus}</p>
+          <p className="text-[12px] text-sub">
+            {fmtDate(order.trackingStatusDate)}
+            {order.trackingUpdatedAt && ` · อัปเดตเมื่อ ${fmtDate(order.trackingUpdatedAt)}`}
+          </p>
+          {history.length > 1 && (
+            <button onClick={() => setShowHistory((s) => !s)} className="mt-1 text-[12px] text-accent">
+              {showHistory ? "ซ่อนประวัติ" : `ดูประวัติทั้งหมด (${history.length})`}
+            </button>
+          )}
+          {showHistory && (
+            <ul className="mt-2 space-y-1.5 border-t border-line pt-2">
+              {[...history].reverse().map((h, i) => (
+                <li key={i} className="text-[12px]">
+                  <span className="text-ink">{h.status}</span>
+                  <span className="text-sub"> · {fmtDate(h.date)}{h.location && ` · ${h.location}`}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {msg && <p className={`mt-2 text-[12px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
+      {order.trackingNumber && (
+        <a
+          href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block text-[12px] text-sub hover:text-ink"
+        >
+          เปิดหน้าไปรษณีย์ไทย ↗
+        </a>
+      )}
+    </Block>
   );
 }
 

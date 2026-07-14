@@ -40,6 +40,27 @@ export function useReorderNav() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (ids) => (await api.patch("/admin/nav-reorder", { ids })).data,
-    onSuccess: () => invalidate(qc),
+    // อัปเดตทันที (optimistic) — ไม่ต้องรอ server ตอบ เมนูสลับที่เลย
+    onMutate: async (ids) => {
+      await qc.cancelQueries({ queryKey: ["admin", "nav"] });
+      await qc.cancelQueries({ queryKey: ["nav"] });
+      const prevAdmin = qc.getQueryData(["admin", "nav"]);
+      const prevNav = qc.getQueryData(["nav"]);
+      const sortByIds = (list) => {
+        if (!Array.isArray(list)) return list;
+        const map = new Map(list.map((n) => [n.id, n]));
+        return ids.map((id) => map.get(id)).filter(Boolean);
+      };
+      qc.setQueryData(["admin", "nav"], sortByIds);
+      qc.setQueryData(["nav"], (list) =>
+        Array.isArray(list) ? sortByIds(list.slice()).filter((n) => n.active) : list
+      );
+      return { prevAdmin, prevNav };
+    },
+    onError: (_e, _ids, ctx) => {
+      if (ctx?.prevAdmin) qc.setQueryData(["admin", "nav"], ctx.prevAdmin);
+      if (ctx?.prevNav) qc.setQueryData(["nav"], ctx.prevNav);
+    },
+    onSettled: () => invalidate(qc),
   });
 }

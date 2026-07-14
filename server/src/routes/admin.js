@@ -6,13 +6,14 @@ import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
 import { ZK, ZORT_DEFAULT_BASE, getZortConfig, testZortConnection, pushOrderToZort } from "../lib/zort.js";
+import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
 
 const router = Router();
 router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
 // เมนูเฉพาะแอดมินเต็ม — STAFF เข้าไม่ได้ (พนักงานเห็นแค่ สินค้า/คำสั่งซื้อ/collection)
-["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users"].forEach((p) =>
+["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder"].forEach((p) =>
   router.use(p, requireAdmin)
 );
 
@@ -419,6 +420,72 @@ router.patch("/nav-reorder", async (req, res, next) => {
   }
 });
 
+/* ---------- Shipping / ช่องทางจัดส่ง ---------- */
+router.get("/shipping", async (req, res, next) => {
+  try {
+    const methods = await prisma.shippingMethod.findMany({
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    });
+    res.json(methods);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/shipping", async (req, res, next) => {
+  try {
+    const name = String(req.body.name || "").trim();
+    if (!name) return res.status(400).json({ error: "กรอกชื่อช่องทางจัดส่ง" });
+    const fee = Math.max(0, Math.round(Number(req.body.fee) || 0));
+    const note = String(req.body.note || "").trim() || null;
+    const max = await prisma.shippingMethod.aggregate({ _max: { order: true } });
+    const item = await prisma.shippingMethod.create({
+      data: { name, fee, note, order: (max._max.order ?? -1) + 1 },
+    });
+    res.status(201).json(item);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/shipping/:id", async (req, res, next) => {
+  try {
+    const data = {};
+    if (req.body.name !== undefined) data.name = String(req.body.name).trim();
+    if (req.body.fee !== undefined) data.fee = Math.max(0, Math.round(Number(req.body.fee) || 0));
+    if (req.body.note !== undefined) data.note = String(req.body.note).trim() || null;
+    if (req.body.active !== undefined) data.active = !!req.body.active;
+    if (req.body.order !== undefined) data.order = Number(req.body.order);
+    const item = await prisma.shippingMethod.update({ where: { id: req.params.id }, data });
+    res.json(item);
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "ไม่พบช่องทางจัดส่ง" });
+    next(err);
+  }
+});
+
+router.delete("/shipping/:id", async (req, res, next) => {
+  try {
+    await prisma.shippingMethod.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.code === "P2025") return res.json({ ok: true });
+    next(err);
+  }
+});
+
+router.patch("/shipping-reorder", async (req, res, next) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+    await prisma.$transaction(
+      ids.map((id, i) => prisma.shippingMethod.update({ where: { id }, data: { order: i } }))
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ---------- Orders ---------- */
 router.get("/orders", async (req, res, next) => {
   try {
@@ -444,6 +511,7 @@ router.get("/orders", async (req, res, next) => {
 const ORDER_TEXT_FIELDS = [
   "shipName", "shipPhone", "shipAddress", "email", "note",
   "receiptName", "receiptTaxId", "receiptAddress",
+  "trackingNumber",
 ];
 
 router.patch("/orders/:id", async (req, res, next) => {
@@ -490,6 +558,15 @@ router.patch("/orders/:id", async (req, res, next) => {
 router.post("/orders/:id/zort-sync", async (req, res, next) => {
   try {
     res.json(await pushOrderToZort(req.params.id));
+  } catch (err) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
+// ดึงสถานะพัสดุล่าสุดจากไปรษณีย์ไทย
+router.post("/orders/:id/tracking-refresh", async (req, res, next) => {
+  try {
+    res.json(await updateOrderTracking(req.params.id));
   } catch (err) {
     res.json({ ok: false, error: err.message });
   }
@@ -671,9 +748,17 @@ function publicZort(z) {
   };
 }
 
+// ซ่อน API key — คืนแค่สถานะว่าตั้งค่าไว้แล้วหรือยัง
+function publicThpost(c) {
+  return { enabled: c.enabled, hasKey: !!c.apikey, connected: c.enabled && !!c.apikey };
+}
+
 router.get("/integrations", async (req, res, next) => {
   try {
-    res.json({ zort: publicZort(await getZortConfig()) });
+    res.json({
+      zort: publicZort(await getZortConfig()),
+      thpost: publicThpost(await getThaipostConfig()),
+    });
   } catch (err) {
     next(err);
   }
@@ -682,6 +767,7 @@ router.get("/integrations", async (req, res, next) => {
 router.patch("/integrations", async (req, res, next) => {
   try {
     const z = req.body?.zort || {};
+    const tp = req.body?.thpost || {};
     const set = (key, value) =>
       prisma.setting.upsert({ where: { key }, update: { value: String(value) }, create: { key, value: String(value) } });
 
@@ -692,7 +778,14 @@ router.patch("/integrations", async (req, res, next) => {
     // apisecret อัปเดตเฉพาะเมื่อกรอกใหม่ (เว้นว่าง = คงของเดิม)
     if (z.apisecret) await set(ZK.apisecret, z.apisecret.trim());
 
-    res.json({ zort: publicZort(await getZortConfig()) });
+    // Thailand Post
+    if ("enabled" in tp) await set(TPK.enabled, !!tp.enabled);
+    if (tp.apikey) await set(TPK.apikey, tp.apikey.trim()); // เว้นว่าง = คงของเดิม
+
+    res.json({
+      zort: publicZort(await getZortConfig()),
+      thpost: publicThpost(await getThaipostConfig()),
+    });
   } catch (err) {
     next(err);
   }
@@ -702,6 +795,15 @@ router.patch("/integrations", async (req, res, next) => {
 router.post("/integrations/zort/test", async (req, res, next) => {
   try {
     res.json(await testZortConnection());
+  } catch (err) {
+    res.json({ ok: false, error: "เชื่อมต่อไม่ได้: " + err.message });
+  }
+});
+
+// ทดสอบการเชื่อมต่อไปรษณีย์ไทย
+router.post("/integrations/thpost/test", async (req, res, next) => {
+  try {
+    res.json(await testThaipostConnection());
   } catch (err) {
     res.json({ ok: false, error: "เชื่อมต่อไม่ได้: " + err.message });
   }
