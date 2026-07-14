@@ -1,8 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "../api/books";
 import { useSettings } from "../api/settings";
 import BookCard from "./BookCard";
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "มาใหม่ล่าสุด" },
+  { value: "popular", label: "ขายดี" },
+  { value: "price_asc", label: "ราคาน้อย → มาก" },
+  { value: "price_desc", label: "ราคามาก → น้อย" },
+];
 
 // ส่วนกรอง/grid/แบ่งหน้า — ค้นหาย้ายไปที่ไอคอนบนแถบเมนู (SearchModal → ?q=)
 export default function BookCatalog({ eyebrow = "คอลเลกชัน", heading = "คัดสรรมาเพื่อคุณ", limit = 12, id }) {
@@ -85,13 +92,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
           {/* fade ขวา บอกว่ามีหมวดต่อ */}
           <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent" />
         </div>
-        <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
-          className="shrink-0 rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
-          <option value="newest">มาใหม่ล่าสุด</option>
-          <option value="popular">ขายดี</option>
-          <option value="price_asc">ราคาน้อย → มาก</option>
-          <option value="price_desc">ราคามาก → น้อย</option>
-        </select>
+        <SortDropdown value={sort} onChange={(v) => { setSort(v); setPage(1); }} />
       </div>
 
       {/* รายการ */}
@@ -114,6 +115,69 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
         </>
       )}
     </section>
+  );
+}
+
+// dropdown เรียงลำดับ — ปุ่ม pill + เมนู popover (แทน select เดิม)
+function SortDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = SORT_OPTIONS.find((o) => o.value === value) || SORT_OPTIONS[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-[13px] text-ink transition ${open ? "border-ink/40" : "border-line hover:border-ink/25"}`}
+      >
+        <span className="whitespace-nowrap">{current.label}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          className={`text-sub transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <ul
+          role="listbox"
+          className="absolute right-0 z-20 mt-2 min-w-[190px] overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg"
+        >
+          {SORT_OPTIONS.map((o) => {
+            const active = o.value === value;
+            return (
+              <li key={o.value}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => { onChange(o.value); setOpen(false); }}
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-[13px] transition hover:bg-mist ${active ? "font-medium text-ink" : "text-sub"}`}
+                >
+                  {o.label}
+                  {active && (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-accent">
+                      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 
