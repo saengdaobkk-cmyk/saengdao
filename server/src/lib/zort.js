@@ -44,11 +44,21 @@ export async function testZortConnection() {
     return { ok: false, error: "กรอก storename / apikey / apisecret ให้ครบก่อน" };
   try {
     const resp = await fetch(`${cfg.baseUrl}/Product/GetProducts?page=1&limit=1`, { headers: zortHeaders(cfg) });
-    if (!resp.ok) return { ok: false, error: `ZORT ตอบกลับสถานะ ${resp.status}` };
     const data = await resp.json().catch(() => null);
-    if (!data || Number(data.res) !== 200)
-      return { ok: false, error: `credential ไม่ถูกต้อง หรือ ZORT ปฏิเสธ (res=${data?.res ?? "?"})` };
-    return { ok: true, message: `เชื่อมต่อ ZORT สำเร็จ (พบสินค้า ${data.count ?? 0} รายการ)` };
+
+    // สำเร็จ = HTTP 200 + มีข้อมูลสินค้า (GetProducts บาง response ไม่มีฟิลด์ res)
+    const code = Number(data?.res ?? data?.resCode);
+    const success = resp.ok && data && (Array.isArray(data.list) || data.count != null || code === 200);
+    if (success)
+      return { ok: true, message: `เชื่อมต่อ ZORT สำเร็จ (พบสินค้า ${data.count ?? data.list?.length ?? 0} รายการ)` };
+
+    // แสดงสาเหตุจริงจาก ZORT ให้อ่านออก
+    const detail =
+      data?.resDesc ||
+      data?.message ||
+      (data?.res && typeof data.res === "object" ? JSON.stringify(data.res) : data?.res) ||
+      `HTTP ${resp.status}`;
+    return { ok: false, error: `ZORT ปฏิเสธ: ${detail}` };
   } catch (err) {
     return { ok: false, error: "เชื่อมต่อไม่ได้: " + err.message };
   }
