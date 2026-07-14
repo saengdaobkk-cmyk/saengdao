@@ -109,7 +109,10 @@ export default function SearchModal({ open, onClose }) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p title={b.title} className="truncate text-[14px] font-medium text-ink">{b.title}</p>
-                          <p className="truncate text-[12.5px] text-sub">
+                          <p
+                            title={b.author + (b.translator ? ` · แปล ${b.translator}` : "")}
+                            className="truncate text-[12.5px] text-sub"
+                          >
                             {b.author}
                             {b.translator && ` · แปล ${b.translator}`}
                           </p>
