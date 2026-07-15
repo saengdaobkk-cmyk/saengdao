@@ -246,14 +246,14 @@ export function TrackingCard({ order }) {
     <div className="mt-8 rounded-2xl border border-line p-6">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[18px] font-semibold text-ink">ติดตามพัสดุ</h3>
-        {isTP && (
+        {order.trackingLink && (
           <a
-            href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
+            href={order.trackingLink}
             target="_blank"
             rel="noreferrer"
             className="text-[16px] text-accent"
           >
-            ไปรษณีย์ไทย ↗
+            {isTP ? "ไปรษณีย์ไทย ↗" : "ติดตามพัสดุ ↗"}
           </a>
         )}
       </div>
@@ -262,7 +262,11 @@ export function TrackingCard({ order }) {
       </p>
 
       {!isTP ? (
-        <p className="mt-3 text-[16px] text-sub">ร้านจัดส่งพัสดุแล้ว — ตรวจสอบสถานะได้จากเลขพัสดุด้านบนกับผู้ให้บริการขนส่ง</p>
+        <p className="mt-3 text-[16px] text-sub">
+          {order.trackingLink
+            ? "กดลิงก์ด้านบนเพื่อดูสถานะพัสดุกับผู้ให้บริการขนส่ง"
+            : "ตรวจสอบสถานะได้จากเลขพัสดุด้านบนกับผู้ให้บริการขนส่ง"}
+        </p>
       ) : order.trackingStatus ? (
         <>
           {/* สถานะล่าสุด */}

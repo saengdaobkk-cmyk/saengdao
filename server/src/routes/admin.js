@@ -6,7 +6,7 @@ import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
 import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort } from "../lib/zort.js";
-import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking } from "../lib/thaipost.js";
+import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
 
@@ -438,9 +438,10 @@ router.post("/shipping", async (req, res, next) => {
     if (!name) return res.status(400).json({ error: "กรอกชื่อช่องทางจัดส่ง" });
     const fee = Math.max(0, Math.round(Number(req.body.fee) || 0));
     const note = String(req.body.note || "").trim() || null;
+    const trackingUrl = String(req.body.trackingUrl || "").trim() || null;
     const max = await prisma.shippingMethod.aggregate({ _max: { order: true } });
     const item = await prisma.shippingMethod.create({
-      data: { name, fee, note, order: (max._max.order ?? -1) + 1 },
+      data: { name, fee, note, trackingUrl, order: (max._max.order ?? -1) + 1 },
     });
     res.status(201).json(item);
   } catch (err) {
@@ -454,6 +455,7 @@ router.patch("/shipping/:id", async (req, res, next) => {
     if (req.body.name !== undefined) data.name = String(req.body.name).trim();
     if (req.body.fee !== undefined) data.fee = Math.max(0, Math.round(Number(req.body.fee) || 0));
     if (req.body.note !== undefined) data.note = String(req.body.note).trim() || null;
+    if (req.body.trackingUrl !== undefined) data.trackingUrl = String(req.body.trackingUrl).trim() || null;
     if (req.body.active !== undefined) data.active = !!req.body.active;
     if (req.body.order !== undefined) data.order = Number(req.body.order);
     const item = await prisma.shippingMethod.update({ where: { id: req.params.id }, data });
@@ -502,6 +504,15 @@ router.get("/orders", async (req, res, next) => {
         items: { include: { book: { select: { title: true } } } },
       },
     });
+    // แนบลิงก์ tracking ให้แต่ละออเดอร์ (ไปรษณีย์ไทย = เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
+    const methods = await prisma.shippingMethod.findMany({ select: { name: true, trackingUrl: true } });
+    const urlByName = new Map(methods.map((m) => [m.name, m.trackingUrl]));
+    for (const o of orders) {
+      if (!o.trackingNumber) continue;
+      o.trackingLink = isThaiPostMethod(o.shippingMethod)
+        ? `https://track.thailandpost.co.th/?trackNumber=${encodeURIComponent(o.trackingNumber)}`
+        : buildTrackingUrl(urlByName.get(o.shippingMethod), o.trackingNumber);
+    }
     res.json(orders);
   } catch (err) {
     next(err);

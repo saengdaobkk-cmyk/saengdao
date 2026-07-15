@@ -7,7 +7,22 @@ import { computeDiscount } from "../lib/coupon.js";
 import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
-import { updateOrderTracking, looksDelivered, isThaiPostMethod } from "../lib/thaipost.js";
+import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
+
+// แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
+async function attachTrackingLink(order) {
+  if (!order?.trackingNumber) return order;
+  if (isThaiPostMethod(order.shippingMethod)) {
+    order.trackingLink = `https://track.thailandpost.co.th/?trackNumber=${encodeURIComponent(order.trackingNumber)}`;
+  } else if (order.shippingMethod) {
+    const m = await prisma.shippingMethod.findFirst({
+      where: { name: order.shippingMethod },
+      select: { trackingUrl: true },
+    });
+    order.trackingLink = buildTrackingUrl(m?.trackingUrl, order.trackingNumber);
+  }
+  return order;
+}
 
 const router = Router();
 
@@ -78,6 +93,7 @@ function publicOrder(o) {
     trackingStatusDate: o.trackingStatusDate,
     trackingHistory: o.trackingHistory,
     trackingUpdatedAt: o.trackingUpdatedAt,
+    trackingLink: o.trackingLink || null,
     items: (o.items || []).map((it) => ({
       id: it.id,
       quantity: it.quantity,
@@ -99,6 +115,7 @@ router.post("/track", async (req, res, next) => {
       });
 
     await maybeRefreshTracking(order); // ดึงสถานะพัสดุล่าสุด (throttled)
+    await attachTrackingLink(order);
 
     let promptpay = null;
     if (order.paymentMethod === "PROMPTPAY" && order.paymentStatus !== "PAID") {
@@ -308,6 +325,7 @@ router.get("/:id", async (req, res, next) => {
     if (!order || order.userId !== req.user.id)
       return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
     await maybeRefreshTracking(order); // ดึงสถานะพัสดุล่าสุด (throttled)
+    await attachTrackingLink(order);
     res.json(order);
   } catch (err) {
     next(err);

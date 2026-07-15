@@ -271,11 +271,12 @@ model OrderItem {
 
 // ช่องทางจัดส่ง — จัดการในหลังร้าน, ลูกค้าเลือกตอน checkout
 model ShippingMethod {
-  id        String   @id @default(uuid())
-  name      String // เช่น "ไปรษณีย์ EMS", "Flash Express"
-  fee       Decimal  @default(0) @db.Decimal(10, 2)
-  note      String? // เช่น "ส่งถึงใน 1-2 วัน"
-  active    Boolean  @default(true)
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  name        String // เช่น "ไปรษณีย์ EMS", "Flash Express"
+  fee         Decimal  @default(0) @db.Decimal(10, 2)
+  note        String? // เช่น "ส่งถึงใน 1-2 วัน"
+  trackingUrl String? // ลิงก์หน้า tracking ของขนส่ง ใส่ {code} แทนเลขพัสดุ
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 }

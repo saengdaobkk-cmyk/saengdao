@@ -339,14 +339,14 @@ function TrackingBlock({ order }) {
       )}
 
       {msg && <p className={`mt-2 text-[15px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
-      {isTP && order.trackingNumber && (
+      {order.trackingLink && (
         <a
-          href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
+          href={order.trackingLink}
           target="_blank"
           rel="noreferrer"
           className="mt-2 inline-block text-[15px] text-sub hover:text-ink"
         >
-          เปิดหน้าไปรษณีย์ไทย ↗
+          {isTP ? "เปิดหน้าไปรษณีย์ไทย ↗" : "เปิดหน้าติดตามพัสดุ ↗"}
         </a>
       )}
     </Block>

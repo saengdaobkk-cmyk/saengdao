@@ -7,7 +7,7 @@ import {
   useReorderShipping,
 } from "../../api/shipping";
 
-const EMPTY = { name: "", fee: "", note: "" };
+const EMPTY = { name: "", fee: "", note: "", trackingUrl: "" };
 
 export default function AdminShipping() {
   const { data: items = [], isLoading } = useAdminShipping();
@@ -27,6 +27,7 @@ export default function AdminShipping() {
       name: form.name.trim(),
       fee: Math.max(0, Math.round(Number(form.fee) || 0)),
       note: form.note.trim(),
+      trackingUrl: form.trackingUrl.trim(),
     };
     save.mutate(editing ? { id: editing.id, ...payload } : payload, {
       onSuccess: () => { setForm(EMPTY); setEditing(null); },
@@ -36,7 +37,7 @@ export default function AdminShipping() {
 
   const startEdit = (m) => {
     setEditing(m);
-    setForm({ name: m.name, fee: String(Number(m.fee)), note: m.note || "" });
+    setForm({ name: m.name, fee: String(Number(m.fee)), note: m.note || "", trackingUrl: m.trackingUrl || "" });
     setError("");
   };
   const cancel = () => { setEditing(null); setForm(EMPTY); setError(""); };
@@ -108,6 +109,11 @@ export default function AdminShipping() {
         <div className="mt-2">
           <label className="mb-1 block text-[15px] text-sub">หมายเหตุ (ไม่บังคับ)</label>
           <input value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} placeholder="เช่น ส่งถึงใน 1-2 วันทำการ" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[16px] outline-none focus:border-ink/30" />
+        </div>
+        <div className="mt-2">
+          <label className="mb-1 block text-[15px] text-sub">ลิงก์ติดตามพัสดุ (ไม่บังคับ)</label>
+          <input value={form.trackingUrl} onChange={(e) => setForm((f) => ({ ...f, trackingUrl: e.target.value }))} placeholder="เช่น https://www.flashexpress.com/tracking/?se={code}" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px] outline-none focus:border-ink/30" />
+          <p className="mt-1 text-[13px] text-sub">ใส่ <code className="rounded bg-mist px-1">{"{code}"}</code> ตรงตำแหน่งเลขพัสดุ · ไปรษณีย์ไทยไม่ต้องใส่ (ระบบติดตามให้อัตโนมัติ)</p>
         </div>
 
         {error && <p className="mt-2 text-[15px] text-red-600">{error}</p>}

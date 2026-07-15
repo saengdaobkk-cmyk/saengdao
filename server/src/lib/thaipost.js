@@ -19,6 +19,13 @@ export function isThaiPostMethod(name) {
   return /ไปรษณีย์|thailand\s*post/i.test(name || "");
 }
 
+// สร้างลิงก์ tracking จาก template ของขนส่ง ({code} = เลขพัสดุ)
+export function buildTrackingUrl(tpl, code) {
+  if (!tpl || !code) return null;
+  const c = encodeURIComponent(String(code).trim());
+  return tpl.includes("{code}") ? tpl.replace(/\{code\}/g, c) : tpl;
+}
+
 // แปลงวันที่จากไปรษณีย์ไทย → ISO string
 // รูปแบบไทย "DD/MM/YYYY HH:mm:ss+07:00" (ปี พ.ศ.) — new Date() แปลงตรงๆ ไม่ได้
 function toIso(s) {
