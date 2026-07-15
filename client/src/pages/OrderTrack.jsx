@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { useSettings } from "../api/settings";
 import { formatPrice } from "../lib/format";
-import { TrackingCard } from "./OrderConfirm";
+import { TrackingCard, OrderSteps } from "./OrderConfirm";
 
 const PAYMENT_LABEL = {
   PROMPTPAY: "พร้อมเพย์ (PromptPay)",
@@ -93,6 +93,7 @@ export default function OrderTrack() {
               </svg>
               ค้นหาคำสั่งซื้ออื่น
             </button>
+            <div className="mb-6"><OrderSteps order={result.order} /></div>
             <OrderResult data={result} code={code} phone={phone} onUpdated={setResult} />
             <TrackingCard order={result.order} />
           </>
