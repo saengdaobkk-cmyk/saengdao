@@ -298,18 +298,18 @@ export default function Checkout() {
             ) : (
               <>
                 <p className="mb-2 text-[16px] font-medium text-ink">{t("checkout.discount_label", "โค้ดส่วนลด")}</p>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2.5">
                   <input
                     value={codeInput}
                     onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                     placeholder="กรอกโค้ด"
-                    className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-[17px] uppercase text-ink outline-none focus:border-ink/30"
+                    className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-2 text-[16px] uppercase text-ink outline-none focus:border-ink/30"
                   />
                   <button
                     type="button"
                     onClick={applyCoupon}
                     disabled={couponBusy || !codeInput.trim()}
-                    className="shrink-0 whitespace-nowrap rounded-full bg-ink px-5 py-2 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
+                    className="shrink-0 whitespace-nowrap rounded-full bg-ink px-4 py-2 text-[16px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
                   >
                     {t("checkout.apply_code", "ใช้โค้ด")}
                   </button>
