@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
@@ -228,10 +229,13 @@ function Row({ label, value }) {
   );
 }
 
-// การ์ดติดตามพัสดุ (ไปรษณีย์ไทย) — โชว์เมื่อมีเลขพัสดุ
+// การ์ดติดตามพัสดุ (ไปรษณีย์ไทย) — โชว์สถานะล่าสุด (กดดูประวัติทั้งหมดได้)
 export function TrackingCard({ order }) {
+  const [showAll, setShowAll] = useState(false);
   if (!order.trackingNumber) return null;
   const history = Array.isArray(order.trackingHistory) ? order.trackingHistory : [];
+  const timeline = [...history].reverse(); // ล่าสุดอยู่บน
+  const latestLoc = timeline[0]?.location || "";
   const fmt = (d) => {
     if (!d) return "";
     const t = new Date(d);
@@ -253,21 +257,42 @@ export function TrackingCard({ order }) {
       <p className="mt-1 font-mono text-[16px] text-sub">{order.trackingNumber}</p>
 
       {order.trackingStatus ? (
-        history.length > 0 ? (
-          <ol className="mt-4 space-y-3">
-            {[...history].reverse().map((h, i) => (
-              <li key={i} className="flex gap-3">
-                <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${i === 0 ? "bg-emerald-500" : "bg-line"}`} />
-                <div>
-                  <p className={`text-[16px] ${i === 0 ? "font-medium text-ink" : "text-sub"}`}>{h.status}</p>
-                  <p className="text-[15px] text-sub">{fmt(h.date)}{h.location && ` · ${h.location}`}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="mt-3 text-[16px] text-ink">{order.trackingStatus}</p>
-        )
+        <>
+          {/* สถานะล่าสุด */}
+          <div className="mt-4 flex gap-3">
+            <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+            <div>
+              <p className="text-[16px] font-medium text-ink">{order.trackingStatus}</p>
+              <p className="text-[15px] text-sub">
+                {fmt(order.trackingStatusDate)}{latestLoc && ` · ${latestLoc}`}
+              </p>
+            </div>
+          </div>
+
+          {history.length > 1 && (
+            <>
+              <button
+                onClick={() => setShowAll((s) => !s)}
+                className="mt-3 text-[15px] text-accent hover:underline"
+              >
+                {showAll ? "ซ่อนประวัติ" : `ดูประวัติทั้งหมด (${history.length})`}
+              </button>
+              {showAll && (
+                <ol className="mt-3 space-y-3 border-t border-line pt-4">
+                  {timeline.map((h, i) => (
+                    <li key={i} className="flex gap-3">
+                      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${i === 0 ? "bg-emerald-500" : "bg-line"}`} />
+                      <div>
+                        <p className={`text-[15px] ${i === 0 ? "font-medium text-ink" : "text-sub"}`}>{h.status}</p>
+                        <p className="text-[14px] text-sub">{fmt(h.date)}{h.location && ` · ${h.location}`}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </>
+          )}
+        </>
       ) : (
         <p className="mt-3 text-[16px] text-sub">ยังไม่มีข้อมูลสถานะ — ระบบจะอัปเดตให้อัตโนมัติ</p>
       )}
