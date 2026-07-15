@@ -71,7 +71,7 @@ export default function App() {
                 aria-label="ค้นหา"
                 className="rounded-lg p-1 text-ink transition hover:bg-mist"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
                 </svg>
               </button>
@@ -290,7 +290,7 @@ function AccountMenu() {
 
 function UserIcon() {
   return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" strokeLinecap="round" />
     </svg>
@@ -299,7 +299,7 @@ function UserIcon() {
 
 function BagIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M6 8h12l-1 12H7L6 8Z" strokeLinejoin="round" />
       <path d="M9 8a3 3 0 0 1 6 0" strokeLinecap="round" />
     </svg>
