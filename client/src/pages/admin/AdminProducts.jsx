@@ -44,14 +44,14 @@ export default function AdminProducts() {
     <div>
       {/* หัว + filters */}
       <div className="mb-5 flex flex-wrap items-center gap-2">
-        <h2 className="mr-2 text-[16px] font-semibold text-ink">หนังสือทั้งหมด ({books?.length || 0})</h2>
+        <h2 className="mr-2 text-[17px] font-semibold text-ink">หนังสือทั้งหมด ({books?.length || 0})</h2>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาชื่อ / ISBN / ผู้เขียน..."
-          className="w-56 rounded-lg border border-line px-3 py-2 text-[14px] outline-none focus:border-ink/30" />
-        <select value={cat} onChange={(e) => setCat(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[14px] outline-none focus:border-ink/30">
+          className="w-56 rounded-lg border border-line px-3 py-2 text-[15px] outline-none focus:border-ink/30" />
+        <select value={cat} onChange={(e) => setCat(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[15px] outline-none focus:border-ink/30">
           <option value="">ทุกหมวด</option>
           {categories?.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[14px] outline-none focus:border-ink/30">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[15px] outline-none focus:border-ink/30">
           <option value="">ทุกสถานะ</option>
           <option value="instock">มีสต็อก</option>
           <option value="out">สินค้าหมด</option>
@@ -60,10 +60,10 @@ export default function AdminProducts() {
           <option value="inactive">ปิดอยู่</option>
         </select>
         <div className="ml-auto flex gap-2">
-          <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[15px] font-medium text-ink transition hover:bg-mist">
+          <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[16px] font-medium text-ink transition hover:bg-mist">
             ⬆ นำเข้า CSV/Excel
           </button>
-          <button onClick={() => setEditing(EMPTY)} className="rounded-full bg-accent px-5 py-2.5 text-[15px] font-medium text-white transition hover:bg-accent/90">
+          <button onClick={() => setEditing(EMPTY)} className="rounded-full bg-accent px-5 py-2.5 text-[16px] font-medium text-white transition hover:bg-accent/90">
             + เพิ่มหนังสือ
           </button>
         </div>
@@ -75,8 +75,8 @@ export default function AdminProducts() {
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full text-left text-[15px]">
-            <thead className="border-b border-line bg-mist/50 text-[13px] text-sub">
+          <table className="w-full text-left text-[16px]">
+            <thead className="border-b border-line bg-mist/50 text-[14px] text-sub">
               <tr>
                 <th className="px-4 py-3 font-medium">รหัส (ISBN)</th>
                 <th className="px-4 py-3 font-medium">ชื่อสินค้า</th>
@@ -89,11 +89,11 @@ export default function AdminProducts() {
             <tbody className="divide-y divide-line">
               {filtered.map((b) => (
                 <tr key={b.id} className={`hover:bg-mist/30 ${b.active === false ? "bg-mist/20" : ""}`}>
-                  <td className="px-4 py-3 text-[13px] text-sub">{b.isbn || "—"}</td>
+                  <td className="px-4 py-3 text-[14px] text-sub">{b.isbn || "—"}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-mist ${b.active === false ? "opacity-40" : ""}`}>
-                        {b.coverImage ? <img src={b.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-[11px] opacity-30">𝐀</span>}
+                        {b.coverImage ? <img src={b.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-[12px] opacity-30">𝐀</span>}
                       </div>
                       <div>
                         <p className={`font-medium ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
@@ -109,7 +109,7 @@ export default function AdminProducts() {
                   <td className="px-4 py-3 text-sub">{b.category?.name || "—"}</td>
                   <td className="px-4 py-3">
                     {b.discountPrice != null ? (
-                      <span><span className="text-ink">{formatPrice(b.discountPrice)}</span> <span className="text-[12px] text-sub line-through">{formatPrice(b.price)}</span></span>
+                      <span><span className="text-ink">{formatPrice(b.discountPrice)}</span> <span className="text-[13px] text-sub line-through">{formatPrice(b.price)}</span></span>
                     ) : <span className="text-ink">{formatPrice(b.price)}</span>}
                   </td>
                   {(() => {
@@ -117,15 +117,15 @@ export default function AdminProducts() {
                     const s = hasVar ? b.variants.reduce((a, v) => a + (Number(v.stock) || 0), 0) : b.stock;
                     return (
                       <td className={`px-4 py-3 ${s <= 5 ? "text-amber-600" : "text-ink"}`}>
-                        {s}{hasVar && <span className="ml-1 text-[12px] text-sub">({b.variants.length} แบบ)</span>}
+                        {s}{hasVar && <span className="ml-1 text-[13px] text-sub">({b.variants.length} แบบ)</span>}
                       </td>
                     );
                   })()}
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <Toggle on={b.active !== false} onChange={() => save.mutate({ ...b, active: b.active === false })} title={b.active === false ? "เปิดขาย" : "ปิดขาย (ซ่อนจากหน้าร้าน)"} />
-                    <button onClick={() => setEditing(b)} className="ml-2 rounded-lg border border-line px-3 py-1 text-[13px] text-ink hover:bg-mist">แก้ไข</button>
+                    <button onClick={() => setEditing(b)} className="ml-2 rounded-lg border border-line px-3 py-1 text-[14px] text-ink hover:bg-mist">แก้ไข</button>
                     <button onClick={() => confirm(`ลบ "${b.title}"?`) && del.mutate(b.id, { onError: (e) => alert(e.response?.data?.error || "ลบไม่สำเร็จ") })}
-                      className="ml-2 rounded-lg border border-line px-3 py-1 text-[13px] text-sub hover:text-red-600">ลบ</button>
+                      className="ml-2 rounded-lg border border-line px-3 py-1 text-[14px] text-sub hover:text-red-600">ลบ</button>
                   </td>
                 </tr>
               ))}
@@ -139,7 +139,7 @@ export default function AdminProducts() {
 
 function Tag({ children, color }) {
   const c = { indigo: "bg-indigo-50 text-indigo-600", rose: "bg-rose-50 text-rose-500", gray: "bg-gray-100 text-gray-500" }[color];
-  return <span className={`rounded px-1.5 py-0.5 text-[11px] ${c}`}>{children}</span>;
+  return <span className={`rounded px-1.5 py-0.5 text-[12px] ${c}`}>{children}</span>;
 }
 
 // สวิตช์เปิด/ปิด
@@ -245,7 +245,7 @@ function BookForm({ book, categories, onClose }) {
             <F label="แท็ก (Tags)" hint="เช่น ขายดี, ใหม่, แนะนำ — คั่นด้วย ,">
               <Inp value={form.tags.join(", ")} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) }))} placeholder="เช่น ขายดี, ใหม่, แนะนำ" />
             </F>
-            <F label="รายละเอียด"><textarea value={form.description} onChange={set("description")} rows={5} className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30" /></F>
+            <F label="รายละเอียด"><textarea value={form.description} onChange={set("description")} rows={5} className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[16px] outline-none focus:border-ink/30" /></F>
           </Card>
 
           <Card title="ราคา">
@@ -282,11 +282,11 @@ function BookForm({ book, categories, onClose }) {
               <F label="SKU (รหัสภายในร้าน)"><Inp value={form.sku} onChange={set("sku")} /></F>
             </div>
             <F label="Meta Title" hint="เว้นว่าง = ใช้ชื่อหนังสือ · ≤ 60 ตัวอักษร"><Inp value={form.metaTitle} onChange={set("metaTitle")} /></F>
-            <F label="Meta Description" hint="เว้นว่าง = ใช้รายละเอียด · ≤ 160 ตัวอักษร"><textarea value={form.metaDescription} onChange={set("metaDescription")} rows={2} className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30" /></F>
+            <F label="Meta Description" hint="เว้นว่าง = ใช้รายละเอียด · ≤ 160 ตัวอักษร"><textarea value={form.metaDescription} onChange={set("metaDescription")} rows={2} className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[16px] outline-none focus:border-ink/30" /></F>
             <F label="Slug (URL หน้าหนังสือ)" hint="เว้นว่าง = ใช้ id · ใช้อังกฤษ-เลข"><Inp value={form.slug} onChange={set("slug")} placeholder="asia-vol1" /></F>
             <F label="ไฟล์ตัวอย่าง (PDF)" hint="อ่านตัวอย่างแบบ flip book · ≤ 25MB">
-              {form.previewPdf && <a href={form.previewPdf} target="_blank" rel="noreferrer" className="mb-2 block text-[13px] text-accent">เปิดดู PDF ปัจจุบัน</a>}
-              <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[14px] text-sub hover:text-ink">
+              {form.previewPdf && <a href={form.previewPdf} target="_blank" rel="noreferrer" className="mb-2 block text-[14px] text-accent">เปิดดู PDF ปัจจุบัน</a>}
+              <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[15px] text-sub hover:text-ink">
                 {busy.pdf ? "กำลังอัปโหลด..." : "อัปโหลด PDF"}
                 <input type="file" accept="application/pdf" onChange={onPdf} className="hidden" />
               </label>
@@ -298,7 +298,7 @@ function BookForm({ book, categories, onClose }) {
               <div className="space-y-3">
                 {form.variants.map((v, i) => (
                   <div key={i} className="space-y-3 rounded-xl border border-line p-3">
-                    <div className="grid grid-cols-[1fr_130px_90px_90px_70px_28px] gap-2 text-[12px] text-sub">
+                    <div className="grid grid-cols-[1fr_130px_90px_90px_70px_28px] gap-2 text-[13px] text-sub">
                       <span>ชื่อแบบ</span><span>ISBN</span><span>ราคา</span><span>ราคาลด</span><span>สต็อก</span><span />
                     </div>
                     <div className="grid grid-cols-[1fr_130px_90px_90px_70px_28px] items-center gap-2">
@@ -312,20 +312,20 @@ function BookForm({ book, categories, onClose }) {
                     <div className="flex flex-wrap gap-4 border-t border-line pt-3">
                       <VariantImg label="ปกหน้า" url={v.coverImage} busy={busy[`v${i}_coverImage`]} onChange={(e) => onVariantImage(i, "coverImage", e)} onClear={() => setVariant(i, "coverImage", "")} />
                       <VariantImg label="ปกหลัง" url={v.backCoverImage} busy={busy[`v${i}_backCoverImage`]} onChange={(e) => onVariantImage(i, "backCoverImage", e)} onClear={() => setVariant(i, "backCoverImage", "")} />
-                      <p className="max-w-[180px] self-center text-[12px] text-sub">เว้นว่าง = ใช้ปกหลักของเล่ม · ใส่เฉพาะแบบที่ปกต่างกัน</p>
+                      <p className="max-w-[180px] self-center text-[13px] text-sub">เว้นว่าง = ใช้ปกหลักของเล่ม · ใส่เฉพาะแบบที่ปกต่างกัน</p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <button type="button" onClick={addVariant} className="mt-3 rounded-xl border border-dashed border-line px-4 py-2 text-[14px] text-ink hover:bg-mist">+ เพิ่มตัวเลือก</button>
+            <button type="button" onClick={addVariant} className="mt-3 rounded-xl border border-dashed border-line px-4 py-2 text-[15px] text-ink hover:bg-mist">+ เพิ่มตัวเลือก</button>
           </Card>
 
           <Card title="รูปภาพเพิ่มเติม" subtitle="ปกหน้าใช้ช่อง “รูปปก” ทางขวา · ตรงนี้เพิ่ม ปกหลัง + รูปแกลเลอรี">
             <F label="ปกหลัง (กดพลิกได้)">
               {form.backCoverImage && <img src={form.backCoverImage} alt="" className="mb-2 h-24 w-16 rounded object-cover" />}
               <UploadBtn busy={busy.backCoverImage} onChange={(e) => onCover(e, "backCoverImage")} label={form.backCoverImage ? "เปลี่ยนปกหลัง" : "อัปโหลดปกหลัง"} />
-              {form.backCoverImage && <button type="button" onClick={() => setForm((f) => ({ ...f, backCoverImage: "" }))} className="mt-1 text-[13px] text-sub hover:text-red-600">ลบปกหลัง</button>}
+              {form.backCoverImage && <button type="button" onClick={() => setForm((f) => ({ ...f, backCoverImage: "" }))} className="mt-1 text-[14px] text-sub hover:text-red-600">ลบปกหลัง</button>}
             </F>
             <F label="รูปแกลเลอรี (เลือกได้หลายรูป)">
               <div className="mb-2 flex flex-wrap gap-2">
@@ -333,7 +333,7 @@ function BookForm({ book, categories, onClose }) {
                   <div key={i} className="relative">
                     <img src={url} alt="" className="h-20 w-16 rounded object-cover" />
                     <button type="button" onClick={() => setForm((f) => ({ ...f, galleryImages: f.galleryImages.filter((_, idx) => idx !== i) }))}
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[11px] text-white">✕</button>
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[12px] text-white">✕</button>
                   </div>
                 ))}
               </div>
@@ -347,8 +347,8 @@ function BookForm({ book, categories, onClose }) {
           <Card>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[14px] font-medium text-ink">สถานะการขาย</p>
-                <p className="text-[13px] text-sub">{form.active !== false ? "เปิดขาย — แสดงในหน้าร้าน" : "ปิดอยู่ — ซ่อนจากหน้าร้าน"}</p>
+                <p className="text-[15px] font-medium text-ink">สถานะการขาย</p>
+                <p className="text-[14px] text-sub">{form.active !== false ? "เปิดขาย — แสดงในหน้าร้าน" : "ปิดอยู่ — ซ่อนจากหน้าร้าน"}</p>
               </div>
               <Toggle on={form.active !== false} onChange={() => setForm((f) => ({ ...f, active: f.active === false }))} title="เปิด/ปิดการขาย" />
             </div>
@@ -366,7 +366,7 @@ function BookForm({ book, categories, onClose }) {
           <Card>
             <div className="grid grid-cols-2 gap-3">
               <F label="สต็อก (เล่ม)" hint="ใช้เมื่อไม่มี variant"><Inp type="number" value={form.stock} onChange={set("stock")} /></F>
-              <label className="flex items-end gap-2 pb-2 text-[14px] text-ink">
+              <label className="flex items-end gap-2 pb-2 text-[15px] text-ink">
                 <input type="checkbox" checked={form.featured} onChange={(e) => setForm((f) => ({ ...f, featured: e.target.checked }))} className="h-4 w-4 accent-accent" />
                 แนะนำหน้าแรก
               </label>
@@ -374,12 +374,12 @@ function BookForm({ book, categories, onClose }) {
             <F label="วันที่นำเข้า" hint="ใช้จัดลำดับ · เว้นว่าง = วันนี้"><Inp type="date" value={form.importedAt} onChange={set("importedAt")} /></F>
           </Card>
 
-          {error && <p className="text-[14px] text-red-600">{error}</p>}
+          {error && <p className="text-[15px] text-red-600">{error}</p>}
 
-          <button type="submit" disabled={save.isPending} className="w-full rounded-full bg-accent py-3 text-[16px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+          <button type="submit" disabled={save.isPending} className="w-full rounded-full bg-accent py-3 text-[17px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
           </button>
-          <button type="button" onClick={onClose} className="w-full rounded-full border border-line py-3 text-[16px] text-ink hover:bg-mist">ยกเลิก</button>
+          <button type="button" onClick={onClose} className="w-full rounded-full border border-line py-3 text-[17px] text-ink hover:bg-mist">ยกเลิก</button>
         </div>
       </div>
     </form>
@@ -388,21 +388,21 @@ function BookForm({ book, categories, onClose }) {
 
 const Card = ({ title, subtitle, children }) => (
   <div className="space-y-4 rounded-2xl border border-line bg-white p-6">
-    {title && <div><p className="text-[16px] font-semibold text-ink">{title}</p>{subtitle && <p className="mt-0.5 text-[13px] text-sub">{subtitle}</p>}</div>}
+    {title && <div><p className="text-[17px] font-semibold text-ink">{title}</p>{subtitle && <p className="mt-0.5 text-[14px] text-sub">{subtitle}</p>}</div>}
     {children}
   </div>
 );
 const F = ({ label, hint, children }) => (
   <label className="block">
-    <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>
+    <span className="mb-1.5 block text-[14px] font-medium text-ink">{label}</span>
     {children}
-    {hint && <span className="mt-1 block text-[12px] text-sub">{hint}</span>}
+    {hint && <span className="mt-1 block text-[13px] text-sub">{hint}</span>}
   </label>
 );
-const Inp = (props) => <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30" />;
-const Select = (props) => <select {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30" />;
+const Inp = (props) => <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />;
+const Select = (props) => <select {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />;
 const UploadBtn = ({ busy, onChange, label, multiple }) => (
-  <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[14px] text-sub hover:text-ink">
+  <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[15px] text-sub hover:text-ink">
     {busy ? "กำลังอัปโหลด..." : label}
     <input type="file" accept="image/*" multiple={multiple} onChange={onChange} className="hidden" />
   </label>
@@ -413,9 +413,9 @@ function VariantImg({ label, url, busy, onChange, onClear }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex h-16 w-11 shrink-0 items-center justify-center overflow-hidden rounded bg-mist">
-        {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] text-sub">{label}</span>}
+        {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="text-[11px] text-sub">{label}</span>}
       </div>
-      <div className="text-[12px]">
+      <div className="text-[13px]">
         <p className="mb-1 font-medium text-ink">{label}</p>
         <label className="cursor-pointer text-accent hover:opacity-80">
           {busy ? "กำลังอัปโหลด..." : url ? "เปลี่ยน" : "อัปโหลด"}

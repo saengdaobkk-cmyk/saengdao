@@ -40,18 +40,18 @@ export default function Register() {
         <Field label="อีเมล" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
 
-        {error && <p className="text-[14px] text-red-600">{error}</p>}
+        {error && <p className="text-[15px] text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full bg-accent py-3 text-[16px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
+          className="w-full rounded-full bg-accent py-3 text-[17px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
         >
           {busy ? "กำลังสมัคร..." : "สมัครสมาชิก"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[14px] text-sub">
+      <p className="mt-6 text-center text-[15px] text-sub">
         มีบัญชีอยู่แล้ว?{" "}
         <Link to="/login" state={location.state} className="text-accent">
           เข้าสู่ระบบ

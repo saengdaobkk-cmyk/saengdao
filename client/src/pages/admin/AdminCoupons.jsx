@@ -12,10 +12,10 @@ export default function AdminCoupons() {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <p className="text-[15px] text-sub">{coupons?.length || 0} โค้ด</p>
+        <p className="text-[16px] text-sub">{coupons?.length || 0} โค้ด</p>
         <button
           onClick={() => setEditing(EMPTY)}
-          className="rounded-full bg-ink px-5 py-2.5 text-[15px] font-medium text-white transition hover:bg-ink/90"
+          className="rounded-full bg-ink px-5 py-2.5 text-[16px] font-medium text-white transition hover:bg-ink/90"
         >
           + เพิ่มโค้ด
         </button>
@@ -28,19 +28,19 @@ export default function AdminCoupons() {
           {coupons.map((c) => (
             <div key={c.id} className="flex items-center gap-4 rounded-2xl border border-line bg-white px-5 py-4">
               <div className="flex-1">
-                <p className="text-[16px] font-semibold tracking-wide text-ink">{c.code}</p>
-                <p className="text-[13px] text-sub">
+                <p className="text-[17px] font-semibold tracking-wide text-ink">{c.code}</p>
+                <p className="text-[14px] text-sub">
                   {c.type === "PERCENT" ? `ลด ${Number(c.value)}%` : `ลด ${formatPrice(c.value)}`}
                   {c.minSubtotal && ` · ขั้นต่ำ ${formatPrice(c.minSubtotal)}`}
                 </p>
               </div>
-              <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${c.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${c.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                 {c.active ? "ใช้งาน" : "ปิด"}
               </span>
-              <button onClick={() => setEditing(c)} className="text-[14px] text-accent">แก้ไข</button>
+              <button onClick={() => setEditing(c)} className="text-[15px] text-accent">แก้ไข</button>
               <button
                 onClick={() => confirm(`ลบโค้ด ${c.code}?`) && del.mutate(c.id)}
-                className="text-[14px] text-sub hover:text-red-600"
+                className="text-[15px] text-sub hover:text-red-600"
               >
                 ลบ
               </button>
@@ -72,14 +72,14 @@ function CouponForm({ coupon, onClose }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-5 text-[18px] font-semibold text-ink">{coupon.id ? "แก้ไขโค้ด" : "เพิ่มโค้ดส่วนลด"}</h3>
+        <h3 className="mb-5 text-[19px] font-semibold text-ink">{coupon.id ? "แก้ไขโค้ด" : "เพิ่มโค้ดส่วนลด"}</h3>
         <form onSubmit={submit} className="space-y-4">
           <F label="โค้ด *">
-            <input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] uppercase outline-none focus:border-ink/30" />
+            <input value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] uppercase outline-none focus:border-ink/30" />
           </F>
           <div className="grid grid-cols-2 gap-4">
             <F label="ประเภท">
-              <select value={form.type} onChange={set("type")} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30">
+              <select value={form.type} onChange={set("type")} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] outline-none focus:border-ink/30">
                 <option value="PERCENT">เปอร์เซ็นต์ (%)</option>
                 <option value="FIXED">จำนวนเงิน (บาท)</option>
               </select>
@@ -93,16 +93,16 @@ function CouponForm({ coupon, onClose }) {
           </F>
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} className="h-4 w-4 accent-accent" />
-            <span className="text-[15px] text-ink">เปิดใช้งาน</span>
+            <span className="text-[16px] text-ink">เปิดใช้งาน</span>
           </label>
 
-          {error && <p className="text-[14px] text-red-600">{error}</p>}
+          {error && <p className="text-[15px] text-red-600">{error}</p>}
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={save.isPending} className="flex-1 rounded-full bg-accent py-2.5 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+            <button type="submit" disabled={save.isPending} className="flex-1 rounded-full bg-accent py-2.5 text-[16px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
               {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
             </button>
-            <button type="button" onClick={onClose} className="rounded-full border border-line px-6 py-2.5 text-[15px] text-ink hover:bg-mist">ยกเลิก</button>
+            <button type="button" onClick={onClose} className="rounded-full border border-line px-6 py-2.5 text-[16px] text-ink hover:bg-mist">ยกเลิก</button>
           </div>
         </form>
       </div>
@@ -112,10 +112,10 @@ function CouponForm({ coupon, onClose }) {
 
 const F = ({ label, children }) => (
   <label className="block">
-    <span className="mb-1.5 block text-[13px] font-medium text-sub">{label}</span>
+    <span className="mb-1.5 block text-[14px] font-medium text-sub">{label}</span>
     {children}
   </label>
 );
 const Inp = (props) => (
-  <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30" />
+  <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />
 );

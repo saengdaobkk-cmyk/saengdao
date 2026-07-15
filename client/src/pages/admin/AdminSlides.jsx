@@ -19,10 +19,10 @@ export default function AdminSlides() {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <p className="text-[15px] text-sub">{slides?.length || 0} สไลด์ · เรียงตามลำดับ order</p>
+        <p className="text-[16px] text-sub">{slides?.length || 0} สไลด์ · เรียงตามลำดับ order</p>
         <button
           onClick={() => setEditing({ ...EMPTY, order: (slides?.length || 0) + 1 })}
-          className="rounded-full bg-ink px-5 py-2.5 text-[15px] font-medium text-white transition hover:bg-ink/90"
+          className="rounded-full bg-ink px-5 py-2.5 text-[16px] font-medium text-white transition hover:bg-ink/90"
         >
           + เพิ่มสไลด์
         </button>
@@ -39,25 +39,25 @@ export default function AdminSlides() {
                 className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cover bg-center text-center"
                 style={{ background: s.image ? undefined : s.bgColor, backgroundImage: s.image ? `url(${s.image})` : undefined }}
               >
-                <span className={`px-1 text-[11px] font-semibold leading-tight ${s.dark ? "text-white" : "text-ink"}`}>
+                <span className={`px-1 text-[12px] font-semibold leading-tight ${s.dark ? "text-white" : "text-ink"}`}>
                   {s.title.split("\n")[0]}
                 </span>
               </div>
 
               <div className="flex-1">
-                <p className="text-[15px] font-medium text-ink">{s.title.replace(/\n/g, " ")}</p>
-                <p className="text-[13px] text-sub">
+                <p className="text-[16px] font-medium text-ink">{s.title.replace(/\n/g, " ")}</p>
+                <p className="text-[14px] text-sub">
                   #{s.order} · {s.eyebrow || "ไม่มี eyebrow"} {s.image ? "· มีรูป" : "· พื้นสี"}
                 </p>
               </div>
 
-              <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${s.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${s.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                 {s.active ? "แสดง" : "ซ่อน"}
               </span>
-              <button onClick={() => setEditing(s)} className="text-[14px] text-accent">แก้ไข</button>
+              <button onClick={() => setEditing(s)} className="text-[15px] text-accent">แก้ไข</button>
               <button
                 onClick={() => confirm("ลบสไลด์นี้?") && del.mutate(s.id)}
-                className="text-[14px] text-sub hover:text-red-600"
+                className="text-[15px] text-sub hover:text-red-600"
               >
                 ลบ
               </button>
@@ -102,7 +102,7 @@ function SlideForm({ slide, onClose }) {
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="mb-5 text-[18px] font-semibold text-ink">{slide.id ? "แก้ไขสไลด์" : "เพิ่มสไลด์"}</h3>
+        <h3 className="mb-5 text-[19px] font-semibold text-ink">{slide.id ? "แก้ไขสไลด์" : "เพิ่มสไลด์"}</h3>
 
         {/* Live preview — สะท้อนตำแหน่งข้อความ */}
         <div
@@ -113,11 +113,11 @@ function SlideForm({ slide, onClose }) {
             <div className="absolute inset-0" style={{ backgroundColor: form.dark ? "#000" : "#fff", opacity: form.overlay / 100 }} />
           )}
           <div className={`relative max-w-[70%] ${form.dark ? "text-white" : "text-ink"}`} style={form.textColor ? { color: form.textColor } : undefined}>
-            {form.eyebrow && <p className="text-[11px] opacity-80">{form.eyebrow}</p>}
+            {form.eyebrow && <p className="text-[12px] opacity-80">{form.eyebrow}</p>}
             <p className="whitespace-pre-line text-lg font-semibold leading-tight">{form.title || "หัวข้อสไลด์"}</p>
             {form.ctaText && (
               <span
-                className="mt-2 inline-block rounded-full bg-accent px-3 py-1 text-[12px] text-white"
+                className="mt-2 inline-block rounded-full bg-accent px-3 py-1 text-[13px] text-white"
                 style={{ backgroundColor: form.buttonColor || undefined, color: form.buttonTextColor || undefined }}
               >
                 {form.ctaText}
@@ -132,7 +132,7 @@ function SlideForm({ slide, onClose }) {
             <F label="ปุ่ม (CTA)"><Inp value={form.ctaText} onChange={set("ctaText")} /></F>
           </div>
           <F label="หัวข้อใหญ่ * (Enter ขึ้นบรรทัดใหม่)">
-            <textarea value={form.title} onChange={set("title")} rows={2} className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30" />
+            <textarea value={form.title} onChange={set("title")} rows={2} className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[16px] outline-none focus:border-ink/30" />
           </F>
           <F label="คำอธิบาย"><Inp value={form.subtitle} onChange={set("subtitle")} /></F>
 
@@ -140,12 +140,12 @@ function SlideForm({ slide, onClose }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <F label="รูปพื้นหลัง — แนะนำ 1920×1080 (16:9), < 500KB">
               <div className="flex gap-2">
-                <label className="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[14px] text-sub hover:text-ink">
+                <label className="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[15px] text-sub hover:text-ink">
                   {uploading ? "กำลังอัปโหลด..." : form.image ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
                   <input type="file" accept="image/*" onChange={onFile} className="hidden" />
                 </label>
                 {form.image && (
-                  <button type="button" onClick={() => setForm((f) => ({ ...f, image: "" }))} className="rounded-xl border border-line px-3 text-[14px] text-sub hover:text-red-600">
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, image: "" }))} className="rounded-xl border border-line px-3 text-[15px] text-sub hover:text-red-600">
                     เอาออก
                   </button>
                 )}
@@ -178,7 +178,7 @@ function SlideForm({ slide, onClose }) {
                 className="w-full accent-accent"
                 disabled={!form.image}
               />
-              <p className="mt-1 text-[12px] text-sub">
+              <p className="mt-1 text-[13px] text-sub">
                 {form.image ? "0% = เห็นรูปชัด · เพิ่มขึ้นเพื่อให้ตัวอักษรอ่านง่าย" : "ใช้เมื่อมีรูปพื้นหลัง"}
               </p>
             </F>
@@ -201,21 +201,21 @@ function SlideForm({ slide, onClose }) {
           <div className="flex gap-6">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.dark} onChange={(e) => setForm((f) => ({ ...f, dark: e.target.checked }))} className="h-4 w-4 accent-accent" />
-              <span className="text-[15px] text-ink">ตัวหนังสือสีขาว (พื้นเข้ม)</span>
+              <span className="text-[16px] text-ink">ตัวหนังสือสีขาว (พื้นเข้ม)</span>
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} className="h-4 w-4 accent-accent" />
-              <span className="text-[15px] text-ink">แสดงสไลด์นี้</span>
+              <span className="text-[16px] text-ink">แสดงสไลด์นี้</span>
             </label>
           </div>
 
-          {error && <p className="text-[14px] text-red-600">{error}</p>}
+          {error && <p className="text-[15px] text-red-600">{error}</p>}
 
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={save.isPending} className="flex-1 rounded-full bg-accent py-2.5 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+            <button type="submit" disabled={save.isPending} className="flex-1 rounded-full bg-accent py-2.5 text-[16px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
               {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
             </button>
-            <button type="button" onClick={onClose} className="rounded-full border border-line px-6 py-2.5 text-[15px] text-ink hover:bg-mist">ยกเลิก</button>
+            <button type="button" onClick={onClose} className="rounded-full border border-line px-6 py-2.5 text-[16px] text-ink hover:bg-mist">ยกเลิก</button>
           </div>
         </form>
       </div>
@@ -255,10 +255,10 @@ function PositionPicker({ align, valign, onChange }) {
 function ColorField({ label, value, fallback, onChange }) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-center justify-between text-[13px] font-medium text-sub">
+      <span className="mb-1.5 flex items-center justify-between text-[14px] font-medium text-sub">
         {label}
         {value && (
-          <button type="button" onClick={() => onChange("")} className="text-[12px] text-accent">
+          <button type="button" onClick={() => onChange("")} className="text-[13px] text-accent">
             รีเซ็ต
           </button>
         )}
@@ -274,7 +274,7 @@ function ColorField({ label, value, fallback, onChange }) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="ค่าเริ่มต้น"
-          className="w-full rounded-xl border border-line px-3 py-2 text-[13px] text-ink outline-none focus:border-ink/30"
+          className="w-full rounded-xl border border-line px-3 py-2 text-[14px] text-ink outline-none focus:border-ink/30"
         />
       </div>
     </label>
@@ -283,10 +283,10 @@ function ColorField({ label, value, fallback, onChange }) {
 
 const F = ({ label, children }) => (
   <label className="block">
-    <span className="mb-1.5 block text-[13px] font-medium text-sub">{label}</span>
+    <span className="mb-1.5 block text-[14px] font-medium text-sub">{label}</span>
     {children}
   </label>
 );
 const Inp = (props) => (
-  <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30" />
+  <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />
 );

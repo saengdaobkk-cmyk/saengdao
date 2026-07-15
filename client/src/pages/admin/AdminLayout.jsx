@@ -71,8 +71,8 @@ export default function AdminLayout() {
         }`}
       >
         <div className="flex h-14 items-center gap-2 border-b border-line px-5">
-          <span className="text-[16px] font-semibold tracking-[0.18em]">SAENGDAO</span>
-          <span className="rounded bg-ink px-1.5 py-0.5 text-[11px] font-medium tracking-wide text-white">{isAdmin ? "ADMIN" : "STAFF"}</span>
+          <span className="text-[17px] font-semibold tracking-[0.18em]">SAENGDAO</span>
+          <span className="rounded bg-ink px-1.5 py-0.5 text-[12px] font-medium tracking-wide text-white">{isAdmin ? "ADMIN" : "STAFF"}</span>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -85,7 +85,7 @@ export default function AdminLayout() {
           {isAdmin && <SideLink item={settingsItem} onClick={() => setOpen(false)} />}
           <Link
             to="/"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-sub transition hover:bg-mist hover:text-ink"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[16px] text-sub transition hover:bg-mist hover:text-ink"
           >
             <StoreIcon />
             ดูหน้าร้าน
@@ -107,7 +107,7 @@ export default function AdminLayout() {
               <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
             </svg>
           </button>
-          <h1 className="text-[17px] font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="text-[18px] font-semibold tracking-tight text-ink">{title}</h1>
         </header>
 
         <main className="w-full px-5 py-8 sm:px-8">
@@ -128,7 +128,7 @@ function SideLink({ item, onClick }) {
       end={item.end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition ${
+        `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[16px] transition ${
           isActive ? "bg-ink text-white" : "text-sub hover:bg-mist hover:text-ink"
         }`
       }
@@ -136,7 +136,7 @@ function SideLink({ item, onClick }) {
       <Icon />
       <span className="flex-1">{item.label}</span>
       {count > 0 && (
-        <span className="rounded-full bg-amber-500 px-1.5 text-[12px] font-semibold text-white">{count}</span>
+        <span className="rounded-full bg-amber-500 px-1.5 text-[13px] font-semibold text-white">{count}</span>
       )}
     </NavLink>
   );
@@ -146,12 +146,12 @@ function AccountBox() {
   const { user, logout } = useAuth();
   return (
     <div className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-[14px] font-medium text-ink">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-[15px] font-medium text-ink">
         {(user.name || user.email)[0].toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium text-ink">{user.name || "ผู้ดูแล"}</p>
-        <button onClick={logout} className="text-[12px] text-sub hover:text-red-600">ออกจากระบบ</button>
+        <p className="truncate text-[14px] font-medium text-ink">{user.name || "ผู้ดูแล"}</p>
+        <button onClick={logout} className="text-[13px] text-sub hover:text-red-600">ออกจากระบบ</button>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export default function Login() {
   return (
     <AuthShell title="เข้าสู่ระบบ" subtitle="ยินดีต้อนรับกลับสู่ SAENGDAO">
       {location.state?.from === "/checkout" && (
-        <p className="mb-5 rounded-xl bg-mist px-4 py-3 text-center text-[14px] text-ink">
+        <p className="mb-5 rounded-xl bg-mist px-4 py-3 text-center text-[15px] text-ink">
           กรุณาเข้าสู่ระบบเพื่อดำเนินการสั่งซื้อ
         </p>
       )}
@@ -39,18 +39,18 @@ export default function Login() {
         <Field label="อีเมล" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="current-password" />
 
-        {error && <p className="text-[14px] text-red-600">{error}</p>}
+        {error && <p className="text-[15px] text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full bg-accent py-3 text-[16px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
+          className="w-full rounded-full bg-accent py-3 text-[17px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
         >
           {busy ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[14px] text-sub">
+      <p className="mt-6 text-center text-[15px] text-sub">
         ยังไม่มีบัญชี?{" "}
         <Link to="/register" state={location.state} className="text-accent">
           สมัครสมาชิก
@@ -65,7 +65,7 @@ export function AuthShell({ title, subtitle, children }) {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-5 py-16">
       <h1 className="text-center text-3xl font-semibold tracking-tightest text-ink">{title}</h1>
-      {subtitle && <p className="mb-8 mt-2 text-center text-[15px] text-sub">{subtitle}</p>}
+      {subtitle && <p className="mb-8 mt-2 text-center text-[16px] text-sub">{subtitle}</p>}
       {children}
     </div>
   );
@@ -85,7 +85,7 @@ export function Field({ label, type = "text", value, onChange, autoComplete }) {
 
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[14px] font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-[15px] font-medium text-ink">{label}</span>
       <input
         type={type}
         value={value}
@@ -94,11 +94,11 @@ export function Field({ label, type = "text", value, onChange, autoComplete }) {
         onInput={onInput}
         autoComplete={autoComplete}
         required
-        className={`w-full rounded-xl border bg-mist px-4 py-3 text-[16px] text-ink outline-none transition focus:bg-white ${
+        className={`w-full rounded-xl border bg-mist px-4 py-3 text-[17px] text-ink outline-none transition focus:bg-white ${
           error ? "neon-error" : "border-line focus:border-ink/30"
         }`}
       />
-      {error && <span className="mt-1.5 block text-[13px] text-red-500">{error}</span>}
+      {error && <span className="mt-1.5 block text-[14px] text-red-500">{error}</span>}
     </label>
   );
 }

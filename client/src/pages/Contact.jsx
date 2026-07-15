@@ -25,9 +25,9 @@ export default function Contact() {
 
   return (
     <div className="mx-auto max-w-page px-5 py-16 sm:py-24">
-      <p className="text-[14px] font-medium tracking-tight text-sub">ติดต่อเรา</p>
+      <p className="text-[15px] font-medium tracking-tight text-sub">ติดต่อเรา</p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tightest text-ink sm:text-5xl">ยินดีให้บริการ</h1>
-      <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-sub">
+      <p className="mt-4 max-w-xl text-[18px] leading-relaxed text-sub">
         มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ
       </p>
 
@@ -40,25 +40,25 @@ export default function Contact() {
           {CONTACT.address && <Info icon="📍" label="ที่อยู่" value={CONTACT.address} />}
           {CONTACT.hours && <Info icon="🕐" label="เวลาทำการ" value={CONTACT.hours} />}
           {!CONTACT.phone && !CONTACT.email && !CONTACT.address && (
-            <p className="text-[15px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
+            <p className="text-[16px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
           )}
         </div>
 
         {/* ฟอร์ม */}
         <div className="rounded-2xl border border-line p-6 sm:p-8">
-          <h2 className="text-[16px] font-semibold text-ink">ส่งข้อความถึงเรา</h2>
+          <h2 className="text-[17px] font-semibold text-ink">ส่งข้อความถึงเรา</h2>
           <form onSubmit={submit} className="mt-4 space-y-4">
             <Field label="ชื่อ" value={form.name} onChange={set("name")} />
             <Field label="อีเมล" type="email" value={form.email} onChange={set("email")} />
             <label className="block">
-              <span className="mb-1.5 block text-[14px] font-medium text-ink">ข้อความ</span>
+              <span className="mb-1.5 block text-[15px] font-medium text-ink">ข้อความ</span>
               <textarea value={form.message} onChange={set("message")} rows={5} required
-                className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />
+                className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[17px] text-ink outline-none focus:border-ink/30" />
             </label>
-            <button type="submit" className="rounded-full bg-accent px-7 py-3 text-[16px] font-medium text-white transition hover:bg-accent/90">
+            <button type="submit" className="rounded-full bg-accent px-7 py-3 text-[17px] font-medium text-white transition hover:bg-accent/90">
               ส่งข้อความ
             </button>
-            {sent && <p className="text-[14px] text-emerald-600">กำลังเปิดแอปอีเมลให้คุณส่ง…</p>}
+            {sent && <p className="text-[15px] text-emerald-600">กำลังเปิดแอปอีเมลให้คุณส่ง…</p>}
           </form>
         </div>
       </div>
@@ -71,8 +71,8 @@ function Info({ icon, label, value, href }) {
     <>
       <span className="text-xl">{icon}</span>
       <span>
-        <span className="block text-[13px] text-sub">{label}</span>
-        <span className="text-[16px] text-ink">{value}</span>
+        <span className="block text-[14px] text-sub">{label}</span>
+        <span className="text-[17px] text-ink">{value}</span>
       </span>
     </>
   );
@@ -86,9 +86,9 @@ function Info({ icon, label, value, href }) {
 function Field({ label, type = "text", value, onChange }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[14px] font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-[15px] font-medium text-ink">{label}</span>
       <input type={type} value={value} onChange={onChange} required
-        className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30" />
+        className="w-full rounded-xl border border-line px-4 py-2.5 text-[17px] text-ink outline-none focus:border-ink/30" />
     </label>
   );
 }

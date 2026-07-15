@@ -48,7 +48,7 @@ export default function OrderConfirm() {
     return (
       <div className="py-24 text-center">
         <p className="text-sub">ไม่พบคำสั่งซื้อ</p>
-        <Link to="/" className="mt-4 inline-block text-[15px] text-accent">
+        <Link to="/" className="mt-4 inline-block text-[16px] text-accent">
           กลับหน้าแรก
         </Link>
       </div>
@@ -64,7 +64,7 @@ export default function OrderConfirm() {
           </svg>
         </div>
         <h1 className="mt-5 text-2xl font-semibold tracking-tightest text-ink">รับคำสั่งซื้อแล้ว</h1>
-        <p className="mt-2 text-[15px] text-sub">
+        <p className="mt-2 text-[16px] text-sub">
           ขอบคุณที่สั่งซื้อกับ SAENGDAO · เลขคำสั่งซื้อ #{order.id.slice(0, 8).toUpperCase()}
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function OrderConfirm() {
       <div className="mt-10 rounded-2xl border border-line p-6">
         <ul className="space-y-3">
           {order.items.map((it) => (
-            <li key={it.id} className="flex justify-between gap-3 text-[15px]">
+            <li key={it.id} className="flex justify-between gap-3 text-[16px]">
               <span className="text-ink">
                 {it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span>
               </span>
@@ -83,7 +83,7 @@ export default function OrderConfirm() {
         </ul>
 
         {(Number(order.discount) > 0 || Number(order.shippingFee) > 0) && (
-          <div className="mt-5 space-y-2 border-t border-line pt-5 text-[15px]">
+          <div className="mt-5 space-y-2 border-t border-line pt-5 text-[16px]">
             {Number(order.discount) > 0 && (
               <div className="flex justify-between">
                 <span className="text-sub">ส่วนลด {order.discountCode && `(${order.discountCode})`}</span>
@@ -99,12 +99,12 @@ export default function OrderConfirm() {
           </div>
         )}
 
-        <div className={`flex justify-between text-[17px] font-semibold text-ink ${Number(order.discount) > 0 || Number(order.shippingFee) > 0 ? "mt-3" : "mt-5 border-t border-line pt-5"}`}>
+        <div className={`flex justify-between text-[18px] font-semibold text-ink ${Number(order.discount) > 0 || Number(order.shippingFee) > 0 ? "mt-3" : "mt-5 border-t border-line pt-5"}`}>
           <span>ยอดรวม</span>
           <span>{formatPrice(order.total)}</span>
         </div>
 
-        <dl className="mt-6 space-y-1.5 text-[14px]">
+        <dl className="mt-6 space-y-1.5 text-[15px]">
           <Row label="วิธีชำระเงิน" value={PAYMENT_LABEL[order.paymentMethod] || order.paymentMethod} />
           {order.shippingMethod && <Row label="วิธีจัดส่ง" value={order.shippingMethod} />}
           <Row label="สถานะ" value={displayStatus(order)} />
@@ -116,8 +116,8 @@ export default function OrderConfirm() {
 
         {order.needReceipt && (
           <div className="mt-6 border-t border-line pt-5">
-            <p className="mb-2 text-[14px] font-semibold text-ink">ใบเสร็จรับเงิน</p>
-            <dl className="space-y-1.5 text-[14px]">
+            <p className="mb-2 text-[15px] font-semibold text-ink">ใบเสร็จรับเงิน</p>
+            <dl className="space-y-1.5 text-[15px]">
               <Row label="ในนาม" value={order.receiptName} />
               {order.receiptTaxId && <Row label="เลขผู้เสียภาษี" value={order.receiptTaxId} />}
               <Row label="ที่อยู่" value={order.receiptAddress} />
@@ -134,7 +134,7 @@ export default function OrderConfirm() {
 
       <Link
         to="/"
-        className="mt-8 block rounded-full border border-line py-3 text-center text-[16px] font-medium text-ink transition hover:bg-mist"
+        className="mt-8 block rounded-full border border-line py-3 text-center text-[17px] font-medium text-ink transition hover:bg-mist"
       >
         เลือกซื้อต่อ
       </Link>
@@ -163,17 +163,17 @@ export function TrackingCard({ order }) {
   return (
     <div className="mt-8 rounded-2xl border border-line p-6">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-[16px] font-semibold text-ink">ติดตามพัสดุ</h3>
+        <h3 className="text-[17px] font-semibold text-ink">ติดตามพัสดุ</h3>
         <a
           href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
           target="_blank"
           rel="noreferrer"
-          className="text-[14px] text-accent"
+          className="text-[15px] text-accent"
         >
           ไปรษณีย์ไทย ↗
         </a>
       </div>
-      <p className="mt-1 font-mono text-[14px] text-sub">{order.trackingNumber}</p>
+      <p className="mt-1 font-mono text-[15px] text-sub">{order.trackingNumber}</p>
 
       {order.trackingStatus ? (
         history.length > 0 ? (
@@ -182,17 +182,17 @@ export function TrackingCard({ order }) {
               <li key={i} className="flex gap-3">
                 <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${i === 0 ? "bg-emerald-500" : "bg-line"}`} />
                 <div>
-                  <p className={`text-[14px] ${i === 0 ? "font-medium text-ink" : "text-sub"}`}>{h.status}</p>
-                  <p className="text-[13px] text-sub">{fmt(h.date)}{h.location && ` · ${h.location}`}</p>
+                  <p className={`text-[15px] ${i === 0 ? "font-medium text-ink" : "text-sub"}`}>{h.status}</p>
+                  <p className="text-[14px] text-sub">{fmt(h.date)}{h.location && ` · ${h.location}`}</p>
                 </div>
               </li>
             ))}
           </ol>
         ) : (
-          <p className="mt-3 text-[14px] text-ink">{order.trackingStatus}</p>
+          <p className="mt-3 text-[15px] text-ink">{order.trackingStatus}</p>
         )
       ) : (
-        <p className="mt-3 text-[14px] text-sub">ยังไม่มีข้อมูลสถานะ — ระบบจะอัปเดตให้อัตโนมัติ</p>
+        <p className="mt-3 text-[15px] text-sub">ยังไม่มีข้อมูลสถานะ — ระบบจะอัปเดตให้อัตโนมัติ</p>
       )}
     </div>
   );

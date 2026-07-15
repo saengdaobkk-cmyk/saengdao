@@ -34,7 +34,7 @@ export default function AdminContent() {
           <button
             key={s.key}
             onClick={() => setActive(idx)}
-            className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-left text-[15px] transition ${
+            className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-left text-[16px] transition ${
               idx === active ? "bg-ink text-white" : "text-sub hover:bg-mist hover:text-ink"
             }`}
           >
@@ -46,8 +46,8 @@ export default function AdminContent() {
       {/* ข้อความในหมวดนั้น */}
       <div className="rounded-2xl border border-line bg-white p-6">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-[16px] font-semibold text-ink">{section.label}</h2>
-          <p className="text-[13px] text-sub">{section.items.length} ข้อความ</p>
+          <h2 className="text-[17px] font-semibold text-ink">{section.label}</h2>
+          <p className="text-[14px] text-sub">{section.items.length} ข้อความ</p>
         </div>
 
         <div className="space-y-5">
@@ -56,22 +56,22 @@ export default function AdminContent() {
             const long = v.length > 45;
             return (
               <label key={item.key} className="block">
-                <span className="mb-1.5 block text-[14px] font-medium text-ink">{item.label}</span>
+                <span className="mb-1.5 block text-[15px] font-medium text-ink">{item.label}</span>
                 {long ? (
                   <textarea
                     value={v}
                     onChange={(e) => setValue(item.key, e.target.value)}
                     rows={2}
-                    className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30"
+                    className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30"
                   />
                 ) : (
                   <input
                     value={v}
                     onChange={(e) => setValue(item.key, e.target.value)}
-                    className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none focus:border-ink/30"
+                    className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none focus:border-ink/30"
                   />
                 )}
-                <span className="mt-1 block text-[12px] text-sub/70">{item.key}</span>
+                <span className="mt-1 block text-[13px] text-sub/70">{item.key}</span>
               </label>
             );
           })}
@@ -81,11 +81,11 @@ export default function AdminContent() {
           <button
             onClick={saveSection}
             disabled={save.isPending}
-            className="rounded-full bg-accent px-6 py-2.5 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50"
+            className="rounded-full bg-accent px-6 py-2.5 text-[16px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50"
           >
             {save.isPending ? "กำลังบันทึก..." : "บันทึกหมวดนี้"}
           </button>
-          {savedFor === section.key && <span className="text-[14px] text-emerald-600">บันทึกแล้ว — หน้าร้านอัปเดตทันที</span>}
+          {savedFor === section.key && <span className="text-[15px] text-emerald-600">บันทึกแล้ว — หน้าร้านอัปเดตทันที</span>}
         </div>
       </div>
     </div>
