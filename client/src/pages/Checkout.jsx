@@ -309,7 +309,7 @@ export default function Checkout() {
                     type="button"
                     onClick={applyCoupon}
                     disabled={couponBusy || !codeInput.trim()}
-                    className="rounded-full bg-ink px-5 py-2 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
+                    className="shrink-0 whitespace-nowrap rounded-full bg-ink px-5 py-2 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
                   >
                     {t("checkout.apply_code", "ใช้โค้ด")}
                   </button>
