@@ -7,7 +7,7 @@ import { computeDiscount } from "../lib/coupon.js";
 import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
-import { updateOrderTracking, looksDelivered } from "../lib/thaipost.js";
+import { updateOrderTracking, looksDelivered, isThaiPostMethod } from "../lib/thaipost.js";
 
 const router = Router();
 
@@ -38,6 +38,9 @@ async function maybeRefreshTracking(order) {
     order.status = "COMPLETED";
     await prisma.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } }).catch(() => {});
   }
+
+  // ดึงสถานะจาก API เฉพาะขนส่งไปรษณีย์ไทย (ช่องทางอื่นไม่มี API — ใช้สถานะออเดอร์ที่ admin ตั้งเอง)
+  if (!isThaiPostMethod(order.shippingMethod)) return order;
 
   const last = order.trackingUpdatedAt ? new Date(order.trackingUpdatedAt).getTime() : 0;
   if (Date.now() - last < 30 * 60 * 1000) return order;

@@ -14,6 +14,11 @@ export function looksDelivered(statusText) {
   return /นำจ่ายสำเร็จ|จ่ายสำเร็จ|delivered/i.test(statusText || "");
 }
 
+// ช่องทางจัดส่งเป็นไปรษณีย์ไทยหรือไม่ (รองรับติดตามอัตโนมัติผ่าน API)
+export function isThaiPostMethod(name) {
+  return /ไปรษณีย์|thailand\s*post/i.test(name || "");
+}
+
 // แปลงวันที่จากไปรษณีย์ไทย → ISO string
 // รูปแบบไทย "DD/MM/YYYY HH:mm:ss+07:00" (ปี พ.ศ.) — new Date() แปลงตรงๆ ไม่ได้
 function toIso(s) {

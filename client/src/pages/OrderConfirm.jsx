@@ -233,6 +233,7 @@ function Row({ label, value }) {
 export function TrackingCard({ order }) {
   const [showAll, setShowAll] = useState(false);
   if (!order.trackingNumber) return null;
+  const isTP = /ไปรษณีย์|thailand\s*post/i.test(order.shippingMethod || "");
   const history = Array.isArray(order.trackingHistory) ? order.trackingHistory : [];
   const timeline = [...history].reverse(); // ล่าสุดอยู่บน
   const latestLoc = timeline[0]?.location || "";
@@ -245,18 +246,24 @@ export function TrackingCard({ order }) {
     <div className="mt-8 rounded-2xl border border-line p-6">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[18px] font-semibold text-ink">ติดตามพัสดุ</h3>
-        <a
-          href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[16px] text-accent"
-        >
-          ไปรษณีย์ไทย ↗
-        </a>
+        {isTP && (
+          <a
+            href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[16px] text-accent"
+          >
+            ไปรษณีย์ไทย ↗
+          </a>
+        )}
       </div>
-      <p className="mt-1 font-mono text-[16px] text-sub">{order.trackingNumber}</p>
+      <p className="mt-1 font-mono text-[16px] text-sub">
+        {order.trackingNumber}{order.shippingMethod && !isTP && ` · ${order.shippingMethod}`}
+      </p>
 
-      {order.trackingStatus ? (
+      {!isTP ? (
+        <p className="mt-3 text-[16px] text-sub">ร้านจัดส่งพัสดุแล้ว — ตรวจสอบสถานะได้จากเลขพัสดุด้านบนกับผู้ให้บริการขนส่ง</p>
+      ) : order.trackingStatus ? (
         <>
           {/* สถานะล่าสุด */}
           <div className="mt-4 flex gap-3">

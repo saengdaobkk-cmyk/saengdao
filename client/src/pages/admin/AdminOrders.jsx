@@ -254,6 +254,7 @@ function TrackingBlock({ order }) {
 
   const history = Array.isArray(order.trackingHistory) ? order.trackingHistory : [];
   const dirty = num.trim() !== (order.trackingNumber || "");
+  const isTP = /ไปรษณีย์|thailand\s*post/i.test(order.shippingMethod || "");
 
   const saveNum = () => {
     setMsg(null);
@@ -279,12 +280,12 @@ function TrackingBlock({ order }) {
   };
 
   return (
-    <Block title="ติดตามพัสดุ (ไปรษณีย์ไทย)">
+    <Block title={`ติดตามพัสดุ${order.shippingMethod ? ` · ${order.shippingMethod}` : ""}`}>
       <div className="flex flex-wrap items-center gap-2">
         <input
           value={num}
           onChange={(e) => setNum(e.target.value.toUpperCase())}
-          placeholder="เลขพัสดุ เช่น EF667142218TH"
+          placeholder={isTP ? "เลขพัสดุ เช่น EF667142218TH" : "เลขพัสดุ (ถ้ามี)"}
           className="min-w-52 flex-1 rounded-lg border border-line px-3 py-2 text-[16px] uppercase outline-none focus:border-ink/30"
         />
         <button
@@ -294,17 +295,25 @@ function TrackingBlock({ order }) {
         >
           บันทึกเลข
         </button>
-        <button
-          onClick={refresh}
-          disabled={busy || !order.trackingNumber || dirty}
-          title={dirty ? "บันทึกเลขพัสดุก่อน" : ""}
-          className="rounded-full border border-line px-4 py-2 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-40"
-        >
-          {busy ? "กำลังดึง..." : "อัปเดตสถานะ"}
-        </button>
+        {isTP && (
+          <button
+            onClick={refresh}
+            disabled={busy || !order.trackingNumber || dirty}
+            title={dirty ? "บันทึกเลขพัสดุก่อน" : ""}
+            className="rounded-full border border-line px-4 py-2 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-40"
+          >
+            {busy ? "กำลังดึง..." : "อัปเดตสถานะ"}
+          </button>
+        )}
       </div>
 
-      {order.trackingStatus && (
+      {!isTP && (
+        <p className="mt-2 text-[15px] text-sub">
+          ช่องทางนี้ไม่รองรับติดตามสถานะอัตโนมัติ — เมื่อจัดส่ง/ส่งถึงแล้ว เปลี่ยน “สถานะคำสั่งซื้อ” ด้านบนเอง (เป็น จัดส่งแล้ว → สำเร็จ)
+        </p>
+      )}
+
+      {isTP && order.trackingStatus && (
         <div className="mt-3 rounded-xl bg-mist px-3 py-2.5 text-[16px]">
           <p className="font-medium text-ink">{order.trackingStatus}</p>
           <p className="text-[15px] text-sub">
@@ -330,7 +339,7 @@ function TrackingBlock({ order }) {
       )}
 
       {msg && <p className={`mt-2 text-[15px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
-      {order.trackingNumber && (
+      {isTP && order.trackingNumber && (
         <a
           href={`https://track.thailandpost.co.th/?trackNumber=${order.trackingNumber}`}
           target="_blank"
