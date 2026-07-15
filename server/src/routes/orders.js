@@ -7,7 +7,7 @@ import { computeDiscount } from "../lib/coupon.js";
 import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
-import { updateOrderTracking } from "../lib/thaipost.js";
+import { updateOrderTracking, looksDelivered } from "../lib/thaipost.js";
 
 const router = Router();
 
@@ -32,6 +32,13 @@ async function findByCodePhone(code, phone) {
 // อัปเดตฟิลด์ tracking บน object ที่ส่งมา (ยังคง items ไว้)
 async function maybeRefreshTracking(order) {
   if (!order?.trackingNumber) return order;
+
+  // reconcile: พัสดุนำจ่ายสำเร็จแล้ว แต่ออเดอร์ยังไม่ปิด → ปิดเป็น "สำเร็จ" ทันที (ไม่ต้องยิง API)
+  if (looksDelivered(order.trackingStatus) && order.status !== "COMPLETED" && order.status !== "CANCELLED") {
+    order.status = "COMPLETED";
+    await prisma.order.update({ where: { id: order.id }, data: { status: "COMPLETED" } }).catch(() => {});
+  }
+
   const last = order.trackingUpdatedAt ? new Date(order.trackingUpdatedAt).getTime() : 0;
   if (Date.now() - last < 30 * 60 * 1000) return order;
   const r = await updateOrderTracking(order.id).catch(() => null);

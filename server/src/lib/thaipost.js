@@ -9,6 +9,11 @@ export const TPK = {
 const AUTH_URL = "https://trackapi.thailandpost.co.th/post/api/v1/authenticate/token";
 const TRACK_URL = "https://trackapi.thailandpost.co.th/post/api/v1/track";
 
+// คำอธิบายสถานะบอกว่า "นำจ่ายสำเร็จ" หรือไม่ (ใช้ reconcile ปิดออเดอร์)
+export function looksDelivered(statusText) {
+  return /นำจ่ายสำเร็จ|จ่ายสำเร็จ|delivered/i.test(statusText || "");
+}
+
 // แปลงวันที่จากไปรษณีย์ไทย → ISO string
 // รูปแบบไทย "DD/MM/YYYY HH:mm:ss+07:00" (ปี พ.ศ.) — new Date() แปลงตรงๆ ไม่ได้
 function toIso(s) {
@@ -122,7 +127,7 @@ export async function trackBarcode(barcode, apikeyOverride) {
     const last = items[items.length - 1];
     // นำจ่ายสำเร็จ = status code 501 หรือคำอธิบายบอกว่าจ่ายสำเร็จ
     const isDelivered = (it) =>
-      String(it.status) === "501" || /นำจ่ายสำเร็จ|จ่ายสำเร็จ|delivered/i.test(it.status_description || "");
+      String(it.status) === "501" || looksDelivered(it.status_description);
     return {
       ok: true,
       delivered: items.some(isDelivered),
