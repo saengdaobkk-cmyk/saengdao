@@ -134,7 +134,7 @@ export default function Checkout() {
         <div className="space-y-10">
           {/* ที่อยู่จัดส่ง */}
           <section>
-            <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.shipping_heading", "ที่อยู่จัดส่ง")}</h2>
+            <h2 className="mb-4 text-[16px] font-semibold text-ink">{t("checkout.shipping_heading", "ที่อยู่จัดส่ง")}</h2>
             <div className="space-y-4">
               <Input label={t("checkout.field_name", "ชื่อผู้รับ")} value={form.shipName} onChange={set("shipName")} />
               <div className="grid gap-4 sm:grid-cols-2">
@@ -148,7 +148,7 @@ export default function Checkout() {
           {/* ช่องทางจัดส่ง */}
           {shippingMethods.length > 0 && (
             <section>
-              <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.shipping_method_heading", "ช่องทางจัดส่ง")}</h2>
+              <h2 className="mb-4 text-[16px] font-semibold text-ink">{t("checkout.shipping_method_heading", "ช่องทางจัดส่ง")}</h2>
               <div className="space-y-3">
                 {shippingMethods.map((m) => (
                   <label
@@ -166,10 +166,10 @@ export default function Checkout() {
                       className="mt-1 accent-accent"
                     />
                     <div className="flex-1">
-                      <p className="text-[14px] font-medium text-ink">{m.name}</p>
-                      {m.note && <p className="text-[12px] text-sub">{m.note}</p>}
+                      <p className="text-[15px] font-medium text-ink">{m.name}</p>
+                      {m.note && <p className="text-[13px] text-sub">{m.note}</p>}
                     </div>
-                    <span className="text-[14px] font-semibold text-ink">
+                    <span className="text-[15px] font-semibold text-ink">
                       {Number(m.fee) === 0 ? <span className="text-emerald-600">ฟรี</span> : formatPrice(m.fee)}
                     </span>
                   </label>
@@ -187,7 +187,7 @@ export default function Checkout() {
                 onChange={(e) => setNeedReceipt(e.target.checked)}
                 className="h-4 w-4 accent-accent"
               />
-              <span className="text-[15px] font-semibold text-ink">{t("checkout.receipt_toggle", "ออกใบเสร็จรับเงิน / ใบกำกับภาษี")}</span>
+              <span className="text-[16px] font-semibold text-ink">{t("checkout.receipt_toggle", "ออกใบเสร็จรับเงิน / ใบกำกับภาษี")}</span>
             </label>
 
             {needReceipt && (
@@ -228,7 +228,7 @@ export default function Checkout() {
 
           {/* วิธีชำระเงิน */}
           <section>
-            <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.payment_heading", "วิธีชำระเงิน")}</h2>
+            <h2 className="mb-4 text-[16px] font-semibold text-ink">{t("checkout.payment_heading", "วิธีชำระเงิน")}</h2>
             <div className="space-y-3">
               {PAYMENTS.map((p) => (
                 <label
@@ -246,34 +246,34 @@ export default function Checkout() {
                     className="mt-1 accent-accent"
                   />
                   <div>
-                    <p className="text-[14px] font-medium text-ink">{p.label}</p>
-                    <p className="text-[12px] text-sub">{p.desc}</p>
+                    <p className="text-[15px] font-medium text-ink">{p.label}</p>
+                    <p className="text-[13px] text-sub">{p.desc}</p>
                   </div>
                 </label>
               ))}
             </div>
-            <p className="mt-3 text-[12px] text-sub">
+            <p className="mt-3 text-[13px] text-sub">
               {t("checkout.payment_note", "* ขั้นตอนชำระเงินจริง (QR / สลิป / บัตร) จะเปิดใช้งานใน Phase 5")}
             </p>
           </section>
 
           {/* หมายเหตุ */}
           <section>
-            <h2 className="mb-3 text-[15px] font-semibold text-ink">{t("checkout.note_heading", "หมายเหตุถึงร้าน")}</h2>
+            <h2 className="mb-3 text-[16px] font-semibold text-ink">{t("checkout.note_heading", "หมายเหตุถึงร้าน")}</h2>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder={t("checkout.note_placeholder", "ระบุรายละเอียดเพิ่มเติม เช่น เวลาที่สะดวกรับของ (ถ้ามี)")}
-              className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition placeholder:text-sub/70 focus:border-ink/30"
+              className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[16px] text-ink outline-none transition placeholder:text-sub/70 focus:border-ink/30"
             />
           </section>
         </div>
 
         {/* สรุป */}
         <aside className="h-fit rounded-2xl border border-line bg-mist/50 p-6 lg:sticky lg:top-20">
-          <h2 className="text-[15px] font-semibold text-ink">{t("checkout.summary_heading", "คำสั่งซื้อ")}</h2>
-          <ul className="mt-4 space-y-2 text-[13px]">
+          <h2 className="text-[16px] font-semibold text-ink">{t("checkout.summary_heading", "คำสั่งซื้อ")}</h2>
+          <ul className="mt-4 space-y-2 text-[14px]">
             {items.map((i) => (
               <li key={i.key} className="flex justify-between gap-2">
                 <span className="text-sub">
@@ -288,39 +288,39 @@ export default function Checkout() {
           <div className="mt-5 border-t border-line pt-5">
             {coupon ? (
               <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2.5">
-                <span className="text-[13px] font-medium text-emerald-700">
+                <span className="text-[14px] font-medium text-emerald-700">
                   ใช้โค้ด {coupon.code} แล้ว
                 </span>
-                <button type="button" onClick={removeCoupon} className="text-[12px] text-emerald-700">
+                <button type="button" onClick={removeCoupon} className="text-[13px] text-emerald-700">
                   ยกเลิก
                 </button>
               </div>
             ) : (
               <>
-                <p className="mb-2 text-[13px] font-medium text-ink">{t("checkout.discount_label", "โค้ดส่วนลด")}</p>
+                <p className="mb-2 text-[14px] font-medium text-ink">{t("checkout.discount_label", "โค้ดส่วนลด")}</p>
                 <div className="flex gap-2">
                   <input
                     value={codeInput}
                     onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                     placeholder="กรอกโค้ด"
-                    className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-[14px] uppercase text-ink outline-none focus:border-ink/30"
+                    className="flex-1 rounded-full border border-line bg-white px-4 py-2 text-[15px] uppercase text-ink outline-none focus:border-ink/30"
                   />
                   <button
                     type="button"
                     onClick={applyCoupon}
                     disabled={couponBusy || !codeInput.trim()}
-                    className="rounded-full bg-ink px-5 py-2 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
+                    className="rounded-full bg-ink px-5 py-2 text-[15px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
                   >
                     {t("checkout.apply_code", "ใช้โค้ด")}
                   </button>
                 </div>
-                {couponError && <p className="mt-2 text-[12px] text-red-500">{couponError}</p>}
+                {couponError && <p className="mt-2 text-[13px] text-red-500">{couponError}</p>}
               </>
             )}
           </div>
 
           {/* ยอดเงิน */}
-          <div className="mt-5 space-y-2 border-t border-line pt-5 text-[14px]">
+          <div className="mt-5 space-y-2 border-t border-line pt-5 text-[15px]">
             <div className="flex justify-between text-sub">
               <span>{t("checkout.subtotal", "ยอดรวมสินค้า")}</span>
               <span className="text-ink">{formatPrice(subtotal)}</span>
@@ -340,14 +340,14 @@ export default function Checkout() {
               )}
             </div>
           </div>
-          <div className="mt-4 flex justify-between border-t border-line pt-4 text-[16px] font-semibold text-ink">
+          <div className="mt-4 flex justify-between border-t border-line pt-4 text-[17px] font-semibold text-ink">
             <span>{t("checkout.total", "ยอดชำระ")}</span>
             <span>{formatPrice(total)}</span>
           </div>
 
           {error && (
             <div className="mt-4">
-              <p className="text-[13px] text-red-600">{error}</p>
+              <p className="text-[14px] text-red-600">{error}</p>
               {error.includes("ตะกร้า") && (
                 <button
                   type="button"
@@ -355,7 +355,7 @@ export default function Checkout() {
                     clear();
                     navigate("/");
                   }}
-                  className="mt-2 text-[13px] font-medium text-accent"
+                  className="mt-2 text-[14px] font-medium text-accent"
                 >
                   ล้างตะกร้าแล้วเลือกใหม่ →
                 </button>
@@ -366,7 +366,7 @@ export default function Checkout() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-6 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
+            className="mt-6 w-full rounded-full bg-accent py-3 text-[16px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50"
           >
             {busy ? "กำลังสั่งซื้อ..." : t("checkout.submit", "ยืนยันคำสั่งซื้อ")}
           </button>
@@ -394,7 +394,7 @@ function Input({ label, type = "text", value, onChange, required = true, ...rest
   const { error, onInvalid, onInput } = useFieldError();
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-[14px] font-medium text-ink">{label}</span>
       <input
         type={type}
         value={value}
@@ -403,11 +403,11 @@ function Input({ label, type = "text", value, onChange, required = true, ...rest
         onInput={onInput}
         required={required}
         {...rest}
-        className={`w-full rounded-xl border bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition placeholder:text-sub/60 ${
+        className={`w-full rounded-xl border bg-white px-4 py-2.5 text-[16px] text-ink outline-none transition placeholder:text-sub/60 ${
           error ? "neon-error" : "border-line focus:border-ink/30"
         }`}
       />
-      {error && <span className="mt-1.5 block text-[12px] text-red-500">{error}</span>}
+      {error && <span className="mt-1.5 block text-[13px] text-red-500">{error}</span>}
     </label>
   );
 }
@@ -416,7 +416,7 @@ function Textarea({ label, value, onChange, required = true }) {
   const { error, onInvalid, onInput } = useFieldError();
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-[14px] font-medium text-ink">{label}</span>
       <textarea
         value={value}
         onChange={onChange}
@@ -424,11 +424,11 @@ function Textarea({ label, value, onChange, required = true }) {
         onInput={onInput}
         required={required}
         rows={3}
-        className={`w-full resize-none rounded-xl border bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition ${
+        className={`w-full resize-none rounded-xl border bg-white px-4 py-2.5 text-[16px] text-ink outline-none transition ${
           error ? "neon-error" : "border-line focus:border-ink/30"
         }`}
       />
-      {error && <span className="mt-1.5 block text-[12px] text-red-500">{error}</span>}
+      {error && <span className="mt-1.5 block text-[13px] text-red-500">{error}</span>}
     </label>
   );
 }
@@ -437,7 +437,7 @@ function Radio({ name, checked, onChange, label }) {
   return (
     <label className="flex cursor-pointer items-center gap-2">
       <input type="radio" name={name} checked={checked} onChange={onChange} className="accent-accent" />
-      <span className="text-[14px] text-ink">{label}</span>
+      <span className="text-[15px] text-ink">{label}</span>
     </label>
   );
 }

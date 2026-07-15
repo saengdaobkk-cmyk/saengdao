@@ -28,7 +28,7 @@ export default function HotDealSection() {
       <div className="mx-auto max-w-page px-5">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[13px] font-semibold tracking-tight text-rose-500">🔥 ราคาพิเศษ มีเวลาจำกัด</p>
+            <p className="text-[14px] font-semibold tracking-tight text-rose-500">🔥 ราคาพิเศษ มีเวลาจำกัด</p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">Hot Deal</h2>
           </div>
         </div>

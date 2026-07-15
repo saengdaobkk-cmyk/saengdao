@@ -25,7 +25,7 @@ export default function Dashboard() {
               c.accent ? "border-ink bg-ink text-white" : "border-line bg-white"
             }`}
           >
-            <p className={`text-[13px] ${c.accent ? "text-white/70" : "text-sub"}`}>{c.label}</p>
+            <p className={`text-[14px] ${c.accent ? "text-white/70" : "text-sub"}`}>{c.label}</p>
             <p className={`mt-2 text-2xl font-semibold tracking-tight ${c.warn ? "text-amber-600" : ""}`}>
               {c.value}
             </p>
@@ -38,10 +38,10 @@ export default function Dashboard() {
           to="/admin/orders"
           className="mt-6 flex items-center justify-between rounded-2xl bg-amber-50 px-5 py-4 text-amber-800 transition hover:bg-amber-100"
         >
-          <span className="text-[14px] font-medium">
+          <span className="text-[15px] font-medium">
             มี {data.pendingReview} คำสั่งซื้อรอตรวจสลิป
           </span>
-          <span className="text-[13px]">ไปตรวจสอบ →</span>
+          <span className="text-[14px]">ไปตรวจสอบ →</span>
         </Link>
       )}
     </div>

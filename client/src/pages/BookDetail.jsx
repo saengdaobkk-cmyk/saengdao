@@ -92,7 +92,7 @@ export default function BookDetail() {
     return (
       <div className="mx-auto max-w-page px-5 py-32 text-center">
         <p className="mb-4 text-sub">{t("product.not_found", "ไม่พบหนังสือเล่มนี้")}</p>
-        <Link to="/books" className="text-[14px] text-accent">{t("product.back_to_shop", "กลับไปร้านหนังสือ")}</Link>
+        <Link to="/books" className="text-[15px] text-accent">{t("product.back_to_shop", "กลับไปร้านหนังสือ")}</Link>
       </div>
     );
 
@@ -119,7 +119,7 @@ export default function BookDetail() {
   return (
     <div className="mx-auto max-w-page px-5 py-10 sm:py-14">
       {/* breadcrumbs */}
-      <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
+      <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-sub">
         <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
         <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link>
         {book.category && (<><span>›</span><Link to={`/books?category=${book.category.slug}`} className="hover:text-ink">{book.category.name}</Link></>)}
@@ -178,21 +178,21 @@ export default function BookDetail() {
         <div>
           {/* chips */}
           <div className="flex flex-wrap items-center gap-2">
-            {book.publisherLink && <Link to={`/publisher/${book.publisherLink.slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-[12px] text-ink transition hover:border-ink/40"><BuildingIcon />{book.publisherLink.name}</Link>}
-            {book.category && <Link to={`/books?category=${book.category.slug}`} className="rounded-full bg-mist px-3 py-1 text-[12px] text-ink/70 transition hover:bg-line">{book.category.name}</Link>}
-            {(book.tags || []).map((t) => <span key={t} className="rounded-full bg-mist px-2.5 py-1 text-[11px] text-ink/60">{t}</span>)}
+            {book.publisherLink && <Link to={`/publisher/${book.publisherLink.slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-[13px] text-ink transition hover:border-ink/40"><BuildingIcon />{book.publisherLink.name}</Link>}
+            {book.category && <Link to={`/books?category=${book.category.slug}`} className="rounded-full bg-mist px-3 py-1 text-[13px] text-ink/70 transition hover:bg-line">{book.category.name}</Link>}
+            {(book.tags || []).map((t) => <span key={t} className="rounded-full bg-mist px-2.5 py-1 text-[12px] text-ink/60">{t}</span>)}
           </div>
 
           <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
           {book.authorLinks?.length > 0 && (
-            <p className="mt-2 text-[15px] text-sub">
+            <p className="mt-2 text-[16px] text-sub">
               {t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
                 <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
               ))}
             </p>
           )}
           {book.translatorLinks?.length > 0 && (
-            <p className="mt-0.5 text-[14px] text-sub">
+            <p className="mt-0.5 text-[15px] text-sub">
               {t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
                 <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
               ))}
@@ -202,7 +202,7 @@ export default function BookDetail() {
           {/* buybox */}
           <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
             {isHot && (
-              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
+              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[13px] font-semibold text-white">
                 🔥 Hot Deal{book.hotDealEnd ? ` · ถึง ${new Date(book.hotDealEnd).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}` : ""}
               </p>
             )}
@@ -210,12 +210,12 @@ export default function BookDetail() {
               <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
               {showDiscount && (
                 <>
-                  <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
-                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold text-white ${isHot ? "bg-orange-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
+                  <span className="pb-1 text-[17px] text-sub line-through">{formatPrice(showFull)}</span>
+                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[13px] font-semibold text-white ${isHot ? "bg-orange-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
                 </>
               )}
             </div>
-            <p className="mt-1.5 text-[13px]">
+            <p className="mt-1.5 text-[14px]">
               {hasVariants
                 ? variant
                   ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
@@ -226,13 +226,13 @@ export default function BookDetail() {
             {/* variant */}
             {hasVariants && (
               <div className="mt-4">
-                <p className="mb-2 text-[13px] font-medium text-ink">{t("product.options_heading", "ตัวเลือก")} {variantErr && <span className="text-rose-500">· {t("product.select_first", "กรุณาเลือกก่อน")}</span>}</p>
+                <p className="mb-2 text-[14px] font-medium text-ink">{t("product.options_heading", "ตัวเลือก")} {variantErr && <span className="text-rose-500">· {t("product.select_first", "กรุณาเลือกก่อน")}</span>}</p>
                 <div className="flex flex-wrap gap-2">
                   {book.variants.map((v) => {
                     const active = v.id === variantId, out = v.stock <= 0;
                     return (
                       <button key={v.id} disabled={out} onClick={() => { setVariantId(v.id); setVariantErr(false); setQty(1); }}
-                        className={`rounded-xl border px-4 py-2 text-[13px] transition ${active ? "border-ink bg-ink text-white" : "border-line text-ink hover:border-ink/40"} ${out ? "cursor-not-allowed opacity-40" : ""}`}>
+                        className={`rounded-xl border px-4 py-2 text-[14px] transition ${active ? "border-ink bg-ink text-white" : "border-line text-ink hover:border-ink/40"} ${out ? "cursor-not-allowed opacity-40" : ""}`}>
                         {v.name} <span className={active ? "text-white/70" : "text-sub"}>{formatPrice(v.discountPrice ?? v.price)}</span>{out && " · หมด"}
                       </button>
                     );
@@ -244,24 +244,24 @@ export default function BookDetail() {
             {/* qty + ปุ่ม */}
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <div className="flex items-center rounded-full border border-line">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">−</button>
-                <span className="w-10 text-center text-[15px] tabular-nums">{qty}</span>
-                <button onClick={() => setQty((q) => (effStock != null ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">+</button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-[19px] text-ink hover:bg-mist">−</button>
+                <span className="w-10 text-center text-[16px] tabular-nums">{qty}</span>
+                <button onClick={() => setQty((q) => (effStock != null ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[19px] text-ink hover:bg-mist">+</button>
               </div>
               <button disabled={effStock != null && effStock <= 0} onClick={() => addToCart(false)}
-                className="flex-1 rounded-full bg-accent px-8 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40">
+                className="flex-1 rounded-full bg-accent px-8 py-3 text-[16px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40">
                 {t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
               {book.previewPdf && (
                 <button type="button" onClick={() => setFlipOpen(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-line px-8 py-3 text-[15px] font-medium text-ink transition hover:bg-mist active:scale-[0.98] sm:w-auto">
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-line px-8 py-3 text-[16px] font-medium text-ink transition hover:bg-mist active:scale-[0.98] sm:w-auto">
                   <BookOpenIcon /> {t("product.preview", "อ่านตัวอย่าง")}
                 </button>
               )}
             </div>
 
             {/* trust */}
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-[13px] text-sub">
+            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-[14px] text-sub">
               <div className="flex items-center gap-2"><TruckIcon />{t("product.trust_shipping", "จัดส่งฟรีทั่วประเทศ")}</div>
               <div className="flex items-center gap-2"><ShieldCheckIcon />{t("product.trust_authentic", "ของแท้ 100%")}</div>
             </div>
@@ -270,12 +270,12 @@ export default function BookDetail() {
           {/* description */}
           {book.description && (
             <div className="mt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>
-              <p className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen && longDesc ? "line-clamp-[7]" : ""}`}>
+              <h2 className="mb-3 text-[16px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>
+              <p className={`whitespace-pre-line text-[16px] leading-relaxed text-ink/80 ${!descOpen && longDesc ? "line-clamp-[7]" : ""}`}>
                 {book.description}
               </p>
               {longDesc && (
-                <button onClick={() => setDescOpen((o) => !o)} className="mt-2 text-[14px] font-medium text-accent">
+                <button onClick={() => setDescOpen((o) => !o)} className="mt-2 text-[15px] font-medium text-accent">
                   {descOpen ? `${t("product.read_less", "ย่อ")} ▴` : `${t("product.read_more", "อ่านเพิ่ม")} ▾`}
                 </button>
               )}
@@ -285,8 +285,8 @@ export default function BookDetail() {
           {/* specs */}
           {meta.length > 0 && (
             <div className="mt-8 border-t border-line pt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.specs_heading", "ข้อมูลจำเพาะ")}</h2>
-              <dl className="grid gap-x-8 gap-y-2 text-[14px] sm:grid-cols-2">
+              <h2 className="mb-3 text-[16px] font-semibold tracking-tight text-ink">{t("product.specs_heading", "ข้อมูลจำเพาะ")}</h2>
+              <dl className="grid gap-x-8 gap-y-2 text-[15px] sm:grid-cols-2">
                 {meta.map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-line/60 py-1.5">
                     <dt className="text-sub">{k}</dt>
@@ -302,7 +302,7 @@ export default function BookDetail() {
       {/* related */}
       {related?.length > 0 && (
         <section className="mt-20">
-          <p className="text-[13px] font-medium tracking-tight text-sub">{t("product.related_eyebrow", "เล่มใกล้เคียง")}</p>
+          <p className="text-[14px] font-medium tracking-tight text-sub">{t("product.related_eyebrow", "เล่มใกล้เคียง")}</p>
           <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">{t("product.related_heading", "คุณอาจสนใจ")}</h2>
           <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4">
             {related.map((b) => <BookCard key={b.id} book={b} />)}
@@ -343,7 +343,7 @@ export default function BookDetail() {
           />
 
           {allImages.length > 1 && (
-            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-[13px] text-white backdrop-blur">
+            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-[14px] text-white backdrop-blur">
               {lbIndex + 1} / {allImages.length}
             </span>
           )}
