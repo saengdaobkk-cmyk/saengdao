@@ -140,7 +140,7 @@ function SortDropdown({ value, onChange }) {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-[13px] text-ink transition ${open ? "border-ink/40" : "border-line hover:border-ink/25"}`}
+        className={`flex items-center gap-2 rounded-full border bg-white px-4 py-2.5 text-[14.5px] text-ink transition ${open ? "border-ink/40" : "border-line hover:border-ink/25"}`}
       >
         <span className="whitespace-nowrap">{current.label}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -163,7 +163,7 @@ function SortDropdown({ value, onChange }) {
                   role="option"
                   aria-selected={active}
                   onClick={() => { onChange(o.value); setOpen(false); }}
-                  className={`flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-[13px] transition hover:bg-mist ${active ? "font-medium text-ink" : "text-sub"}`}
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[14.5px] transition hover:bg-mist ${active ? "font-medium text-ink" : "text-sub"}`}
                 >
                   {o.label}
                   {active && (
