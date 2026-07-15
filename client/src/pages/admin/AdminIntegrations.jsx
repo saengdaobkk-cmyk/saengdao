@@ -15,14 +15,14 @@ export default function AdminIntegrations() {
 
   return (
     <div className="space-y-6">
-      <p className="text-[15px] text-sub">เชื่อม SAENGDAO กับแอปภายนอกผ่าน API</p>
+      <p className="text-[16px] text-sub">เชื่อม SAENGDAO กับแอปภายนอกผ่าน API</p>
       <ZortCard zort={data.zort} />
       <ThaipostCard thpost={data.thpost} />
 
       {/* ช่องทางอื่นในอนาคต */}
       <div className="rounded-2xl border border-dashed border-line bg-white p-6 text-center">
-        <p className="text-[16px] font-medium text-ink">Shopee · Lazada · LINE Shopping</p>
-        <p className="mt-1 text-[14px] text-sub">เร็วๆ นี้</p>
+        <p className="text-[17px] font-medium text-ink">Shopee · Lazada · LINE Shopping</p>
+        <p className="mt-1 text-[15px] text-sub">เร็วๆ นี้</p>
       </div>
     </div>
   );
@@ -92,13 +92,13 @@ function ZortCard({ zort }) {
     <div className="rounded-2xl border border-line bg-white p-6">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-[15px] font-bold text-white">Z</div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-[16px] font-bold text-white">Z</div>
           <div>
-            <p className="text-[17px] font-semibold text-ink">ZORT</p>
-            <p className="text-[14px] text-sub">ระบบจัดการออเดอร์ & สต็อก</p>
+            <p className="text-[18px] font-semibold text-ink">ZORT</p>
+            <p className="text-[15px] text-sub">ระบบจัดการออเดอร์ & สต็อก</p>
           </div>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${zort.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+        <span className={`rounded-full px-2.5 py-1 text-[14px] font-medium ${zort.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
           {zort.connected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"}
         </span>
       </div>
@@ -116,23 +116,23 @@ function ZortCard({ zort }) {
         />
         <Field label="Base URL" value={form.baseUrl} onChange={set("baseUrl")} placeholder="https://open-api.zortout.com/v4" />
 
-        <label className="flex items-center gap-2 text-[16px] text-ink">
+        <label className="flex items-center gap-2 text-[17px] text-ink">
           <input type="checkbox" checked={form.enabled} onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))} className="h-4 w-4 accent-accent" />
           เปิดใช้งานการเชื่อมต่อ ZORT
         </label>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
-          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[16px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+          <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[17px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
             {testing ? "กำลังทดสอบ..." : "ทดสอบการเชื่อมต่อ"}
           </button>
-          {savedMsg && <span className="text-[15px] text-emerald-600">{savedMsg}</span>}
+          {savedMsg && <span className="text-[16px] text-emerald-600">{savedMsg}</span>}
         </div>
 
         {test && (
-          <p className={`text-[15px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`text-[16px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>
             {test.ok ? `✓ ${test.message}` : `✕ ${test.error}`}
           </p>
         )}
@@ -142,8 +142,8 @@ function ZortCard({ zort }) {
       <div className="mt-5 border-t border-line pt-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[15px] font-medium text-ink">สต็อกจาก ZORT</p>
-            <p className="text-[14px] text-sub">
+            <p className="text-[16px] font-medium text-ink">สต็อกจาก ZORT</p>
+            <p className="text-[15px] text-sub">
               ZORT เป็นคลังหลัก · จับคู่ตาม SKU = ISBN · อัตโนมัติทุก 15 นาที
               {zort.stockSyncedAt && ` · ล่าสุด ${fmtDateTime(zort.stockSyncedAt)}`}
             </p>
@@ -153,15 +153,15 @@ function ZortCard({ zort }) {
             onClick={runSync}
             disabled={syncing || !zort.connected}
             title={!zort.connected ? "เชื่อมต่อ ZORT ให้สำเร็จก่อน" : ""}
-            className="shrink-0 rounded-full border border-line px-4 py-2 text-[15px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+            className="shrink-0 rounded-full border border-line px-4 py-2 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
           >
             {syncing ? "กำลังดึง..." : "ดึงสต็อกตอนนี้"}
           </button>
         </div>
-        {syncMsg && <p className={`mt-2 text-[14px] ${syncMsg.ok ? "text-emerald-600" : "text-red-600"}`}>{syncMsg.text}</p>}
+        {syncMsg && <p className={`mt-2 text-[15px] ${syncMsg.ok ? "text-emerald-600" : "text-red-600"}`}>{syncMsg.text}</p>}
       </div>
 
-      <p className="mt-4 border-t border-line pt-4 text-[14px] text-sub">
+      <p className="mt-4 border-t border-line pt-4 text-[15px] text-sub">
         หา storename / apikey / apisecret ได้ใน ZORT → Settings → API · เมื่ออนุมัติการชำระเงิน ระบบส่งออเดอร์ไป ZORT อัตโนมัติ
       </p>
     </div>
@@ -206,13 +206,13 @@ function ThaipostCard({ thpost }) {
     <div className="rounded-2xl border border-line bg-white p-6">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ED1C24] text-[17px] font-bold text-white">฿</div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ED1C24] text-[18px] font-bold text-white">฿</div>
           <div>
-            <p className="text-[17px] font-semibold text-ink">ไปรษณีย์ไทย</p>
-            <p className="text-[14px] text-sub">ติดตามสถานะพัสดุ (Track &amp; Trace)</p>
+            <p className="text-[18px] font-semibold text-ink">ไปรษณีย์ไทย</p>
+            <p className="text-[15px] text-sub">ติดตามสถานะพัสดุ (Track &amp; Trace)</p>
           </div>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[13px] font-medium ${thpost.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+        <span className={`rounded-full px-2.5 py-1 text-[14px] font-medium ${thpost.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
           {thpost.connected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"}
         </span>
       </div>
@@ -227,29 +227,29 @@ function ThaipostCard({ thpost }) {
           placeholder={thpost.hasKey ? "•••••• (บันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)" : "วาง API key จากไปรษณีย์ไทย"}
         />
 
-        <label className="flex items-center gap-2 text-[16px] text-ink">
+        <label className="flex items-center gap-2 text-[17px] text-ink">
           <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4 accent-accent" />
           เปิดใช้งานการติดตามพัสดุ
         </label>
 
         <div className="flex flex-wrap items-center gap-3 pt-1">
-          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[16px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+          <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[17px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
             {testing ? "กำลังทดสอบ..." : "ทดสอบการเชื่อมต่อ"}
           </button>
-          {savedMsg && <span className="text-[15px] text-emerald-600">{savedMsg}</span>}
+          {savedMsg && <span className="text-[16px] text-emerald-600">{savedMsg}</span>}
         </div>
 
         {test && (
-          <p className={`text-[15px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>
+          <p className={`text-[16px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>
             {test.ok ? `✓ ${test.message}` : `✕ ${test.error}`}
           </p>
         )}
       </form>
 
-      <p className="mt-4 border-t border-line pt-4 text-[14px] text-sub">
+      <p className="mt-4 border-t border-line pt-4 text-[15px] text-sub">
         สมัคร API key ฟรีที่ track.thailandpost.co.th → Track &amp; Trace API · ใส่เลขพัสดุที่ออเดอร์แล้วระบบจะดึงสถานะล่าสุดให้ลูกค้าเห็นเองในหน้าติดตามคำสั่งซื้อ
       </p>
     </div>
@@ -259,14 +259,14 @@ function ThaipostCard({ thpost }) {
 function Field({ label, type = "text", value, onChange, placeholder, autoComplete }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[14px] font-medium text-sub">{label}</span>
+      <span className="mb-1.5 block text-[15px] font-medium text-sub">{label}</span>
       <input
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="w-full rounded-xl border border-line px-4 py-2.5 text-[16px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30"
+        className="w-full rounded-xl border border-line px-4 py-2.5 text-[17px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30"
       />
     </label>
   );

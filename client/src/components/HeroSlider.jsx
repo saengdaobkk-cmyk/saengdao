@@ -65,14 +65,14 @@ export default function HeroSlider() {
                 <div key={i} className="pointer-events-auto w-full max-w-xl animate-fadeUp">
                   {s.eyebrow && (
                     <p
-                      className={`mb-3 text-[15px] font-medium tracking-tight ${s.dark ? "text-white/70" : "text-sub"}`}
+                      className={`mb-3 text-[16px] font-medium tracking-tight ${s.dark ? "text-white/70" : "text-sub"}`}
                       style={s.textColor ? { color: s.textColor, opacity: 0.8 } : undefined}
                     >
                       {s.eyebrow}
                     </p>
                   )}
                   <h1
-                    className={`whitespace-pre-line text-[46px] font-semibold leading-[1.05] tracking-tightest sm:text-6xl ${
+                    className={`whitespace-pre-line text-[47px] font-semibold leading-[1.05] tracking-tightest sm:text-6xl ${
                       s.dark ? "text-white" : "text-ink"
                     }`}
                     style={s.textColor ? { color: s.textColor } : undefined}
@@ -81,7 +81,7 @@ export default function HeroSlider() {
                   </h1>
                   {s.subtitle && (
                     <p
-                      className={`mt-5 text-[17px] leading-relaxed sm:text-lg ${s.dark ? "text-white/75" : "text-sub"}`}
+                      className={`mt-5 text-[18px] leading-relaxed sm:text-lg ${s.dark ? "text-white/75" : "text-sub"}`}
                       style={s.textColor ? { color: s.textColor, opacity: 0.85 } : undefined}
                     >
                       {s.subtitle}
@@ -90,7 +90,7 @@ export default function HeroSlider() {
                   {s.ctaText && (
                     <a
                       href={s.ctaLink || "#catalog"}
-                      className="mt-8 inline-flex items-center rounded-full bg-accent px-6 py-2.5 text-[17px] font-medium text-white transition-transform hover:scale-[1.03] active:scale-95"
+                      className="mt-8 inline-flex items-center rounded-full bg-accent px-6 py-2.5 text-[18px] font-medium text-white transition-transform hover:scale-[1.03] active:scale-95"
                       style={{
                         backgroundColor: s.buttonColor || undefined,
                         color: s.buttonTextColor || undefined,

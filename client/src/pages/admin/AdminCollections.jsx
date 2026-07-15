@@ -21,7 +21,7 @@ export default function AdminCollections() {
       <nav className="mb-6 flex flex-wrap gap-2">
         {subtabs.map((t) => (
           <NavLink key={t.to} to={t.to} end={t.end}
-            className={({ isActive }) => `rounded-full px-4 py-2 text-[15px] transition ${isActive ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"}`}>
+            className={({ isActive }) => `rounded-full px-4 py-2 text-[16px] transition ${isActive ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"}`}>
             {t.label}
           </NavLink>
         ))}
@@ -68,8 +68,8 @@ export function CategoryManager() {
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
       {/* ตาราง */}
       <div className="w-full overflow-x-auto rounded-2xl border border-line bg-white">
-        <table className="w-full text-left text-[16px]">
-          <thead className="border-b border-line bg-mist/40 text-[14px] text-sub">
+        <table className="w-full text-left text-[17px]">
+          <thead className="border-b border-line bg-mist/40 text-[15px] text-sub">
             <tr>
               <th className="px-5 py-3 font-medium">ชื่อหมวดหมู่</th>
               <th className="px-5 py-3 font-medium">Slug</th>
@@ -84,7 +84,7 @@ export function CategoryManager() {
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-16 shrink-0 items-center justify-center overflow-hidden rounded bg-mist">
-                      {c.image ? <img src={c.image} alt="" className="h-full w-full object-cover" /> : <span className="text-[12px] text-sub">ไม่มีรูป</span>}
+                      {c.image ? <img src={c.image} alt="" className="h-full w-full object-cover" /> : <span className="text-[13px] text-sub">ไม่มีรูป</span>}
                     </div>
                     <span className="font-medium text-ink">{c.name}</span>
                   </div>
@@ -93,9 +93,9 @@ export function CategoryManager() {
                 <td className="px-5 py-3 text-sub">{c.bookCount} เล่ม</td>
                 <td className="whitespace-nowrap px-5 py-3">
                   <div className="flex justify-end gap-4">
-                    <Link to={`/books?category=${c.slug}`} target="_blank" className="text-[15px] text-sub hover:text-ink">ดู ↗</Link>
-                    <button onClick={() => { setEditing(c); setForm({ name: c.name, slug: c.slug, image: c.image || "" }); setError(""); }} className="text-[15px] text-accent">แก้ไข</button>
-                    <button onClick={() => confirm(`ลบหมวด "${c.name}"? หนังสือจะกลายเป็นไม่มีหมวด (${c.bookCount} เล่ม)`) && del.mutate(c.id)} className="text-[15px] text-sub hover:text-red-600">ลบ</button>
+                    <Link to={`/books?category=${c.slug}`} target="_blank" className="text-[16px] text-sub hover:text-ink">ดู ↗</Link>
+                    <button onClick={() => { setEditing(c); setForm({ name: c.name, slug: c.slug, image: c.image || "" }); setError(""); }} className="text-[16px] text-accent">แก้ไข</button>
+                    <button onClick={() => confirm(`ลบหมวด "${c.name}"? หนังสือจะกลายเป็นไม่มีหมวด (${c.bookCount} เล่ม)`) && del.mutate(c.id)} className="text-[16px] text-sub hover:text-red-600">ลบ</button>
                   </div>
                 </td>
               </tr>
@@ -107,31 +107,31 @@ export function CategoryManager() {
 
       {/* ฟอร์มเพิ่ม/แก้ไข */}
       <form onSubmit={submit} className="h-fit rounded-2xl border border-line bg-white p-5 lg:sticky lg:top-20">
-        <p className="mb-3 text-[15px] font-semibold text-ink">{editing ? `แก้ไข: ${editing.name}` : "เพิ่มหมวดใหม่"}</p>
+        <p className="mb-3 text-[16px] font-semibold text-ink">{editing ? `แก้ไข: ${editing.name}` : "เพิ่มหมวดใหม่"}</p>
         <div className="space-y-2">
-          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="ชื่อหมวด เช่น นิยาย" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[16px] outline-none focus:border-ink/30" />
-          <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="slug (เว้นว่าง = สร้างให้)" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px] outline-none focus:border-ink/30" />
+          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="ชื่อหมวด เช่น นิยาย" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[17px] outline-none focus:border-ink/30" />
+          <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="slug (เว้นว่าง = สร้างให้)" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[16px] outline-none focus:border-ink/30" />
         </div>
 
         {/* รูปการ์ดหมวดหมู่ (หน้าแรก) */}
         <div className="mt-3">
-          <p className="mb-1.5 text-[14px] text-sub">รูปการ์ด (หน้าแรก) · สัดส่วน 16:10</p>
+          <p className="mb-1.5 text-[15px] text-sub">รูปการ์ด (หน้าแรก) · สัดส่วน 16:10</p>
           <div className="mb-2 flex aspect-[16/10] items-center justify-center overflow-hidden rounded-xl bg-mist">
-            {form.image ? <img src={form.image} alt="" className="h-full w-full object-cover" /> : <span className="text-[14px] text-sub">ยังไม่มีรูป</span>}
+            {form.image ? <img src={form.image} alt="" className="h-full w-full object-cover" /> : <span className="text-[15px] text-sub">ยังไม่มีรูป</span>}
           </div>
           <div className="flex items-center gap-3">
-            <label className="cursor-pointer rounded-lg border border-dashed border-line px-3 py-1.5 text-[14px] text-sub hover:text-ink">
+            <label className="cursor-pointer rounded-lg border border-dashed border-line px-3 py-1.5 text-[15px] text-sub hover:text-ink">
               {busy ? "กำลังอัปโหลด..." : form.image ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
               <input type="file" accept="image/*" onChange={onImage} className="hidden" />
             </label>
-            {form.image && <button type="button" onClick={() => setForm((f) => ({ ...f, image: "" }))} className="text-[14px] text-sub hover:text-red-600">ลบรูป</button>}
+            {form.image && <button type="button" onClick={() => setForm((f) => ({ ...f, image: "" }))} className="text-[15px] text-sub hover:text-red-600">ลบรูป</button>}
           </div>
         </div>
 
-        {error && <p className="mt-2 text-[14px] text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-[15px] text-red-600">{error}</p>}
         <div className="mt-3 flex gap-2">
-          <button type="submit" disabled={save.isPending || !form.name.trim()} className="rounded-full bg-accent px-5 py-2 text-[15px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">{editing ? "บันทึก" : "เพิ่ม"}</button>
-          {editing && <button type="button" onClick={reset} className="rounded-full border border-line px-4 py-2 text-[15px] text-ink hover:bg-mist">ยกเลิก</button>}
+          <button type="submit" disabled={save.isPending || !form.name.trim()} className="rounded-full bg-accent px-5 py-2 text-[16px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">{editing ? "บันทึก" : "เพิ่ม"}</button>
+          {editing && <button type="button" onClick={reset} className="rounded-full border border-line px-4 py-2 text-[16px] text-ink hover:bg-mist">ยกเลิก</button>}
         </div>
       </form>
       </div>
@@ -146,8 +146,8 @@ function CollectionDisplaySettings() {
   return (
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4">
       <div>
-        <p className="text-[16px] font-medium text-ink">แสดงจำนวนเล่มทั้งหมด</p>
-        <p className="text-[14px] text-sub">เปิด: โชว์ “N เล่ม” ใต้หัวข้อหน้ารวมหนังสือ · ปิด: ซ่อน</p>
+        <p className="text-[17px] font-medium text-ink">แสดงจำนวนเล่มทั้งหมด</p>
+        <p className="text-[15px] text-sub">เปิด: โชว์ “N เล่ม” ใต้หัวข้อหน้ารวมหนังสือ · ปิด: ซ่อน</p>
       </div>
       <button
         type="button"
@@ -201,18 +201,18 @@ export function TermManager({ type }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[15px] text-sub">จัดการ{meta.label} — แก้ชื่อจะอัปเดตทุกเล่มที่ใช้ · คลิก "ดู" เพื่อดูหน้ารวมของ{meta.label}นั้น</p>
+        <p className="text-[16px] text-sub">จัดการ{meta.label} — แก้ชื่อจะอัปเดตทุกเล่มที่ใช้ · คลิก "ดู" เพื่อดูหน้ารวมของ{meta.label}นั้น</p>
         {/* เพิ่มรายการใหม่ (บาร์ด้านบน) */}
         <form onSubmit={add} className="flex gap-2">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={meta.ph} className="w-56 rounded-lg border border-line px-3 py-2 text-[15px] outline-none focus:border-ink/30" />
-          <button type="submit" disabled={save.isPending || !name.trim()} className="whitespace-nowrap rounded-full bg-ink px-5 py-2 text-[15px] font-medium text-white hover:bg-ink/90 disabled:opacity-50">+ เพิ่ม{meta.label}</button>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={meta.ph} className="w-56 rounded-lg border border-line px-3 py-2 text-[16px] outline-none focus:border-ink/30" />
+          <button type="submit" disabled={save.isPending || !name.trim()} className="whitespace-nowrap rounded-full bg-ink px-5 py-2 text-[16px] font-medium text-white hover:bg-ink/90 disabled:opacity-50">+ เพิ่ม{meta.label}</button>
         </form>
       </div>
-      {error && <p className="text-[14px] text-red-600">{error}</p>}
+      {error && <p className="text-[15px] text-red-600">{error}</p>}
 
       <div className="w-full overflow-x-auto rounded-2xl border border-line bg-white">
-        <table className="w-full text-left text-[16px]">
-          <thead className="border-b border-line bg-mist/40 text-[14px] text-sub">
+        <table className="w-full text-left text-[17px]">
+          <thead className="border-b border-line bg-mist/40 text-[15px] text-sub">
             <tr>
               <th className="px-5 py-3 font-medium">ชื่อ{meta.label}</th>
               <th className="px-5 py-3 font-medium">Slug</th>
@@ -227,12 +227,12 @@ export function TermManager({ type }) {
                 {editing?.id === t.id ? (
                   <>
                     <td className="px-5 py-2" colSpan={3}>
-                      <input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full max-w-sm rounded-lg border border-line px-3 py-1.5 text-[16px] outline-none focus:border-ink/30" autoFocus />
+                      <input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full max-w-sm rounded-lg border border-line px-3 py-1.5 text-[17px] outline-none focus:border-ink/30" autoFocus />
                     </td>
                     <td className="whitespace-nowrap px-5 py-2">
                       <div className="flex justify-end gap-4">
-                        <button onClick={saveEdit} className="text-[15px] font-medium text-accent">บันทึก</button>
-                        <button onClick={() => setEditing(null)} className="text-[15px] text-sub hover:text-ink">ยกเลิก</button>
+                        <button onClick={saveEdit} className="text-[16px] font-medium text-accent">บันทึก</button>
+                        <button onClick={() => setEditing(null)} className="text-[16px] text-sub hover:text-ink">ยกเลิก</button>
                       </div>
                     </td>
                   </>
@@ -242,13 +242,13 @@ export function TermManager({ type }) {
                       <div className="flex items-center gap-3">
                         {type === "PUBLISHER" && (
                           <div className="flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded border border-line bg-white">
-                            {t.image ? <img src={t.image} alt="" className="h-full w-full object-contain p-1" /> : <span className="text-[11px] text-sub">โลโก้</span>}
+                            {t.image ? <img src={t.image} alt="" className="h-full w-full object-contain p-1" /> : <span className="text-[12px] text-sub">โลโก้</span>}
                           </div>
                         )}
                         <div>
                           <span className="font-medium text-ink">{t.name}</span>
                           {type === "PUBLISHER" && (
-                            <div className="mt-0.5 flex gap-2 text-[13px]">
+                            <div className="mt-0.5 flex gap-2 text-[14px]">
                               <label className="cursor-pointer text-accent hover:opacity-80">
                                 {uploadingId === t.id ? "กำลังอัป..." : t.image ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
                                 <input type="file" accept="image/*" onChange={(e) => onLogo(t, e)} className="hidden" />
@@ -263,16 +263,16 @@ export function TermManager({ type }) {
                     <td className="px-5 py-3 text-sub">{t.count} เล่ม</td>
                     <td className="whitespace-nowrap px-5 py-3">
                       <div className="flex justify-end gap-4">
-                        <Link to={`/${meta.path}/${t.slug}`} target="_blank" className="text-[15px] text-sub hover:text-ink">ดู ↗</Link>
-                        <button onClick={() => { setEditing(t); setEditName(t.name); setError(""); }} className="text-[15px] text-accent">แก้ไข</button>
-                        <button onClick={() => confirm(`ลบ "${t.name}"? จะเอาออกจากหนังสือ ${t.count} เล่มด้วย`) && del.mutate(t.id)} className="text-[15px] text-sub hover:text-red-600">ลบ</button>
+                        <Link to={`/${meta.path}/${t.slug}`} target="_blank" className="text-[16px] text-sub hover:text-ink">ดู ↗</Link>
+                        <button onClick={() => { setEditing(t); setEditName(t.name); setError(""); }} className="text-[16px] text-accent">แก้ไข</button>
+                        <button onClick={() => confirm(`ลบ "${t.name}"? จะเอาออกจากหนังสือ ${t.count} เล่มด้วย`) && del.mutate(t.id)} className="text-[16px] text-sub hover:text-red-600">ลบ</button>
                       </div>
                     </td>
                   </>
                 )}
               </tr>
             ))}
-            {terms?.length === 0 && <tr><td colSpan={4} className="px-5 py-4 text-[15px] text-sub">ยังไม่มี — เพิ่มด้านบน</td></tr>}
+            {terms?.length === 0 && <tr><td colSpan={4} className="px-5 py-4 text-[16px] text-sub">ยังไม่มี — เพิ่มด้านบน</td></tr>}
           </tbody>
         </table>
       </div>

@@ -25,7 +25,7 @@ export default function BrowseSections() {
           <div className="mb-6 flex items-center gap-4">
             <h2 className="whitespace-nowrap text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">หมวดหมู่หนังสือ</h2>
             <div className="hidden h-px flex-1 bg-line sm:block" />
-            <Link to="/books" className="shrink-0 rounded-full bg-ink px-5 py-2 text-[15px] font-medium text-white transition hover:bg-ink/90">
+            <Link to="/books" className="shrink-0 rounded-full bg-ink px-5 py-2 text-[16px] font-medium text-white transition hover:bg-ink/90">
               ดูทั้งหมด →
             </Link>
           </div>
@@ -47,8 +47,8 @@ export default function BrowseSections() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-[20px] font-semibold text-white drop-shadow-sm">{c.name}</p>
-                    <p className="text-[14px] text-white/80">{c.bookCount} เล่ม</p>
+                    <p className="text-[21px] font-semibold text-white drop-shadow-sm">{c.name}</p>
+                    <p className="text-[15px] text-white/80">{c.bookCount} เล่ม</p>
                   </div>
                 </Link>
               ))}

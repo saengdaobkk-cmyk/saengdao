@@ -152,13 +152,13 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
     pageFlipRef.current = pf;
   }
 
-  const btn = "flex h-9 w-9 items-center justify-center rounded-full text-[22px] text-white/80 transition hover:bg-white/10 hover:text-white";
+  const btn = "flex h-9 w-9 items-center justify-center rounded-full text-[23px] text-white/80 transition hover:bg-white/10 hover:text-white";
 
   return (
     <div className={`fixed inset-0 z-[100] flex-col bg-[#12161f] ${open ? "flex" : "hidden"}`}>
       {/* แถบบน */}
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-        <span className="flex min-w-0 items-center gap-2 text-[16px] text-white/90">
+        <span className="flex min-w-0 items-center gap-2 text-[17px] text-white/90">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
             <path d="M12 6.5C10.5 5.2 8.5 4.5 6 4.5c-1 0-2 .1-3 .4v13c1-.3 2-.4 3-.4 2.5 0 4.5.7 6 2 1.5-1.3 3.5-2 6-2 1 0 2 .1 3 .4v-13c-1-.3-2-.4-3-.4-2.5 0-4.5.7-6 2Z" />
             <path d="M12 6.5v13" />
@@ -170,7 +170,7 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
             <button onClick={() => pageFlipRef.current?.flipPrev()} className={btn} title="หน้าก่อน">‹</button>
             <button onClick={() => pageFlipRef.current?.flipNext()} className={btn} title="หน้าถัดไป">›</button>
           </>}
-          <button onClick={onClose} className={`${btn} text-[17px]`} title="ปิด">✕</button>
+          <button onClick={onClose} className={`${btn} text-[18px]`} title="ปิด">✕</button>
         </div>
       </div>
 
@@ -181,7 +181,7 @@ export default function FlipBook({ pdfUrl, title, open, onClose }) {
         {error && <p className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white/85">{error}</p>}
       </div>
 
-      <div className="pb-3 text-center text-[14px] text-white/45">
+      <div className="pb-3 text-center text-[15px] text-white/45">
         {scrollMode ? "เลื่อนขึ้น-ลงเพื่อดูหน้าถัดไป" : "ลากที่มุมหน้า หรือกดปุ่ม ‹ › เพื่อพลิกหน้า"}
       </div>
     </div>
