@@ -120,8 +120,12 @@ export async function trackBarcode(barcode, apikeyOverride) {
       location: it.location || "",
     }));
     const last = items[items.length - 1];
+    // นำจ่ายสำเร็จ = status code 501 หรือคำอธิบายบอกว่าจ่ายสำเร็จ
+    const isDelivered = (it) =>
+      String(it.status) === "501" || /นำจ่ายสำเร็จ|จ่ายสำเร็จ|delivered/i.test(it.status_description || "");
     return {
       ok: true,
+      delivered: items.some(isDelivered),
       latest: {
         status: last.status_description || last.status || "",
         date: toIso(last.status_date),
@@ -138,7 +142,7 @@ export async function trackBarcode(barcode, apikeyOverride) {
 export async function updateOrderTracking(orderId) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, trackingNumber: true },
+    select: { id: true, trackingNumber: true, status: true },
   });
   if (!order) return { ok: false, error: "ไม่พบออเดอร์" };
   if (!order.trackingNumber) return { ok: false, error: "ออเดอร์นี้ยังไม่มีเลขพัสดุ" };
@@ -150,14 +154,20 @@ export async function updateOrderTracking(orderId) {
     return res;
   }
 
+  // พัสดุนำจ่ายสำเร็จ → ปิดออเดอร์เป็น "สำเร็จ" อัตโนมัติ (ยกเว้นที่ยกเลิกไปแล้ว)
+  const data = {
+    trackingStatus: res.latest.status,
+    trackingStatusDate: res.latest.date ? new Date(res.latest.date) : null,
+    trackingUpdatedAt: new Date(),
+    trackingHistory: res.history,
+  };
+  if (res.delivered && order.status !== "CANCELLED" && order.status !== "COMPLETED") {
+    data.status = "COMPLETED";
+  }
+
   const updated = await prisma.order.update({
     where: { id: orderId },
-    data: {
-      trackingStatus: res.latest.status,
-      trackingStatusDate: res.latest.date ? new Date(res.latest.date) : null,
-      trackingUpdatedAt: new Date(),
-      trackingHistory: res.history,
-    },
+    data,
   });
   return { ok: true, order: updated, latest: res.latest, history: res.history };
 }
