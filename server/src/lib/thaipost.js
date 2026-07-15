@@ -9,6 +9,24 @@ export const TPK = {
 const AUTH_URL = "https://trackapi.thailandpost.co.th/post/api/v1/authenticate/token";
 const TRACK_URL = "https://trackapi.thailandpost.co.th/post/api/v1/track";
 
+// แปลงวันที่จากไปรษณีย์ไทย → ISO string
+// รูปแบบไทย "DD/MM/YYYY HH:mm:ss+07:00" (ปี พ.ศ.) — new Date() แปลงตรงๆ ไม่ได้
+function toIso(s) {
+  if (!s) return null;
+  const str = String(s).trim();
+  const m = str.match(/^(\d{2})\/(\d{2})\/(\d{4})[ T](\d{2}):(\d{2}):(\d{2})(.*)$/);
+  if (m) {
+    let [, dd, mm, yyyy, HH, MM, SS, tz] = m;
+    let year = parseInt(yyyy, 10);
+    if (year > 2200) year -= 543; // พ.ศ. → ค.ศ.
+    tz = tz.trim() || "+07:00";
+    const d = new Date(`${year}-${mm}-${dd}T${HH}:${MM}:${SS}${tz}`);
+    return isNaN(d) ? null : d.toISOString();
+  }
+  const d = new Date(str); // เผื่อ API คืน ISO อยู่แล้ว
+  return isNaN(d) ? null : d.toISOString();
+}
+
 // fetch พร้อม timeout — กัน API ค้างจนหน้าเว็บโหลดนาน
 async function fetchT(url, options = {}, ms = 8000) {
   const ctrl = new AbortController();
@@ -95,10 +113,10 @@ export async function trackBarcode(barcode, apikeyOverride) {
     if (!Array.isArray(items) || items.length === 0)
       return { ok: false, error: "ยังไม่มีข้อมูลพัสดุนี้ (ตรวจสอบเลขพัสดุอีกครั้ง)" };
 
-    // API เรียงจากเก่า→ใหม่; ล่าสุด = ตัวสุดท้าย
+    // API เรียงจากเก่า→ใหม่; ล่าสุด = ตัวสุดท้าย · แปลงวันที่ไทย(พ.ศ.)→ISO
     const history = items.map((it) => ({
       status: it.status_description || it.status || "",
-      date: it.status_date || null,
+      date: toIso(it.status_date),
       location: it.location || "",
     }));
     const last = items[items.length - 1];
@@ -106,7 +124,7 @@ export async function trackBarcode(barcode, apikeyOverride) {
       ok: true,
       latest: {
         status: last.status_description || last.status || "",
-        date: last.status_date || null,
+        date: toIso(last.status_date),
         location: last.location || "",
       },
       history,
