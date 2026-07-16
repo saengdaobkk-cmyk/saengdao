@@ -49,10 +49,19 @@ function PromptPayBox({ orderId }) {
 
   // วาดการ์ดชำระเงินลง canvas เอง (พื้นขาวเป๊ะ + ใช้ฟอนต์ที่โหลดในหน้าจริง + QR ชัวร์)
   const drawCard = async () => {
-    await document.fonts?.ready;
     const qr = new Image();
     qr.src = data.qr;
     await (qr.decode?.() ?? new Promise((r) => { qr.onload = r; qr.onerror = r; })).catch(() => {});
+
+    // บังคับโหลดฟอนต์ IBM Plex Sans Thai ทุกน้ำหนัก+ตัวอักษรที่ใช้ ก่อนวาด (มือถือมักยังไม่พร้อม)
+    const face = '"IBM Plex Sans Thai"';
+    const sample = "สแกนจ่ายด้วยพร้อมเพย์บจ.สำนักพิมพ์แสงดาว฿0123456789";
+    try {
+      await Promise.all(
+        ["400", "500", "600", "700"].map((w) => document.fonts.load(`${w} 30px ${face}`, sample))
+      );
+    } catch { /* เครื่องไม่รองรับ → ใช้ fallback */ }
+    await document.fonts?.ready;
 
     const FONT = '"IBM Plex Sans Thai", "Leelawadee UI", system-ui, sans-serif';
     const W = 620, H = 760, cx = W / 2, scale = 2;
