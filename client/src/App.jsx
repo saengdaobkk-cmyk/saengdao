@@ -221,7 +221,7 @@ function CartButton() {
 
   const inner = (
     <>
-      <span className={`inline-block transition-transform duration-200 group-hover:scale-110 group-active:scale-90 ${bump ? "cart-bump" : ""}`}>
+      <span className={`block transition-transform duration-200 group-hover:scale-110 group-active:scale-90 ${bump ? "cart-bump" : ""}`}>
         <BagIcon />
       </span>
       {count > 0 && (
@@ -232,7 +232,7 @@ function CartButton() {
     </>
   );
 
-  const cls = "group relative text-sub transition-colors hover:text-ink";
+  const cls = "group relative inline-flex items-center text-sub transition-colors hover:text-ink";
   // เปิด setting → เปิด drawer, ปิด → ไปหน้า /cart เต็มจอ
   return cartDrawerEnabled ? (
     <button onClick={openDrawer} aria-label="ตะกร้า" className={cls}>{inner}</button>
