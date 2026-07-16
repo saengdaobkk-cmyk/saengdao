@@ -69,9 +69,10 @@ export default function App() {
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="ค้นหา"
-                className="rounded-lg p-1 text-ink transition hover:bg-mist"
+                className="group rounded-lg p-1 text-ink transition hover:bg-mist"
               >
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                  className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
                   <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
                 </svg>
               </button>
@@ -274,9 +275,11 @@ function AccountMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-label="บัญชีของฉัน"
         aria-expanded={open}
-        className="flex items-center gap-1.5 text-sub transition-colors hover:text-ink"
+        className="group flex items-center gap-1.5 text-sub transition-colors hover:text-ink"
       >
-        <UserIcon />
+        <span className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
+          <UserIcon />
+        </span>
       </button>
 
       {open && (
