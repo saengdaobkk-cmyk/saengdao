@@ -29,7 +29,7 @@ export default function Contact() {
       {/* หัวเพจ */}
       <div className="mx-auto max-w-2xl text-center">
         {s.logoUrl ? (
-          <img src={s.logoUrl} alt="SAENGDAO" className="mx-auto mb-6 h-14 w-auto object-contain" />
+          <img src={s.logoUrl} alt="SAENGDAO" style={{ height: `${Number(s.logoSize) || 56}px` }} className="mx-auto mb-6 w-auto object-contain" />
         ) : (
           <p className="mb-5 text-[15px] font-semibold tracking-[0.28em] text-ink">SAENGDAO</p>
         )}

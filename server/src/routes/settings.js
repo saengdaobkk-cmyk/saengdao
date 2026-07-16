@@ -8,6 +8,7 @@ const router = Router();
 const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
+  "logoSize", // ความสูงโลโก้ (px) บนหน้าติดต่อ
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร

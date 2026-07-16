@@ -8,6 +8,7 @@ const FALLBACK = {
   showPublisherMarquee: true,
   showCollectionCount: true,
   logoUrl: "",
+  logoSize: "56",
   promptpayId: "",
   promptpayName: "",
   bankName: "",

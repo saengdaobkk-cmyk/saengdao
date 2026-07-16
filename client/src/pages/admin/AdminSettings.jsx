@@ -48,6 +48,9 @@ function BrandSettings({ settings, save }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const logo = settings.logoUrl || "";
+  const [size, setSize] = useState(Number(settings.logoSize) || 56);
+
+  useEffect(() => { setSize(Number(settings.logoSize) || 56); }, [settings.logoSize]);
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -68,22 +71,41 @@ function BrandSettings({ settings, save }) {
     <section>
       <h2 className="mb-1 text-[15px] font-semibold text-ink">โลโก้ร้าน</h2>
       <p className="mb-4 text-[12px] text-sub">ใช้บนหน้า "ติดต่อเรา" · แนะนำพื้นหลังโปร่งใส (PNG/SVG)</p>
-      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-white p-6">
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
-          {logo ? <img src={logo} alt="โลโก้" className="h-full w-full object-contain p-2" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+        <div className="flex flex-wrap items-center gap-5">
+          {/* พรีวิวตามขนาดจริง */}
+          <div className="flex h-24 w-40 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+            {logo ? <img src={logo} alt="โลโก้" style={{ height: `${size}px` }} className="w-auto object-contain" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+              {busy ? "กำลังอัปโหลด..." : logo ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
+              <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+            </label>
+            {logo && (
+              <button type="button" onClick={() => { save.mutate({ logoUrl: "" }); setSaved(false); }} className="text-[13px] text-sub hover:text-red-600">
+                ลบโลโก้
+              </button>
+            )}
+            {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
-            {busy ? "กำลังอัปโหลด..." : logo ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
-            <input type="file" accept="image/*" onChange={onFile} className="hidden" />
-          </label>
-          {logo && (
-            <button type="button" onClick={() => { save.mutate({ logoUrl: "" }); setSaved(false); }} className="text-[13px] text-sub hover:text-red-600">
-              ลบโลโก้
-            </button>
-          )}
-          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
-        </div>
+
+        {logo && (
+          <div className="border-t border-line pt-5">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[13px] font-medium text-ink">ขนาดโลโก้ (หน้าติดต่อ)</span>
+              <span className="text-[13px] tabular-nums text-sub">{size}px</span>
+            </div>
+            <input
+              type="range" min="28" max="140" step="2" value={size}
+              onChange={(e) => setSize(Number(e.target.value))}
+              onMouseUp={() => save.mutate({ logoSize: String(size) }, { onSuccess: () => setSaved(true) })}
+              onTouchEnd={() => save.mutate({ logoSize: String(size) }, { onSuccess: () => setSaved(true) })}
+              className="w-full max-w-md accent-accent"
+            />
+          </div>
+        )}
       </div>
     </section>
   );
