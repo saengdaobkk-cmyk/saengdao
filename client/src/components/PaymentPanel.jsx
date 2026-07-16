@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toBlob } from "html-to-image";
 import { api } from "../lib/api";
 import { useSettings } from "../api/settings";
 import { formatPrice } from "../lib/format";
@@ -48,24 +47,55 @@ function PromptPayBox({ orderId }) {
     queryFn: async () => (await api.get(`/orders/${orderId}/promptpay`)).data,
   });
 
-  // บันทึกทั้งการ์ด (QR + ชื่อ + ยอด) เป็นรูปเดียว
-  // มือถือ (จอสัมผัส) → share sheet (มีปุ่ม "บันทึกรูปภาพ") · เดสก์ท็อป → ดาวน์โหลด
+  // วาดการ์ดชำระเงินลง canvas เอง (พื้นขาวเป๊ะ + ใช้ฟอนต์ที่โหลดในหน้าจริง + QR ชัวร์)
+  const drawCard = async () => {
+    await document.fonts?.ready;
+    const qr = new Image();
+    qr.src = data.qr;
+    await (qr.decode?.() ?? new Promise((r) => { qr.onload = r; qr.onerror = r; })).catch(() => {});
+
+    const FONT = '"IBM Plex Sans Thai", "Leelawadee UI", system-ui, sans-serif';
+    const W = 620, H = 760, cx = W / 2, scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = "center";
+
+    ctx.fillStyle = "#1d1d1f";
+    ctx.font = `600 30px ${FONT}`;
+    ctx.fillText("สแกนจ่ายด้วยพร้อมเพย์", cx, 66);
+
+    const qs = 380;
+    if (qr.width) ctx.drawImage(qr, cx - qs / 2, 100, qs, qs);
+
+    let y = 100 + qs + 52;
+    if (data.promptpayName) {
+      ctx.fillStyle = "#1d1d1f";
+      ctx.font = `500 26px ${FONT}`;
+      ctx.fillText(data.promptpayName, cx, y);
+      y += 42;
+    }
+    ctx.fillStyle = "#86868b";
+    ctx.font = `400 22px ${FONT}`;
+    ctx.fillText(`พร้อมเพย์ · ${data.promptpayId}`, cx, y);
+    y += 60;
+    ctx.fillStyle = "#1d1d1f";
+    ctx.font = `700 42px ${FONT}`;
+    ctx.fillText(formatPrice(data.amount), cx, y);
+
+    return new Promise((res) => canvas.toBlob(res, "image/png"));
+  };
+
+  // มือถือ → share sheet (มีปุ่ม "บันทึกรูปภาพ") · เดสก์ท็อป → ดาวน์โหลด
   const saveCard = async () => {
-    if (!cardRef.current) return;
+    if (!data) return;
     setSaving(true);
     try {
-      // ให้รูป QR (data URI) โหลด/decode ให้เสร็จก่อน ไม่งั้นบางเครื่องจับภาพไม่ติด
-      const qrImg = cardRef.current.querySelector("img");
-      if (qrImg) {
-        if (!qrImg.complete) await new Promise((r) => { qrImg.onload = r; qrImg.onerror = r; });
-        await qrImg.decode?.().catch(() => {});
-      }
-      await document.fonts?.ready;
-
-      // เรนเดอร์ครั้งแรกบางทีได้ภาพเปล่า (ข้อจำกัด html-to-image) → เรียกซ้ำให้ชัวร์
-      const opts = { backgroundColor: "#ffffff", pixelRatio: 2, cacheBust: true };
-      await toBlob(cardRef.current, opts);
-      const blob = await toBlob(cardRef.current, opts);
+      const blob = await drawCard();
       if (!blob) throw new Error("no blob");
 
       const name = `saengdao-promptpay-${data.amount}.png`;
