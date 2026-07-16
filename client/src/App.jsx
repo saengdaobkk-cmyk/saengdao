@@ -69,7 +69,7 @@ export default function App() {
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="ค้นหา"
-                className="group rounded-lg p-1 text-ink transition hover:bg-mist"
+                className="group text-sub transition-colors hover:text-ink"
               >
                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
                   className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
