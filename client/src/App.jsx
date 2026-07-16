@@ -55,7 +55,7 @@ export default function App() {
                   to={n.url}
                   end={n.url === "/"}
                   className={({ isActive }) =>
-                    `text-[13px] tracking-tight transition-colors ${
+                    `text-[14px] tracking-tight transition-colors ${
                       isActive ? "text-ink" : "text-sub hover:text-ink"
                     }`
                   }
