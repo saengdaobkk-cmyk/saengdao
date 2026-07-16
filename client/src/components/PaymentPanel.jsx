@@ -49,26 +49,41 @@ function PromptPayBox({ orderId }) {
   });
 
   // บันทึกทั้งการ์ด (QR + ชื่อ + ยอด) เป็นรูปเดียว
-  // มือถือ/iPhone → share sheet (มีปุ่ม "บันทึกรูปภาพ") · เดสก์ท็อป → ดาวน์โหลด
+  // มือถือ (จอสัมผัส) → share sheet (มีปุ่ม "บันทึกรูปภาพ") · เดสก์ท็อป → ดาวน์โหลด
   const saveCard = async () => {
     if (!cardRef.current) return;
     setSaving(true);
     try {
-      const blob = await toBlob(cardRef.current, { backgroundColor: "#ffffff", pixelRatio: 2, cacheBust: true });
+      // ให้รูป QR (data URI) โหลด/decode ให้เสร็จก่อน ไม่งั้นบางเครื่องจับภาพไม่ติด
+      const qrImg = cardRef.current.querySelector("img");
+      if (qrImg) {
+        if (!qrImg.complete) await new Promise((r) => { qrImg.onload = r; qrImg.onerror = r; });
+        await qrImg.decode?.().catch(() => {});
+      }
+      await document.fonts?.ready;
+
+      // เรนเดอร์ครั้งแรกบางทีได้ภาพเปล่า (ข้อจำกัด html-to-image) → เรียกซ้ำให้ชัวร์
+      const opts = { backgroundColor: "#ffffff", pixelRatio: 2, cacheBust: true };
+      await toBlob(cardRef.current, opts);
+      const blob = await toBlob(cardRef.current, opts);
+      if (!blob) throw new Error("no blob");
+
       const name = `saengdao-promptpay-${data.amount}.png`;
       const file = new File([blob], name, { type: "image/png" });
 
-      // iOS/Android: เปิด share sheet เพื่อเซฟลงคลังรูป
-      if (navigator.canShare?.({ files: [file] })) {
+      // ใช้ share sheet เฉพาะจอสัมผัส (มือถือ/แท็บเล็ต) — เดสก์ท็อปให้ดาวน์โหลดตรงๆ
+      const isTouch = window.matchMedia?.("(pointer: coarse)")?.matches;
+      if (isTouch && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: "ชำระเงิน SAENGDAO" });
           return;
         } catch (e) {
           if (e.name === "AbortError") return; // ผู้ใช้กดยกเลิก
+          // แชร์ไม่ได้ → ตกไปดาวน์โหลด
         }
       }
 
-      // เดสก์ท็อป: ดาวน์โหลดไฟล์
+      // เดสก์ท็อป (หรือ fallback): ดาวน์โหลดไฟล์
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
