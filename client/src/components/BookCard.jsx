@@ -44,13 +44,13 @@ export default function BookCard({ book }) {
           </div>
         )}
         {stock <= 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[14px] font-medium text-sub backdrop-blur">
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">
             สินค้าหมด
           </span>
         )}
         {/* ป้ายลดราคา / Hot Deal */}
         {pct > 0 && stock > 0 && (
-          <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[14px] font-semibold text-white ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
+          <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
             {pi.hot && "🔥 "}-{pct}%
           </span>
         )}
@@ -86,21 +86,21 @@ export default function BookCard({ book }) {
       {/* ข้อมูล */}
       <div className="px-1 pt-3">
         {showCardCategory && book.category && (
-          <p className="text-[14px] font-medium tracking-tight text-sub">
+          <p className="text-[11px] font-medium tracking-tight text-sub">
             {book.category.name}
           </p>
         )}
-        <h3 className="mt-0.5 line-clamp-1 text-[18px] font-medium tracking-tight text-ink transition-colors group-hover:text-accent">
+        <h3 className="mt-0.5 line-clamp-1 text-[15px] font-medium tracking-tight text-ink transition-colors group-hover:text-accent">
           {book.title}
         </h3>
-        <p className="line-clamp-1 text-[16px] text-sub">{book.author}</p>
+        <p className="line-clamp-1 text-[13px] text-sub">{book.author}</p>
         {pct > 0 ? (
           <p className="mt-1.5 flex items-center gap-2">
-            <span className={`text-[18px] font-semibold tracking-tight ${pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
-            <span className="text-[15px] text-sub line-through">{formatPrice(pi.original)}</span>
+            <span className={`text-[15px] font-semibold tracking-tight ${pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
+            <span className="text-[12px] text-sub line-through">{formatPrice(pi.original)}</span>
           </p>
         ) : (
-          <p className="mt-1.5 text-[18px] font-semibold tracking-tight text-ink">{formatPrice(pi.price)}</p>
+          <p className="mt-1.5 text-[15px] font-semibold tracking-tight text-ink">{formatPrice(pi.price)}</p>
         )}
       </div>
     </Link>

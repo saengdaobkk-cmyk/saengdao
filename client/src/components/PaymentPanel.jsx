@@ -153,24 +153,24 @@ function PromptPayBox({ orderId }) {
 
   return (
     <div className="rounded-2xl border border-line p-6 text-center">
-      {isLoading && <p className="py-8 text-[16px] text-sub">กำลังสร้าง QR...</p>}
-      {isError && <p className="py-8 text-[16px] text-red-500">สร้าง QR ไม่สำเร็จ (ร้านอาจยังไม่ตั้งค่าพร้อมเพย์)</p>}
+      {isLoading && <p className="py-8 text-[13px] text-sub">กำลังสร้าง QR...</p>}
+      {isError && <p className="py-8 text-[13px] text-red-500">สร้าง QR ไม่สำเร็จ (ร้านอาจยังไม่ตั้งค่าพร้อมเพย์)</p>}
       {data && (
         <>
           {/* ส่วนที่ถูกบันทึกเป็นรูป */}
           <div ref={cardRef} className="bg-white px-4 pb-4 pt-2">
-            <h3 className="text-[18px] font-semibold text-ink">สแกนจ่ายด้วยพร้อมเพย์</h3>
+            <h3 className="text-[15px] font-semibold text-ink">สแกนจ่ายด้วยพร้อมเพย์</h3>
             <img src={data.qr} alt="PromptPay QR" className="mx-auto my-4 h-56 w-56" />
-            {data.promptpayName && <p className="text-[17px] text-ink">{data.promptpayName}</p>}
-            <p className="text-[16px] text-sub">พร้อมเพย์ · {data.promptpayId}</p>
-            <p className="mt-2 text-[21px] font-semibold text-ink">{formatPrice(data.amount)}</p>
+            {data.promptpayName && <p className="text-[14px] text-ink">{data.promptpayName}</p>}
+            <p className="text-[13px] text-sub">พร้อมเพย์ · {data.promptpayId}</p>
+            <p className="mt-2 text-[18px] font-semibold text-ink">{formatPrice(data.amount)}</p>
           </div>
 
           <button
             type="button"
             onClick={saveCard}
             disabled={saving}
-            className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[17px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M12 3v12m0 0 4-4m-4 4-4-4" strokeLinecap="round" strokeLinejoin="round" />
@@ -178,7 +178,7 @@ function PromptPayBox({ orderId }) {
             </svg>
             {saving ? "กำลังบันทึก..." : "บันทึกรูปการชำระเงิน"}
           </button>
-          <p className="mt-2 text-[14px] text-sub">เซฟรูปแล้วเปิดในแอปธนาคาร → สแกนจากรูปได้เลย</p>
+          <p className="mt-2 text-[11px] text-sub">เซฟรูปแล้วเปิดในแอปธนาคาร → สแกนจากรูปได้เลย</p>
         </>
       )}
     </div>
@@ -190,16 +190,16 @@ function BankBox({ total }) {
   const s = useSettings();
   return (
     <div className="rounded-2xl border border-line p-6">
-      <h3 className="mb-4 text-[18px] font-semibold text-ink">โอนเงินเข้าบัญชี</h3>
+      <h3 className="mb-4 text-[15px] font-semibold text-ink">โอนเงินเข้าบัญชี</h3>
       {s.bankAccountNo ? (
-        <dl className="space-y-2 text-[17px]">
+        <dl className="space-y-2 text-[14px]">
           <Line label="ธนาคาร" value={s.bankName} />
           <Line label="เลขบัญชี" value={s.bankAccountNo} copy />
           <Line label="ชื่อบัญชี" value={s.bankAccountName} />
           <Line label="ยอดโอน" value={formatPrice(total)} strong />
         </dl>
       ) : (
-        <p className="text-[16px] text-sub">ร้านยังไม่ได้ตั้งค่าบัญชีธนาคาร</p>
+        <p className="text-[13px] text-sub">ร้านยังไม่ได้ตั้งค่าบัญชีธนาคาร</p>
       )}
     </div>
   );
@@ -210,7 +210,7 @@ function Line({ label, value, copy, strong }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <dt className="text-sub">{label}</dt>
-      <dd className={`flex items-center gap-2 text-right ${strong ? "text-[19px] font-semibold text-ink" : "text-ink"}`}>
+      <dd className={`flex items-center gap-2 text-right ${strong ? "text-[16px] font-semibold text-ink" : "text-ink"}`}>
         {value}
         {copy && value && (
           <button
@@ -220,7 +220,7 @@ function Line({ label, value, copy, strong }) {
               setCopied(true);
               setTimeout(() => setCopied(false), 1500);
             }}
-            className="rounded-full bg-mist px-2 py-0.5 text-[14px] text-sub hover:text-ink"
+            className="rounded-full bg-mist px-2 py-0.5 text-[11px] text-sub hover:text-ink"
           >
             {copied ? "คัดลอกแล้ว" : "คัดลอก"}
           </button>
@@ -257,22 +257,22 @@ function SlipUpload({ orderId }) {
 
   return (
     <div className="mt-4 rounded-2xl border border-line p-6">
-      <h3 className="text-[18px] font-semibold text-ink">แนบสลิปการโอน</h3>
-      <p className="mt-1 text-[15px] text-sub">อัปโหลดรูปสลิปเพื่อยืนยันการชำระเงิน</p>
+      <h3 className="text-[15px] font-semibold text-ink">แนบสลิปการโอน</h3>
+      <p className="mt-1 text-[12px] text-sub">อัปโหลดรูปสลิปเพื่อยืนยันการชำระเงิน</p>
 
       {preview && <img src={preview} alt="ตัวอย่างสลิป" className="mx-auto mt-4 max-h-56 rounded-xl border border-line" />}
 
-      <label className="mt-4 flex cursor-pointer items-center justify-center rounded-full border border-dashed border-line py-3 text-[17px] text-sub transition hover:border-ink/30 hover:text-ink">
+      <label className="mt-4 flex cursor-pointer items-center justify-center rounded-full border border-dashed border-line py-3 text-[14px] text-sub transition hover:border-ink/30 hover:text-ink">
         {file ? file.name : "เลือกรูปสลิป"}
         <input type="file" accept="image/*" onChange={pick} className="hidden" />
       </label>
 
-      {error && <p className="mt-2 text-[15px] text-red-500">{error}</p>}
+      {error && <p className="mt-2 text-[12px] text-red-500">{error}</p>}
 
       <button
         onClick={() => upload.mutate()}
         disabled={!file || upload.isPending}
-        className="mt-4 w-full rounded-full bg-accent py-3 text-[18px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-40"
+        className="mt-4 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-40"
       >
         {upload.isPending ? "กำลังส่งสลิป..." : "ส่งสลิปยืนยัน"}
       </button>
@@ -288,8 +288,8 @@ function Banner({ tone, title, desc }) {
   };
   return (
     <div className={`rounded-2xl px-5 py-4 text-center ${tones[tone]}`}>
-      <p className="text-[18px] font-semibold">{title}</p>
-      <p className="mt-1 text-[16px] opacity-90">{desc}</p>
+      <p className="text-[15px] font-semibold">{title}</p>
+      <p className="mt-1 text-[13px] opacity-90">{desc}</p>
     </div>
   );
 }

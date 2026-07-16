@@ -40,7 +40,7 @@ export default function PublisherMarquee() {
 
   return (
     <section className="mt-6 border-t border-line bg-white pb-6 pt-7">
-      <p className="mb-5 text-center text-[16px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")}</p>
+      <p className="mb-5 text-center text-[13px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")}</p>
       <div className="marquee relative">
         <div ref={trackRef} className="flex" style={{ transform: "translate3d(0,0,0)" }}>
           {loop.map((p, i) => (
@@ -53,7 +53,7 @@ export default function PublisherMarquee() {
               {p.image ? (
                 <img src={p.image} alt={p.name} className="h-10 w-auto max-w-[150px] object-contain" />
               ) : (
-                <span className="whitespace-nowrap text-[20px] font-semibold tracking-tight text-ink/70">{p.name}</span>
+                <span className="whitespace-nowrap text-[17px] font-semibold tracking-tight text-ink/70">{p.name}</span>
               )}
             </Link>
           ))}

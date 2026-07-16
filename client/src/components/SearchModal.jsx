@@ -73,24 +73,24 @@ export default function SearchModal({ open, onClose }) {
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="ค้นหาชื่อหนังสือ ผู้เขียน ผู้แปล หรือ ISBN"
-              className="w-full bg-transparent py-4 text-[19px] text-ink outline-none placeholder:text-sub/70"
+              className="w-full bg-transparent py-4 text-[16px] text-ink outline-none placeholder:text-sub/70"
             />
             {term && (
               <button type="button" onClick={() => setTerm("")} aria-label="ล้าง" className="shrink-0 rounded-full p-1 text-sub hover:bg-mist hover:text-ink">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
               </button>
             )}
-            <button type="button" onClick={onClose} className="shrink-0 rounded-lg px-2 py-1 text-[15px] text-sub hover:text-ink">esc</button>
+            <button type="button" onClick={onClose} className="shrink-0 rounded-lg px-2 py-1 text-[12px] text-sub hover:text-ink">esc</button>
           </form>
 
           {/* ผลลัพธ์ */}
           <div className="max-h-[62vh] overflow-y-auto">
             {!dq && (
-              <p className="px-5 py-10 text-center text-[16px] text-sub">พิมพ์เพื่อค้นหาหนังสือ · รองรับ ISBN</p>
+              <p className="px-5 py-10 text-center text-[13px] text-sub">พิมพ์เพื่อค้นหาหนังสือ · รองรับ ISBN</p>
             )}
 
             {dq && items.length === 0 && !isFetching && (
-              <p className="px-5 py-10 text-center text-[16px] text-sub">ไม่พบผลลัพธ์สำหรับ “{dq}”</p>
+              <p className="px-5 py-10 text-center text-[13px] text-sub">ไม่พบผลลัพธ์สำหรับ “{dq}”</p>
             )}
 
             {items.length > 0 && (
@@ -108,16 +108,16 @@ export default function SearchModal({ open, onClose }) {
                           {b.coverImage && <img src={b.coverImage} alt="" className="h-full w-full object-cover" />}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p title={b.title} className="truncate text-[17px] font-medium text-ink">{b.title}</p>
+                          <p title={b.title} className="truncate text-[14px] font-medium text-ink">{b.title}</p>
                           <p
                             title={b.author + (b.translator ? ` · แปล ${b.translator}` : "")}
-                            className="truncate text-[15.5px] text-sub"
+                            className="truncate text-[12.5px] text-sub"
                           >
                             {b.author}
                             {b.translator && ` · แปล ${b.translator}`}
                           </p>
                         </div>
-                        <span className={`shrink-0 text-[16px] font-semibold ${pi.price < pi.original ? "text-rose-600" : "text-ink"}`}>
+                        <span className={`shrink-0 text-[13px] font-semibold ${pi.price < pi.original ? "text-rose-600" : "text-ink"}`}>
                           {formatPrice(pi.price)}
                         </span>
                       </Link>
@@ -128,7 +128,7 @@ export default function SearchModal({ open, onClose }) {
             )}
 
             {dq && total > items.length && (
-              <button onClick={goAll} className="w-full border-t border-line px-5 py-3 text-left text-[16px] font-medium text-accent hover:bg-mist">
+              <button onClick={goAll} className="w-full border-t border-line px-5 py-3 text-left text-[13px] font-medium text-accent hover:bg-mist">
                 ดูผลการค้นหาทั้งหมด ({total}) →
               </button>
             )}

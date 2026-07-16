@@ -71,12 +71,12 @@ export default function AdminOrders() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-[16px] transition ${
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-[13px] transition ${
               filter === f.key ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"
             }`}
           >
             {f.label}
-            <span className={`rounded-full px-1.5 text-[14px] ${filter === f.key ? "bg-white/20" : "bg-white text-sub"}`}>
+            <span className={`rounded-full px-1.5 text-[11px] ${filter === f.key ? "bg-white/20" : "bg-white text-sub"}`}>
               {counts[f.key]}
             </span>
           </button>
@@ -84,7 +84,7 @@ export default function AdminOrders() {
       </div>
 
       {/* หัวตาราง (เดสก์ท็อป) */}
-      <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[15px] text-sub lg:grid">
+      <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[12px] text-sub lg:grid">
         <span>คำสั่งซื้อ</span>
         <span>วันที่ · ช่องทาง</span>
         <span>การชำระเงิน</span>
@@ -117,15 +117,15 @@ function OrderRow({ order, open, onToggle }) {
         className="grid w-full grid-cols-[1fr_auto] items-center gap-3 px-4 py-3.5 text-left lg:grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px]"
       >
         <div className="min-w-0">
-          <p className="truncate text-[17px] font-medium text-ink">
+          <p className="truncate text-[14px] font-medium text-ink">
             #{order.id.slice(0, 8).toUpperCase()}
-            <span className="ml-2 text-[15px] font-normal text-sub">{order.user?.name || order.user?.email}</span>
+            <span className="ml-2 text-[12px] font-normal text-sub">{order.user?.name || order.user?.email}</span>
           </p>
-          <p className="text-[15px] text-sub lg:hidden">
+          <p className="text-[12px] text-sub lg:hidden">
             {new Date(order.createdAt).toLocaleDateString("th-TH", { dateStyle: "medium" })} · {PAYMENT_LABEL[order.paymentMethod]}
           </p>
         </div>
-        <p className="hidden text-[15px] text-sub lg:block">
+        <p className="hidden text-[12px] text-sub lg:block">
           {new Date(order.createdAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
           <br />
           {PAYMENT_LABEL[order.paymentMethod]}
@@ -140,7 +140,7 @@ function OrderRow({ order, open, onToggle }) {
           <span className="lg:hidden">
             <Badge cls={PAY_BADGE[order.paymentStatus]}>{PAY_TH[order.paymentStatus]}</Badge>
           </span>
-          <span className="text-[17px] font-semibold text-ink lg:text-right">{formatPrice(order.total)}</span>
+          <span className="text-[14px] font-semibold text-ink lg:text-right">{formatPrice(order.total)}</span>
           <svg
             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
             className={`justify-self-center text-sub transition-transform ${open ? "rotate-180" : ""}`}
@@ -154,7 +154,7 @@ function OrderRow({ order, open, onToggle }) {
       {open && (
         <div className="grid gap-6 border-t border-line px-4 py-5 md:grid-cols-[1.6fr_1fr]">
           {/* ซ้าย: ข้อมูล */}
-          <div className="space-y-5 text-[16px]">
+          <div className="space-y-5 text-[13px]">
             <Block title="รายการสินค้า">
               <ul className="space-y-1 text-sub">
                 {order.items.map((it) => (
@@ -189,7 +189,7 @@ function OrderRow({ order, open, onToggle }) {
               <select
                 value={order.status}
                 onChange={(e) => update.mutate({ id: order.id, status: e.target.value })}
-                className="w-full max-w-56 rounded-lg border border-line px-3 py-2 text-[16px] outline-none focus:border-ink/30"
+                className="w-full max-w-56 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30"
               >
                 {STATUS.map(([v, l]) => (
                   <option key={v} value={v}>{l}</option>
@@ -202,13 +202,13 @@ function OrderRow({ order, open, onToggle }) {
 
           {/* ขวา: สลิป + อนุมัติ */}
           <div>
-            <p className="mb-2 text-[16px] font-medium text-ink">สลิปการชำระเงิน</p>
+            <p className="mb-2 text-[13px] font-medium text-ink">สลิปการชำระเงิน</p>
             {order.slipImage ? (
               <a href={order.slipImage} target="_blank" rel="noreferrer" className="block">
                 <img src={order.slipImage} alt="สลิป" className="mx-auto max-h-72 w-auto rounded-xl border border-line" />
               </a>
             ) : (
-              <div className="flex h-32 items-center justify-center rounded-xl bg-mist text-[15px] text-sub">ยังไม่มีสลิป</div>
+              <div className="flex h-32 items-center justify-center rounded-xl bg-mist text-[12px] text-sub">ยังไม่มีสลิป</div>
             )}
 
             {order.paymentStatus !== "PAID" ? (
@@ -216,21 +216,21 @@ function OrderRow({ order, open, onToggle }) {
                 <button
                   onClick={() => update.mutate({ id: order.id, paymentStatus: "PAID" })}
                   disabled={update.isPending}
-                  className="mt-3 w-full rounded-full bg-emerald-600 py-2.5 text-[16px] font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                  className="mt-3 w-full rounded-full bg-emerald-600 py-2.5 text-[13px] font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
                 >
                   ✓ อนุมัติการชำระเงิน
                 </button>
                 {order.paymentStatus === "PENDING_REVIEW" && (
                   <button
                     onClick={() => update.mutate({ id: order.id, paymentStatus: "FAILED" })}
-                    className="mt-2 w-full rounded-full border border-line py-2 text-[15px] text-sub hover:text-red-600"
+                    className="mt-2 w-full rounded-full border border-line py-2 text-[12px] text-sub hover:text-red-600"
                   >
                     ปฏิเสธสลิป
                   </button>
                 )}
               </>
             ) : (
-              <p className="mt-3 rounded-full bg-emerald-50 py-2.5 text-center text-[16px] font-medium text-emerald-700">
+              <p className="mt-3 rounded-full bg-emerald-50 py-2.5 text-center text-[13px] font-medium text-emerald-700">
                 ✓ ชำระเงินแล้ว
               </p>
             )}
@@ -286,12 +286,12 @@ function TrackingBlock({ order }) {
           value={num}
           onChange={(e) => setNum(e.target.value.toUpperCase())}
           placeholder={isTP ? "เลขพัสดุ เช่น EF667142218TH" : "เลขพัสดุ (ถ้ามี)"}
-          className="min-w-52 flex-1 rounded-lg border border-line px-3 py-2 text-[16px] uppercase outline-none focus:border-ink/30"
+          className="min-w-52 flex-1 rounded-lg border border-line px-3 py-2 text-[13px] uppercase outline-none focus:border-ink/30"
         />
         <button
           onClick={saveNum}
           disabled={!dirty || update.isPending}
-          className="rounded-full bg-ink px-4 py-2 text-[16px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
+          className="rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-40"
         >
           บันทึกเลข
         </button>
@@ -300,7 +300,7 @@ function TrackingBlock({ order }) {
             onClick={refresh}
             disabled={busy || !order.trackingNumber || dirty}
             title={dirty ? "บันทึกเลขพัสดุก่อน" : ""}
-            className="rounded-full border border-line px-4 py-2 text-[16px] font-medium text-ink transition hover:bg-mist disabled:opacity-40"
+            className="rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-40"
           >
             {busy ? "กำลังดึง..." : "อัปเดตสถานะ"}
           </button>
@@ -308,27 +308,27 @@ function TrackingBlock({ order }) {
       </div>
 
       {!isTP && (
-        <p className="mt-2 text-[15px] text-sub">
+        <p className="mt-2 text-[12px] text-sub">
           ช่องทางนี้ไม่รองรับติดตามสถานะอัตโนมัติ — เมื่อจัดส่ง/ส่งถึงแล้ว เปลี่ยน “สถานะคำสั่งซื้อ” ด้านบนเอง (เป็น จัดส่งแล้ว → สำเร็จ)
         </p>
       )}
 
       {isTP && order.trackingStatus && (
-        <div className="mt-3 rounded-xl bg-mist px-3 py-2.5 text-[16px]">
+        <div className="mt-3 rounded-xl bg-mist px-3 py-2.5 text-[13px]">
           <p className="font-medium text-ink">{order.trackingStatus}</p>
-          <p className="text-[15px] text-sub">
+          <p className="text-[12px] text-sub">
             {fmtDate(order.trackingStatusDate)}
             {order.trackingUpdatedAt && ` · อัปเดตเมื่อ ${fmtDate(order.trackingUpdatedAt)}`}
           </p>
           {history.length > 1 && (
-            <button onClick={() => setShowHistory((s) => !s)} className="mt-1 text-[15px] text-accent">
+            <button onClick={() => setShowHistory((s) => !s)} className="mt-1 text-[12px] text-accent">
               {showHistory ? "ซ่อนประวัติ" : `ดูประวัติทั้งหมด (${history.length})`}
             </button>
           )}
           {showHistory && (
             <ul className="mt-2 space-y-1.5 border-t border-line pt-2">
               {[...history].reverse().map((h, i) => (
-                <li key={i} className="text-[15px]">
+                <li key={i} className="text-[12px]">
                   <span className="text-ink">{h.status}</span>
                   <span className="text-sub"> · {fmtDate(h.date)}{h.location && ` · ${h.location}`}</span>
                 </li>
@@ -338,13 +338,13 @@ function TrackingBlock({ order }) {
         </div>
       )}
 
-      {msg && <p className={`mt-2 text-[15px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
+      {msg && <p className={`mt-2 text-[12px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
       {order.trackingLink && (
         <a
           href={order.trackingLink}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 inline-block text-[15px] text-sub hover:text-ink"
+          className="mt-2 inline-block text-[12px] text-sub hover:text-ink"
         >
           {isTP ? "เปิดหน้าไปรษณีย์ไทย ↗" : "เปิดหน้าติดตามพัสดุ ↗"}
         </a>
@@ -370,22 +370,22 @@ function ZortBlock({ order }) {
   return (
     <div className="mt-4 border-t border-line pt-3">
       <div className="flex items-center justify-between">
-        <span className="text-[15px] font-semibold uppercase tracking-wide text-sub">ZORT</span>
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-sub">ZORT</span>
         {order.zortOrderId ? (
-          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[14px] font-medium text-emerald-700">
+          <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
             ส่งแล้ว #{order.zortOrderId}
           </span>
         ) : (
           <button
             onClick={run}
             disabled={sync.isPending}
-            className="rounded-full border border-line px-3 py-1.5 text-[15px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+            className="rounded-full border border-line px-3 py-1.5 text-[12px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
           >
             {sync.isPending ? "กำลังส่ง..." : "ส่งไป ZORT"}
           </button>
         )}
       </div>
-      {msg && <p className={`mt-2 text-[15px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
+      {msg && <p className={`mt-2 text-[12px] ${msg.ok ? "text-emerald-600" : "text-red-600"}`}>{msg.text}</p>}
     </div>
   );
 }
@@ -427,8 +427,8 @@ function OrderInfo({ order }) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <div className="mb-1.5 flex items-center gap-2">
-            <p className="text-[15px] font-semibold uppercase tracking-wide text-sub">ที่อยู่จัดส่ง</p>
-            <button onClick={startEdit} className="text-[15px] text-accent">แก้ไข</button>
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-sub">ที่อยู่จัดส่ง</p>
+            <button onClick={startEdit} className="text-[12px] text-accent">แก้ไข</button>
           </div>
           <p className="text-ink">{order.shipName} · {order.shipPhone}</p>
           <p className="text-sub">{order.shipAddress}</p>
@@ -447,7 +447,7 @@ function OrderInfo({ order }) {
 
   return (
     <div className="rounded-xl border border-line bg-mist/40 p-4">
-      <p className="mb-3 text-[15px] font-semibold uppercase tracking-wide text-sub">แก้ไขข้อมูลจัดส่ง</p>
+      <p className="mb-3 text-[12px] font-semibold uppercase tracking-wide text-sub">แก้ไขข้อมูลจัดส่ง</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <EditField label="ชื่อผู้รับ" value={form.shipName} onChange={set("shipName")} />
         <EditField label="เบอร์โทร" value={form.shipPhone} onChange={set("shipPhone")} />
@@ -456,7 +456,7 @@ function OrderInfo({ order }) {
         <EditField label="หมายเหตุ" value={form.note} onChange={set("note")} className="sm:col-span-2" />
       </div>
 
-      <label className="mt-3 flex items-center gap-2 text-[16px] text-ink">
+      <label className="mt-3 flex items-center gap-2 text-[13px] text-ink">
         <input
           type="checkbox"
           checked={form.needReceipt}
@@ -479,7 +479,7 @@ function OrderInfo({ order }) {
           <button
             type="button"
             onClick={() => setForm((f) => ({ ...f, receiptName: f.shipName, receiptAddress: f.shipAddress }))}
-            className="text-[15px] text-accent"
+            className="text-[12px] text-accent"
           >
             ↺ ใช้ข้อมูลเดียวกับที่อยู่จัดส่ง
           </button>
@@ -494,7 +494,7 @@ function OrderInfo({ order }) {
                   receiptAddress: order.user.receiptAddress || f.receiptAddress,
                 }))
               }
-              className="text-[15px] font-medium text-accent"
+              className="text-[12px] font-medium text-accent"
             >
               ⬇ ดึงข้อมูลใบเสร็จของลูกค้า
             </button>
@@ -509,13 +509,13 @@ function OrderInfo({ order }) {
         </div>
       )}
 
-      {error && <p className="mt-2 text-[15px] text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-[12px] text-red-600">{error}</p>}
 
       <div className="mt-4 flex gap-2">
-        <button onClick={save} disabled={update.isPending} className="rounded-full bg-accent px-5 py-2 text-[16px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+        <button onClick={save} disabled={update.isPending} className="rounded-full bg-accent px-5 py-2 text-[13px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
           {update.isPending ? "กำลังบันทึก..." : "บันทึก"}
         </button>
-        <button onClick={() => setEditing(false)} className="rounded-full border border-line px-4 py-2 text-[16px] text-ink hover:bg-white">ยกเลิก</button>
+        <button onClick={() => setEditing(false)} className="rounded-full border border-line px-4 py-2 text-[13px] text-ink hover:bg-white">ยกเลิก</button>
       </div>
     </div>
   );
@@ -529,20 +529,20 @@ function hasProfileReceipt(user) {
 function EditField({ label, value, onChange, className = "" }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1 block text-[14px] font-medium text-sub">{label}</span>
-      <input value={value} onChange={onChange} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[16px] text-ink outline-none focus:border-ink/30" />
+      <span className="mb-1 block text-[11px] font-medium text-sub">{label}</span>
+      <input value={value} onChange={onChange} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13px] text-ink outline-none focus:border-ink/30" />
     </label>
   );
 }
 
 function Badge({ cls, children }) {
-  return <span className={`inline-block rounded-full px-2.5 py-1 text-[14px] font-medium ${cls}`}>{children}</span>;
+  return <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-medium ${cls}`}>{children}</span>;
 }
 
 function Block({ title, children }) {
   return (
     <div>
-      <p className="mb-1.5 text-[15px] font-semibold uppercase tracking-wide text-sub">{title}</p>
+      <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-sub">{title}</p>
       <div className="space-y-0.5">{children}</div>
     </div>
   );

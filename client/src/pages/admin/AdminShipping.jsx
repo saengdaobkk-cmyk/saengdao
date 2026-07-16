@@ -54,15 +54,15 @@ export default function AdminShipping() {
 
   return (
     <div className="w-full space-y-6">
-      <p className="text-[16px] text-sub">
+      <p className="text-[13px] text-sub">
         จัดการช่องทางจัดส่งที่ลูกค้าเลือกได้ตอนสั่งซื้อ — ตั้งชื่อ + ค่าส่ง (0 = ส่งฟรี) · ลากลำดับด้วยปุ่มลูกศร · ปิดไว้ชั่วคราวได้
       </p>
 
       {/* รายการช่องทาง */}
       <div className="rounded-2xl border border-line bg-white p-2">
-        {isLoading && <p className="px-4 py-3 text-[16px] text-sub">กำลังโหลด...</p>}
+        {isLoading && <p className="px-4 py-3 text-[13px] text-sub">กำลังโหลด...</p>}
         {!isLoading && items.length === 0 && (
-          <p className="px-4 py-3 text-[16px] text-sub">ยังไม่มีช่องทางจัดส่ง — เพิ่มด้านล่าง</p>
+          <p className="px-4 py-3 text-[13px] text-sub">ยังไม่มีช่องทางจัดส่ง — เพิ่มด้านล่าง</p>
         )}
         <ul className="divide-y divide-line">
           {items.map((m, i) => (
@@ -76,17 +76,17 @@ export default function AdminShipping() {
                 </button>
               </div>
               <div className="min-w-0 flex-1">
-                <p className={`truncate text-[17px] font-medium ${m.active ? "text-ink" : "text-sub line-through"}`}>{m.name}</p>
-                {m.note && <p className="truncate text-[15px] text-sub">{m.note}</p>}
+                <p className={`truncate text-[14px] font-medium ${m.active ? "text-ink" : "text-sub line-through"}`}>{m.name}</p>
+                {m.note && <p className="truncate text-[12px] text-sub">{m.note}</p>}
               </div>
-              <span className="shrink-0 text-[17px] font-semibold text-ink">
+              <span className="shrink-0 text-[14px] font-semibold text-ink">
                 {Number(m.fee) === 0 ? <span className="text-emerald-600">ฟรี</span> : formatPrice(m.fee)}
               </span>
-              <button onClick={() => toggleActive(m)} className={`text-[16px] ${m.active ? "text-sub hover:text-ink" : "text-accent"}`}>
+              <button onClick={() => toggleActive(m)} className={`text-[13px] ${m.active ? "text-sub hover:text-ink" : "text-accent"}`}>
                 {m.active ? "ซ่อน" : "แสดง"}
               </button>
-              <button onClick={() => startEdit(m)} className="text-[16px] text-accent">แก้ไข</button>
-              <button onClick={() => confirm(`ลบช่องทาง "${m.name}"?`) && del.mutate(m.id)} className="text-[16px] text-sub hover:text-red-600">ลบ</button>
+              <button onClick={() => startEdit(m)} className="text-[13px] text-accent">แก้ไข</button>
+              <button onClick={() => confirm(`ลบช่องทาง "${m.name}"?`) && del.mutate(m.id)} className="text-[13px] text-sub hover:text-red-600">ลบ</button>
             </li>
           ))}
         </ul>
@@ -94,32 +94,32 @@ export default function AdminShipping() {
 
       {/* ฟอร์มเพิ่ม/แก้ไข */}
       <form onSubmit={submit} className="rounded-2xl border border-line bg-white p-6">
-        <p className="mb-3 text-[16px] font-semibold text-ink">{editing ? `แก้ไข: ${editing.name}` : "เพิ่มช่องทางจัดส่ง"}</p>
+        <p className="mb-3 text-[13px] font-semibold text-ink">{editing ? `แก้ไข: ${editing.name}` : "เพิ่มช่องทางจัดส่ง"}</p>
 
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-[15px] text-sub">ชื่อช่องทาง</label>
-            <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="เช่น ไปรษณีย์ EMS / Flash Express" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[17px] outline-none focus:border-ink/30" />
+            <label className="mb-1 block text-[12px] text-sub">ชื่อช่องทาง</label>
+            <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="เช่น ไปรษณีย์ EMS / Flash Express" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30" />
           </div>
           <div>
-            <label className="mb-1 block text-[15px] text-sub">ค่าส่ง (บาท)</label>
-            <input type="number" min="0" step="1" value={form.fee} onChange={(e) => setForm((f) => ({ ...f, fee: e.target.value }))} placeholder="0 = ฟรี" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[17px] outline-none focus:border-ink/30" />
+            <label className="mb-1 block text-[12px] text-sub">ค่าส่ง (บาท)</label>
+            <input type="number" min="0" step="1" value={form.fee} onChange={(e) => setForm((f) => ({ ...f, fee: e.target.value }))} placeholder="0 = ฟรี" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30" />
           </div>
         </div>
         <div className="mt-2">
-          <label className="mb-1 block text-[15px] text-sub">หมายเหตุ (ไม่บังคับ)</label>
-          <input value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} placeholder="เช่น ส่งถึงใน 1-2 วันทำการ" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[16px] outline-none focus:border-ink/30" />
+          <label className="mb-1 block text-[12px] text-sub">หมายเหตุ (ไม่บังคับ)</label>
+          <input value={form.note} onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))} placeholder="เช่น ส่งถึงใน 1-2 วันทำการ" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
         </div>
         <div className="mt-2">
-          <label className="mb-1 block text-[15px] text-sub">ลิงก์ติดตามพัสดุ (ไม่บังคับ)</label>
-          <input value={form.trackingUrl} onChange={(e) => setForm((f) => ({ ...f, trackingUrl: e.target.value }))} placeholder="เช่น https://www.flashexpress.com/tracking/?se={code}" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[15px] outline-none focus:border-ink/30" />
-          <p className="mt-1 text-[13px] text-sub">ใส่ <code className="rounded bg-mist px-1">{"{code}"}</code> ตรงตำแหน่งเลขพัสดุ · ไปรษณีย์ไทยไม่ต้องใส่ (ระบบติดตามให้อัตโนมัติ)</p>
+          <label className="mb-1 block text-[12px] text-sub">ลิงก์ติดตามพัสดุ (ไม่บังคับ)</label>
+          <input value={form.trackingUrl} onChange={(e) => setForm((f) => ({ ...f, trackingUrl: e.target.value }))} placeholder="เช่น https://www.flashexpress.com/tracking/?se={code}" className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[12px] outline-none focus:border-ink/30" />
+          <p className="mt-1 text-[10px] text-sub">ใส่ <code className="rounded bg-mist px-1">{"{code}"}</code> ตรงตำแหน่งเลขพัสดุ · ไปรษณีย์ไทยไม่ต้องใส่ (ระบบติดตามให้อัตโนมัติ)</p>
         </div>
 
-        {error && <p className="mt-2 text-[15px] text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-[12px] text-red-600">{error}</p>}
         <div className="mt-4 flex gap-2">
-          <button type="submit" disabled={save.isPending} className="rounded-full bg-accent px-5 py-2 text-[16px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">{editing ? "บันทึก" : "เพิ่มช่องทาง"}</button>
-          {editing && <button type="button" onClick={cancel} className="rounded-full border border-line px-4 py-2 text-[16px] text-ink hover:bg-mist">ยกเลิก</button>}
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-accent px-5 py-2 text-[13px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">{editing ? "บันทึก" : "เพิ่มช่องทาง"}</button>
+          {editing && <button type="button" onClick={cancel} className="rounded-full border border-line px-4 py-2 text-[13px] text-ink hover:bg-mist">ยกเลิก</button>}
         </div>
       </form>
     </div>

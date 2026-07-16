@@ -42,7 +42,7 @@ export default function App() {
               </button>
               <Link
                 to="/"
-                className="text-[19px] font-semibold tracking-[0.22em] text-ink"
+                className="text-[16px] font-semibold tracking-[0.22em] text-ink"
               >
                 SAENGDAO
               </Link>
@@ -55,7 +55,7 @@ export default function App() {
                   to={n.url}
                   end={n.url === "/"}
                   className={({ isActive }) =>
-                    `text-[16px] tracking-tight transition-colors ${
+                    `text-[13px] tracking-tight transition-colors ${
                       isActive ? "text-ink" : "text-sub hover:text-ink"
                     }`
                   }
@@ -90,7 +90,7 @@ export default function App() {
         />
         <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex h-12 items-center justify-between border-b border-line px-5">
-            <span className="text-[18px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
+            <span className="text-[15px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
             <button onClick={() => setMobileOpen(false)} aria-label="ปิด" className="rounded-lg p-1 text-sub hover:bg-mist hover:text-ink">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
             </button>
@@ -103,7 +103,7 @@ export default function App() {
                 end={n.url === "/"}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `block rounded-xl px-4 py-3 text-[18px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`
+                  `block rounded-xl px-4 py-3 text-[15px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`
                 }
               >
                 {n.label}
@@ -111,7 +111,7 @@ export default function App() {
             ))}
           </nav>
           <div className="border-t border-line p-3">
-            <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[18px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
+            <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
           </div>
         </div>
       </div>
@@ -128,8 +128,8 @@ export default function App() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {/* แบรนด์ */}
             <div className="lg:col-span-1">
-              <p className="text-[18px] font-semibold tracking-[0.22em]">SAENGDAO</p>
-              <p className="mt-3 max-w-xs text-[16px] leading-relaxed text-sub">
+              <p className="text-[15px] font-semibold tracking-[0.22em]">SAENGDAO</p>
+              <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-sub">
                 {t("common.brand_tagline", "ร้านหนังสือแสงดาว คัดหนังสือดีมาเพื่อคุณ ส่งถึงบ้านทั่วประเทศ")}
               </p>
               <div className="mt-4 flex gap-3">
@@ -158,16 +158,16 @@ export default function App() {
 
             {/* ช่องทางชำระเงิน */}
             <div>
-              <p className="mb-3 text-[16px] font-semibold text-ink">ชำระเงินปลอดภัย</p>
+              <p className="mb-3 text-[13px] font-semibold text-ink">ชำระเงินปลอดภัย</p>
               <div className="flex flex-wrap gap-2">
                 {["พร้อมเพย์", "โอนเงิน", "บัตรเครดิต"].map((p) => (
-                  <span key={p} className="rounded-lg border border-line bg-white px-2.5 py-1 text-[14px] text-sub">{p}</span>
+                  <span key={p} className="rounded-lg border border-line bg-white px-2.5 py-1 text-[11px] text-sub">{p}</span>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="mt-12 border-t border-line pt-6 text-[15px] text-sub">
+          <div className="mt-12 border-t border-line pt-6 text-[12px] text-sub">
             {t("footer.copyright", "© 2026 SAENGDAO — ร้านหนังสือออนไลน์")}
           </div>
         </div>
@@ -179,11 +179,11 @@ export default function App() {
 function FooterCol({ title, links }) {
   return (
     <div>
-      <p className="mb-3 text-[16px] font-semibold text-ink">{title}</p>
+      <p className="mb-3 text-[13px] font-semibold text-ink">{title}</p>
       <ul className="space-y-2">
         {links.map((l) => (
           <li key={l.to}>
-            <Link to={l.to} className="text-[16px] text-sub transition hover:text-ink">{l.label}</Link>
+            <Link to={l.to} className="text-[13px] text-sub transition hover:text-ink">{l.label}</Link>
           </li>
         ))}
       </ul>
@@ -207,7 +207,7 @@ function CartButton() {
   const { cartDrawerEnabled } = useSettings();
 
   const badge = count > 0 && (
-    <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[13px] font-semibold text-white">
+    <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white">
       {count}
     </span>
   );
@@ -254,7 +254,7 @@ function AccountMenu() {
     return (
       <Link
         to="/login"
-        className="text-[16px] tracking-tight text-sub transition-colors hover:text-ink"
+        className="text-[13px] tracking-tight text-sub transition-colors hover:text-ink"
       >
         เข้าสู่ระบบ
       </Link>
@@ -274,10 +274,10 @@ function AccountMenu() {
       {open && (
         <div className="absolute right-0 mt-3 w-56 overflow-hidden rounded-2xl border border-line bg-white/90 shadow-lg backdrop-blur-xl">
           <div className="border-b border-line px-4 py-3">
-            <p className="text-[17px] font-medium text-ink">{user.name || "สมาชิก"}</p>
-            <p className="truncate text-[15px] text-sub">{user.email}</p>
+            <p className="text-[14px] font-medium text-ink">{user.name || "สมาชิก"}</p>
+            <p className="truncate text-[12px] text-sub">{user.email}</p>
           </div>
-          <div className="py-1.5 text-[17px]">
+          <div className="py-1.5 text-[14px]">
             <Link to="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
               บัญชีของฉัน
             </Link>

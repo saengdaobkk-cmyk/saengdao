@@ -57,7 +57,7 @@ export default function CartDrawer() {
       >
         {/* หัว */}
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <h2 className="text-[18px] font-semibold tracking-tight text-ink">
+          <h2 className="text-[15px] font-semibold tracking-tight text-ink">
             ตะกร้า {count > 0 && <span className="text-sub">({count})</span>}
           </h2>
           <button
@@ -75,10 +75,10 @@ export default function CartDrawer() {
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
             <span className="text-4xl opacity-20">🛍️</span>
-            <p className="mt-4 text-[17px] text-sub">ตะกร้ายังว่างอยู่</p>
+            <p className="mt-4 text-[14px] text-sub">ตะกร้ายังว่างอยู่</p>
             <button
               onClick={closeDrawer}
-              className="mt-6 rounded-full bg-accent px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-accent/90"
+              className="mt-6 rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90"
             >
               เลือกซื้อหนังสือ
             </button>
@@ -99,21 +99,21 @@ export default function CartDrawer() {
                     <Link
                       to={`/books/${item.id}`}
                       onClick={closeDrawer}
-                      className="line-clamp-1 text-[17px] font-medium text-ink hover:text-accent"
+                      className="line-clamp-1 text-[14px] font-medium text-ink hover:text-accent"
                     >
                       {item.title}
                     </Link>
-                    {item.variantName && <span className="text-[14px] text-ink/60">{item.variantName}</span>}
-                    <p className="text-[15px] text-sub">{formatPrice(item.price)}</p>
+                    {item.variantName && <span className="text-[11px] text-ink/60">{item.variantName}</span>}
+                    <p className="text-[12px] text-sub">{formatPrice(item.price)}</p>
                     <div className="mt-auto flex items-center justify-between pt-2">
                       <div className="flex items-center rounded-full border border-line">
                         <Qty onClick={() => setQty(item.key, item.quantity - 1)} disabled={item.quantity <= 1}>−</Qty>
-                        <span className="w-7 text-center text-[16px] tabular-nums">{item.quantity}</span>
+                        <span className="w-7 text-center text-[13px] tabular-nums">{item.quantity}</span>
                         <Qty onClick={() => setQty(item.key, item.quantity + 1)} disabled={item.quantity >= item.stock}>+</Qty>
                       </div>
                       <button
                         onClick={() => remove(item.key)}
-                        className="text-[15px] text-sub transition hover:text-red-600"
+                        className="text-[12px] text-sub transition hover:text-red-600"
                       >
                         ลบ
                       </button>
@@ -125,21 +125,21 @@ export default function CartDrawer() {
 
             {/* ท้าย */}
             <div className="border-t border-line px-5 py-4">
-              <div className="flex items-center justify-between text-[18px]">
+              <div className="flex items-center justify-between text-[15px]">
                 <span className="text-sub">ยอดรวม</span>
                 <span className="font-semibold text-ink">{formatPrice(subtotal)}</span>
               </div>
-              <p className="mt-1 text-[15px] text-sub">ค่าจัดส่งฟรีทั่วประเทศ</p>
+              <p className="mt-1 text-[12px] text-sub">ค่าจัดส่งฟรีทั่วประเทศ</p>
               <button
                 onClick={goCheckout}
-                className="mt-4 w-full rounded-full bg-accent py-3 text-[18px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99]"
+                className="mt-4 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99]"
               >
                 ดำเนินการสั่งซื้อ
               </button>
               <Link
                 to="/cart"
                 onClick={closeDrawer}
-                className="mt-2 block text-center text-[16px] text-sub hover:text-ink"
+                className="mt-2 block text-center text-[13px] text-sub hover:text-ink"
               >
                 ดูตะกร้าแบบเต็ม
               </Link>
@@ -156,7 +156,7 @@ function Qty({ children, onClick, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex h-7 w-7 items-center justify-center text-[18px] text-ink transition hover:bg-line/60 disabled:opacity-30"
+      className="flex h-7 w-7 items-center justify-center text-[15px] text-ink transition hover:bg-line/60 disabled:opacity-30"
     >
       {children}
     </button>

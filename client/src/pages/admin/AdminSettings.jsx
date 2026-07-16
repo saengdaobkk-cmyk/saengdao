@@ -9,7 +9,7 @@ export default function AdminSettings() {
     <div className="space-y-12">
       {/* การแสดงผล */}
       <section>
-        <h2 className="mb-4 text-[18px] font-semibold text-ink">การแสดงผล</h2>
+        <h2 className="mb-4 text-[15px] font-semibold text-ink">การแสดงผล</h2>
         <div className="divide-y divide-line rounded-2xl border border-line bg-white">
           <ToggleRow
             title="Cart Drawer"
@@ -60,11 +60,11 @@ function ContactSettings({ settings, save }) {
 
   return (
     <section>
-      <h2 className="mb-1 text-[18px] font-semibold text-ink">ข้อมูลติดต่อ</h2>
-      <p className="mb-4 text-[15px] text-sub">แสดงบนหน้า "ติดต่อเรา" และ footer</p>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ข้อมูลติดต่อ</h2>
+      <p className="mb-4 text-[12px] text-sub">แสดงบนหน้า "ติดต่อเรา" และ footer</p>
       <form onSubmit={submit} className="space-y-6 rounded-2xl border border-line bg-white p-6">
         <div>
-          <p className="mb-3 text-[16px] font-semibold text-ink">ติดต่อ</p>
+          <p className="mb-3 text-[13px] font-semibold text-ink">ติดต่อ</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="เบอร์โทรศัพท์" value={form.contactPhone} onChange={set("contactPhone")} placeholder="0812345678" />
             <Input label="อีเมล" value={form.contactEmail} onChange={set("contactEmail")} placeholder="hello@saengdao.com" />
@@ -74,7 +74,7 @@ function ContactSettings({ settings, save }) {
           </div>
         </div>
         <div>
-          <p className="mb-3 text-[16px] font-semibold text-ink">โซเชียล (ลิงก์เพจ)</p>
+          <p className="mb-3 text-[13px] font-semibold text-ink">โซเชียล (ลิงก์เพจ)</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Facebook (URL)" value={form.socialFacebook} onChange={set("socialFacebook")} placeholder="https://facebook.com/..." />
             <Input label="Instagram (URL)" value={form.socialInstagram} onChange={set("socialInstagram")} placeholder="https://instagram.com/..." />
@@ -82,10 +82,10 @@ function ContactSettings({ settings, save }) {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          {saved && <span className="text-[16px] text-emerald-600">บันทึกแล้ว</span>}
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
         </div>
       </form>
     </section>
@@ -121,19 +121,19 @@ function PaymentSettings({ settings, save }) {
 
   return (
     <section>
-      <h2 className="mb-1 text-[18px] font-semibold text-ink">การชำระเงิน</h2>
-      <p className="mb-4 text-[15px] text-sub">แสดงให้ลูกค้าเห็นตอนชำระเงิน (QR สร้างจากพร้อมเพย์อัตโนมัติ)</p>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">การชำระเงิน</h2>
+      <p className="mb-4 text-[12px] text-sub">แสดงให้ลูกค้าเห็นตอนชำระเงิน (QR สร้างจากพร้อมเพย์อัตโนมัติ)</p>
 
       <form onSubmit={submit} className="space-y-6 rounded-2xl border border-line bg-white p-6">
         <div>
-          <p className="mb-3 text-[16px] font-semibold text-ink">พร้อมเพย์</p>
+          <p className="mb-3 text-[13px] font-semibold text-ink">พร้อมเพย์</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="เบอร์ / เลขบัตรประชาชน" value={form.promptpayId} onChange={set("promptpayId")} placeholder="0812345678" />
             <Input label="ชื่อบัญชีพร้อมเพย์" value={form.promptpayName} onChange={set("promptpayName")} />
           </div>
         </div>
         <div>
-          <p className="mb-3 text-[16px] font-semibold text-ink">บัญชีธนาคาร</p>
+          <p className="mb-3 text-[13px] font-semibold text-ink">บัญชีธนาคาร</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="ธนาคาร" value={form.bankName} onChange={set("bankName")} />
             <Input label="เลขบัญชี" value={form.bankAccountNo} onChange={set("bankAccountNo")} />
@@ -141,10 +141,10 @@ function PaymentSettings({ settings, save }) {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          {saved && <span className="text-[16px] text-emerald-600">บันทึกแล้ว</span>}
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
         </div>
       </form>
     </section>
@@ -155,8 +155,8 @@ function ToggleRow({ title, desc, checked, onChange, disabled }) {
   return (
     <div className="flex items-center justify-between gap-6 px-5 py-4">
       <div>
-        <p className="text-[17px] font-medium text-ink">{title}</p>
-        <p className="mt-0.5 text-[15px] leading-relaxed text-sub">{desc}</p>
+        <p className="text-[14px] font-medium text-ink">{title}</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-sub">{desc}</p>
       </div>
       <button
         role="switch"
@@ -179,8 +179,8 @@ function ToggleRow({ title, desc, checked, onChange, disabled }) {
 function Input({ label, value, onChange, placeholder, className = "" }) {
   return (
     <label className={`block ${className}`}>
-      <span className="mb-1.5 block text-[15px] font-medium text-sub">{label}</span>
-      <input value={value} onChange={onChange} placeholder={placeholder} className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[17px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30" />
+      <span className="mb-1.5 block text-[12px] font-medium text-sub">{label}</span>
+      <input value={value} onChange={onChange} placeholder={placeholder} className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14px] text-ink outline-none transition placeholder:text-sub/50 focus:border-ink/30" />
     </label>
   );
 }

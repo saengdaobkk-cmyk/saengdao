@@ -40,7 +40,7 @@ export default function Account() {
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tightest text-ink">{user.name || "สมาชิก"}</h1>
-          <p className="text-[17px] text-sub">{user.email}</p>
+          <p className="text-[14px] text-sub">{user.email}</p>
         </div>
       </div>
 
@@ -53,7 +53,7 @@ export default function Account() {
 
       <button
         onClick={logout}
-        className="mt-12 text-[17px] text-sub transition hover:text-red-600"
+        className="mt-12 text-[14px] text-sub transition hover:text-red-600"
       >
         ออกจากระบบ
       </button>
@@ -89,8 +89,8 @@ function ProfileSection({ user, updateUser }) {
 
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-4 text-[18px] font-semibold text-ink">ข้อมูลบัญชี</h2>
-      <p className="mb-4 -mt-2 text-[15px] text-sub">ข้อมูลนี้จะถูกเติมให้อัตโนมัติตอนสั่งซื้อ</p>
+      <h2 className="mb-4 text-[15px] font-semibold text-ink">ข้อมูลบัญชี</h2>
+      <p className="mb-4 -mt-2 text-[12px] text-sub">ข้อมูลนี้จะถูกเติมให้อัตโนมัติตอนสั่งซื้อ</p>
       <form onSubmit={save} className="space-y-4">
         <Field label="ชื่อ" value={form.name} onChange={set("name")} />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -98,19 +98,19 @@ function ProfileSection({ user, updateUser }) {
           <Field label="เบอร์โทรศัพท์" type="tel" value={form.phone} onChange={set("phone")} />
         </div>
         <label className="block">
-          <span className="mb-1.5 block text-[16px] font-medium text-ink">ที่อยู่จัดส่ง</span>
+          <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่จัดส่ง</span>
           <textarea
             value={form.address}
             onChange={(e) => set("address")(e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[18px] text-ink outline-none transition focus:border-ink/30"
+            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
           />
         </label>
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {busy ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          {msg && <span className={`text-[16px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
+          {msg && <span className={`text-[13px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
         </div>
       </form>
     </section>
@@ -144,27 +144,27 @@ function ReceiptAddressSection({ user, updateUser }) {
 
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-1 text-[18px] font-semibold text-ink">ที่อยู่ออกใบเสร็จ</h2>
-      <p className="mb-4 text-[15px] text-sub">สำหรับใบเสร็จ/ใบกำกับภาษี — เว้นว่างได้ถ้าใช้ที่อยู่จัดส่ง</p>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ที่อยู่ออกใบเสร็จ</h2>
+      <p className="mb-4 text-[12px] text-sub">สำหรับใบเสร็จ/ใบกำกับภาษี — เว้นว่างได้ถ้าใช้ที่อยู่จัดส่ง</p>
       <form onSubmit={save} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="ชื่อ / บริษัท" value={form.receiptName} onChange={set("receiptName")} />
           <Field label="เลขประจำตัวผู้เสียภาษี (13 หลัก)" value={form.receiptTaxId} onChange={set("receiptTaxId")} />
         </div>
         <label className="block">
-          <span className="mb-1.5 block text-[16px] font-medium text-ink">ที่อยู่ออกใบเสร็จ</span>
+          <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่ออกใบเสร็จ</span>
           <textarea
             value={form.receiptAddress}
             onChange={(e) => set("receiptAddress")(e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[18px] text-ink outline-none transition focus:border-ink/30"
+            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
           />
         </label>
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {busy ? "กำลังบันทึก..." : "บันทึก"}
           </button>
-          {msg && <span className={`text-[16px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
+          {msg && <span className={`text-[13px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
         </div>
       </form>
     </section>
@@ -195,15 +195,15 @@ function PasswordSection() {
 
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-4 text-[18px] font-semibold text-ink">เปลี่ยนรหัสผ่าน</h2>
+      <h2 className="mb-4 text-[15px] font-semibold text-ink">เปลี่ยนรหัสผ่าน</h2>
       <form onSubmit={save} className="space-y-4">
         <Field label="รหัสผ่านปัจจุบัน" type="password" value={cur} onChange={setCur} />
         <Field label="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)" type="password" value={next} onChange={setNext} />
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy || !cur || !next} className="rounded-full bg-ink px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          <button type="submit" disabled={busy || !cur || !next} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
             {busy ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
           </button>
-          {msg && <span className={`text-[16px] ${msg.includes("แล้ว") ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
+          {msg && <span className={`text-[13px] ${msg.includes("แล้ว") ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
         </div>
       </form>
     </section>
@@ -218,13 +218,13 @@ function OrdersSection() {
 
   return (
     <section>
-      <h2 className="mb-4 text-[18px] font-semibold text-ink">ประวัติคำสั่งซื้อ</h2>
+      <h2 className="mb-4 text-[15px] font-semibold text-ink">ประวัติคำสั่งซื้อ</h2>
       {isLoading ? (
         <p className="text-sub">กำลังโหลด...</p>
       ) : !orders?.length ? (
         <div className="rounded-2xl border border-line p-8 text-center">
-          <p className="text-[17px] text-sub">ยังไม่มีคำสั่งซื้อ</p>
-          <Link to="/" className="mt-3 inline-block text-[17px] text-accent">เลือกซื้อหนังสือ</Link>
+          <p className="text-[14px] text-sub">ยังไม่มีคำสั่งซื้อ</p>
+          <Link to="/" className="mt-3 inline-block text-[14px] text-accent">เลือกซื้อหนังสือ</Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -238,19 +238,19 @@ function OrdersSection() {
                 className="flex items-center gap-4 rounded-2xl border border-line p-4 transition hover:border-ink/20"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-[17px] font-medium text-ink">
+                  <p className="text-[14px] font-medium text-ink">
                     #{o.id.slice(0, 8).toUpperCase()}
-                    <span className="ml-2 text-[15px] font-normal text-sub">
+                    <span className="ml-2 text-[12px] font-normal text-sub">
                       {new Date(o.createdAt).toLocaleDateString("th-TH", { dateStyle: "medium" })}
                     </span>
                   </p>
-                  <p className="text-[15px] text-sub">
+                  <p className="text-[12px] text-sub">
                     {o.items.length} รายการ
                     {needPay && <span className="ml-2 text-accent">· ชำระเงิน/แนบสลิป →</span>}
                   </p>
                 </div>
-                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[14px] font-medium ${st.cls}`}>{st.label}</span>
-                <span className="w-20 shrink-0 text-right text-[17px] font-semibold text-ink">{formatPrice(o.total)}</span>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${st.cls}`}>{st.label}</span>
+                <span className="w-20 shrink-0 text-right text-[14px] font-semibold text-ink">{formatPrice(o.total)}</span>
               </Link>
             );
           })}
@@ -263,12 +263,12 @@ function OrdersSection() {
 function Field({ label, type = "text", value, onChange }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[16px] font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[18px] text-ink outline-none transition focus:border-ink/30"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
       />
     </label>
   );

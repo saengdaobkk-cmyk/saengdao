@@ -15,7 +15,7 @@ export default function BookRow({ title, eyebrow, sort }) {
     <section className="mx-auto max-w-page px-5 py-10">
       <div className="mb-6 flex items-end justify-between">
         <div>
-          {eyebrow && <p className="text-[16px] font-medium tracking-tight text-sub">{eyebrow}</p>}
+          {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
           <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">{title}</h2>
         </div>
         {/* ปุ่มเลื่อน (เดสก์ท็อป) */}

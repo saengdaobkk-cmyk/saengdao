@@ -77,7 +77,7 @@ export default function ImportBooks({ onClose }) {
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 sm:p-8" onClick={(e) => e.stopPropagation()}>
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-[21px] font-semibold text-ink">นำเข้าสินค้า (CSV / Excel)</h3>
+          <h3 className="text-[18px] font-semibold text-ink">นำเข้าสินค้า (CSV / Excel)</h3>
           <button onClick={onClose} aria-label="ปิด" className="rounded-full p-1.5 text-sub hover:bg-mist hover:text-ink">✕</button>
         </div>
 
@@ -86,16 +86,16 @@ export default function ImportBooks({ onClose }) {
           <div>
             <div className="rounded-2xl bg-emerald-50 p-5 text-center">
               <p className="text-2xl font-semibold text-emerald-700">นำเข้าสำเร็จ {result.created} เล่ม</p>
-              {result.failed > 0 && <p className="mt-1 text-[17px] text-amber-700">ข้าม {result.failed} แถว (ข้อมูลไม่ครบ/ซ้ำ)</p>}
+              {result.failed > 0 && <p className="mt-1 text-[14px] text-amber-700">ข้าม {result.failed} แถว (ข้อมูลไม่ครบ/ซ้ำ)</p>}
             </div>
             {result.errors?.length > 0 && (
-              <div className="mt-4 max-h-52 overflow-y-auto rounded-xl border border-line p-3 text-[16px]">
+              <div className="mt-4 max-h-52 overflow-y-auto rounded-xl border border-line p-3 text-[13px]">
                 {result.errors.map((e, i) => (
                   <p key={i} className="text-sub">แถว {e.line}: <span className="text-red-600">{e.error}</span></p>
                 ))}
               </div>
             )}
-            <button onClick={onClose} className="mt-5 w-full rounded-full bg-ink py-3 text-[18px] font-medium text-white hover:bg-ink/90">เสร็จสิ้น</button>
+            <button onClick={onClose} className="mt-5 w-full rounded-full bg-ink py-3 text-[15px] font-medium text-white hover:bg-ink/90">เสร็จสิ้น</button>
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
@@ -109,28 +109,28 @@ export default function ImportBooks({ onClose }) {
                 className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition ${drag ? "border-accent bg-accent/5" : "border-line hover:border-ink/30"}`}
               >
                 <span className="text-4xl">📥</span>
-                <p className="mt-3 text-[18px] font-medium text-ink">ลากไฟล์มาวางที่นี่</p>
-                <p className="text-[16px] text-sub">หรือคลิกเพื่อเลือกไฟล์ (.xlsx / .csv)</p>
+                <p className="mt-3 text-[15px] font-medium text-ink">ลากไฟล์มาวางที่นี่</p>
+                <p className="text-[13px] text-sub">หรือคลิกเพื่อเลือกไฟล์ (.xlsx / .csv)</p>
                 <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => readFile(e.target.files?.[0])} className="hidden" />
               </label>
 
-              {err && <p className="mt-3 text-[16px] text-red-600">{err}</p>}
+              {err && <p className="mt-3 text-[13px] text-red-600">{err}</p>}
 
               {rows && !err && (
                 <div className="mt-4 rounded-xl border border-line p-4">
-                  <p className="text-[17px] text-ink">📄 {fileName}</p>
-                  <p className="text-[16px] text-sub">พบ <b className="text-ink">{rows.length}</b> แถว พร้อมนำเข้า</p>
+                  <p className="text-[14px] text-ink">📄 {fileName}</p>
+                  <p className="text-[13px] text-sub">พบ <b className="text-ink">{rows.length}</b> แถว พร้อมนำเข้า</p>
                   <div className="mt-3 flex gap-2">
                     <button onClick={doImport} disabled={importBooks.isPending}
-                      className="rounded-full bg-accent px-6 py-2.5 text-[17px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+                      className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
                       {importBooks.isPending ? "กำลังนำเข้า..." : `นำเข้า ${rows.length} เล่ม`}
                     </button>
-                    <button onClick={() => { setRows(null); setFileName(""); }} className="rounded-full border border-line px-4 py-2.5 text-[17px] text-ink hover:bg-mist">เลือกใหม่</button>
+                    <button onClick={() => { setRows(null); setFileName(""); }} className="rounded-full border border-line px-4 py-2.5 text-[14px] text-ink hover:bg-mist">เลือกใหม่</button>
                   </div>
                 </div>
               )}
 
-              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-[15px] text-emerald-800">
+              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-[12px] text-emerald-800">
                 💡 แนะนำอัปโหลดเป็น <b>.xlsx</b> โดยตรง — เลข ISBN จะไม่เพี้ยน · ถ้าใช้ CSV ให้ตั้งคอลัมน์ ISBN เป็น Text ก่อน
               </div>
             </div>
@@ -138,15 +138,15 @@ export default function ImportBooks({ onClose }) {
             {/* เทมเพลต + คำอธิบาย */}
             <div className="space-y-4">
               <div className="rounded-2xl border border-line p-4">
-                <p className="text-[16px] font-semibold text-ink">เทมเพลต</p>
-                <p className="mt-1 text-[15px] text-sub">มีคอลัมน์ + ตัวอย่างให้ กรอกแล้วอัปได้เลย</p>
-                <button onClick={downloadTemplate} className="mt-3 w-full rounded-full bg-ink py-2.5 text-[16px] font-medium text-white hover:bg-ink/90">
+                <p className="text-[13px] font-semibold text-ink">เทมเพลต</p>
+                <p className="mt-1 text-[12px] text-sub">มีคอลัมน์ + ตัวอย่างให้ กรอกแล้วอัปได้เลย</p>
+                <button onClick={downloadTemplate} className="mt-3 w-full rounded-full bg-ink py-2.5 text-[13px] font-medium text-white hover:bg-ink/90">
                   ⬇ ดาวน์โหลด template.xlsx
                 </button>
               </div>
               <div className="rounded-2xl border border-line p-4">
-                <p className="mb-2 text-[16px] font-semibold text-ink">คอลัมน์</p>
-                <dl className="space-y-1.5 text-[15px]">
+                <p className="mb-2 text-[13px] font-semibold text-ink">คอลัมน์</p>
+                <dl className="space-y-1.5 text-[12px]">
                   {Object.entries(COL_DESC).map(([k, v]) => (
                     <div key={k}><dt className="font-medium text-ink">{k}</dt><dd className="text-sub">{v}</dd></div>
                   ))}
