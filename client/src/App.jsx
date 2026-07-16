@@ -310,9 +310,9 @@ function UserIcon() {
 
 function BagIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M6 8h12l-1 12H7L6 8Z" strokeLinejoin="round" />
-      <path d="M9 8a3 3 0 0 1 6 0" strokeLinecap="round" />
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.33 8h11.34a2 2 0 0 1 1.977 2.304l-1.255 8.152A3 3 0 0 1 15.43 21H8.57a3 3 0 0 1-2.966-2.544l-1.255-8.152A2 2 0 0 1 6.33 8Z" />
+      <path d="M9 11V6a3 3 0 0 1 6 0v5" />
     </svg>
   );
 }
