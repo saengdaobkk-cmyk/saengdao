@@ -80,7 +80,7 @@ export default function SearchModal({ open, onClose }) {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
               </button>
             )}
-            <button type="button" onClick={onClose} className="shrink-0 rounded-lg px-2 py-1 text-[12px] text-sub hover:text-ink">esc</button>
+            <button type="button" onClick={onClose} className="shrink-0 rounded-lg px-2 py-1 text-[12px] text-sub hover:text-ink">ปิด</button>
           </form>
 
           {/* ผลลัพธ์ */}
