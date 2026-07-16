@@ -71,9 +71,15 @@ function PromptPayBox({ orderId }) {
       const name = `saengdao-promptpay-${data.amount}.png`;
       const file = new File([blob], name, { type: "image/png" });
 
-      // ใช้ share sheet เฉพาะจอสัมผัส (มือถือ/แท็บเล็ต) — เดสก์ท็อปให้ดาวน์โหลดตรงๆ
-      const isTouch = window.matchMedia?.("(pointer: coarse)")?.matches;
-      if (isTouch && navigator.canShare?.({ files: [file] })) {
+      // เดสก์ท็อป = มีเมาส์/ทัชแพด (any-pointer: fine) → ดาวน์โหลด
+      // มือถือ/แท็บเล็ต (ไม่มีเมาส์ หรือ UA เป็นมือถือ/iPad) → share sheet เพื่อเซฟลงคลังรูป
+      const ua = navigator.userAgent || "";
+      const hasMouse = window.matchMedia?.("(any-pointer: fine)")?.matches;
+      const isMobile =
+        /Android|iPhone|iPod|Mobile/i.test(ua) ||
+        (/Macintosh|iPad/.test(ua) && navigator.maxTouchPoints > 1) || // iPadOS
+        hasMouse === false;
+      if (isMobile && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: "ชำระเงิน SAENGDAO" });
           return;
