@@ -85,10 +85,6 @@ export default function SearchModal({ open, onClose }) {
 
           {/* ผลลัพธ์ */}
           <div className="max-h-[62vh] overflow-y-auto">
-            {!dq && (
-              <p className="px-5 py-10 text-center text-[13px] text-sub">พิมพ์เพื่อค้นหาหนังสือ · รองรับ ISBN</p>
-            )}
-
             {dq && items.length === 0 && !isFetching && (
               <p className="px-5 py-10 text-center text-[13px] text-sub">ไม่พบผลลัพธ์สำหรับ “{dq}”</p>
             )}
