@@ -72,11 +72,17 @@ function PromptPayBox({ orderId }) {
     ctx.scale(scale, scale);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
-    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+
+    // จัดกึ่งกลางเองด้วย measureText (textAlign:center ถูกบางมือถือ ignore)
+    const centered = (text, y) => {
+      const w = ctx.measureText(text).width;
+      ctx.fillText(text, cx - w / 2, y);
+    };
 
     ctx.fillStyle = "#1d1d1f";
     ctx.font = `600 30px ${FONT}`;
-    ctx.fillText("สแกนจ่ายด้วยพร้อมเพย์", cx, 66);
+    centered("สแกนจ่ายด้วยพร้อมเพย์", 66);
 
     const qs = 380;
     if (qr.width) ctx.drawImage(qr, cx - qs / 2, 100, qs, qs);
@@ -85,16 +91,16 @@ function PromptPayBox({ orderId }) {
     if (data.promptpayName) {
       ctx.fillStyle = "#1d1d1f";
       ctx.font = `500 26px ${FONT}`;
-      ctx.fillText(data.promptpayName, cx, y);
+      centered(data.promptpayName, y);
       y += 42;
     }
     ctx.fillStyle = "#86868b";
     ctx.font = `400 22px ${FONT}`;
-    ctx.fillText(`พร้อมเพย์ · ${data.promptpayId}`, cx, y);
+    centered(`พร้อมเพย์ · ${data.promptpayId}`, y);
     y += 60;
     ctx.fillStyle = "#1d1d1f";
     ctx.font = `700 42px ${FONT}`;
-    ctx.fillText(formatPrice(data.amount), cx, y);
+    centered(formatPrice(data.amount), y);
 
     return new Promise((res) => canvas.toBlob(res, "image/png"));
   };
