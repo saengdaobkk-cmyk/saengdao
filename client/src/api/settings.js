@@ -7,6 +7,7 @@ const FALLBACK = {
   showCardCategory: false,
   showPublisherMarquee: true,
   showCollectionCount: true,
+  logoUrl: "",
   promptpayId: "",
   promptpayName: "",
   bankName: "",

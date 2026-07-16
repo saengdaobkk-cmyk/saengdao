@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
+import { uploadImage } from "../../api/admin";
 
 export default function AdminSettings() {
   const settings = useSettings();
@@ -7,6 +8,8 @@ export default function AdminSettings() {
 
   return (
     <div className="space-y-12">
+      <BrandSettings settings={settings} save={update} />
+
       {/* การแสดงผล */}
       <section>
         <h2 className="mb-4 text-[15px] font-semibold text-ink">การแสดงผล</h2>
@@ -38,6 +41,51 @@ export default function AdminSettings() {
       <ContactSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
+  );
+}
+
+function BrandSettings({ settings, save }) {
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const logo = settings.logoUrl || "";
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    setSaved(false);
+    try {
+      const url = await uploadImage(file);
+      save.mutate({ logoUrl: url }, { onSuccess: () => setSaved(true) });
+    } catch {
+      /* ไม่สำเร็จ */
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">โลโก้ร้าน</h2>
+      <p className="mb-4 text-[12px] text-sub">ใช้บนหน้า "ติดต่อเรา" · แนะนำพื้นหลังโปร่งใส (PNG/SVG)</p>
+      <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-white p-6">
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+          {logo ? <img src={logo} alt="โลโก้" className="h-full w-full object-contain p-2" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+            {busy ? "กำลังอัปโหลด..." : logo ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
+            <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+          </label>
+          {logo && (
+            <button type="button" onClick={() => { save.mutate({ logoUrl: "" }); setSaved(false); }} className="text-[13px] text-sub hover:text-red-600">
+              ลบโลโก้
+            </button>
+          )}
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+        </div>
+      </div>
+    </section>
   );
 }
 

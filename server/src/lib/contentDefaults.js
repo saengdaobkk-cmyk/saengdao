@@ -69,6 +69,17 @@ export const CONTENT_DEFAULTS = [
   { key: "product.related_heading", section: "product", label: "หัวข้อ: คุณอาจสนใจ", value: "คุณอาจสนใจ", order: 33 },
   { key: "product.not_found", section: "product", label: "ข้อความไม่พบหนังสือ", value: "ไม่พบหนังสือเล่มนี้", order: 34 },
   { key: "product.back_to_shop", section: "product", label: "ปุ่มกลับไปร้านหนังสือ", value: "กลับไปร้านหนังสือ", order: 35 },
+
+  // ===== หน้าติดต่อ =====
+  { key: "contact.eyebrow", section: "contact", label: "หัวข้อเล็ก", value: "ติดต่อเรา", order: 1 },
+  { key: "contact.heading", section: "contact", label: "หัวข้อใหญ่", value: "ยินดีให้บริการ", order: 2 },
+  { key: "contact.subtitle", section: "contact", label: "คำโปรย", value: "มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ", order: 3 },
+  { key: "contact.form_heading", section: "contact", label: "หัวข้อฟอร์ม", value: "ส่งข้อความถึงเรา", order: 4 },
+  { key: "contact.form_desc", section: "contact", label: "คำอธิบายใต้หัวข้อฟอร์ม", value: "กรอกข้อความ เดี๋ยวเราติดต่อกลับโดยเร็ว", order: 5 },
+  { key: "contact.form_name", section: "contact", label: "ป้ายช่อง: ชื่อ", value: "ชื่อ", order: 6 },
+  { key: "contact.form_email", section: "contact", label: "ป้ายช่อง: อีเมล", value: "อีเมล", order: 7 },
+  { key: "contact.form_message", section: "contact", label: "ป้ายช่อง: ข้อความ", value: "ข้อความ", order: 8 },
+  { key: "contact.form_submit", section: "contact", label: "ปุ่มส่ง", value: "ส่งข้อความ", order: 9 },
 ];
 
 // ชื่อ section ที่โชว์ในหลังบ้าน
@@ -77,4 +88,5 @@ export const SECTION_LABELS = {
   cart: "ตะกร้าสินค้า",
   checkout: "หน้าชำระเงิน",
   product: "หน้าสินค้า",
+  contact: "หน้าติดต่อ",
 };

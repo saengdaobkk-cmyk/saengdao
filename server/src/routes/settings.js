@@ -7,6 +7,7 @@ const router = Router();
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
 const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount"];
 const STRING_KEYS = [
+  "logoUrl", // โลโก้ร้าน (URL รูป)
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร
