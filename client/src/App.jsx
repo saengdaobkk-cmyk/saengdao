@@ -205,31 +205,39 @@ function Social({ label, href, children }) {
 function CartButton() {
   const { count, openDrawer } = useCart();
   const { cartDrawerEnabled } = useSettings();
+  const [bump, setBump] = useState(false);
+  const prev = useRef(count);
 
-  const badge = count > 0 && (
-    <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white">
-      {count}
-    </span>
+  // เด้งไอคอนเมื่อจำนวนสินค้าเพิ่ม
+  useEffect(() => {
+    if (count > prev.current) {
+      setBump(true);
+      const t = setTimeout(() => setBump(false), 500);
+      return () => clearTimeout(t);
+    }
+    prev.current = count;
+  }, [count]);
+  useEffect(() => { prev.current = count; }, [count]);
+
+  const inner = (
+    <>
+      <span className={`inline-block transition-transform duration-200 group-hover:scale-110 group-active:scale-90 ${bump ? "cart-bump" : ""}`}>
+        <BagIcon />
+      </span>
+      {count > 0 && (
+        <span className={`absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-white ${bump ? "cart-badge-pop" : ""}`}>
+          {count}
+        </span>
+      )}
+    </>
   );
 
+  const cls = "group relative text-sub transition-colors hover:text-ink";
   // เปิด setting → เปิด drawer, ปิด → ไปหน้า /cart เต็มจอ
-  if (cartDrawerEnabled)
-    return (
-      <button
-        onClick={openDrawer}
-        aria-label="ตะกร้า"
-        className="relative text-sub transition-colors hover:text-ink"
-      >
-        <BagIcon />
-        {badge}
-      </button>
-    );
-
-  return (
-    <Link to="/cart" aria-label="ตะกร้า" className="relative text-sub transition-colors hover:text-ink">
-      <BagIcon />
-      {badge}
-    </Link>
+  return cartDrawerEnabled ? (
+    <button onClick={openDrawer} aria-label="ตะกร้า" className={cls}>{inner}</button>
+  ) : (
+    <Link to="/cart" aria-label="ตะกร้า" className={cls}>{inner}</Link>
   );
 }
 
