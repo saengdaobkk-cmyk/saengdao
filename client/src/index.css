@@ -7,6 +7,9 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
+    /* จองพื้นที่ scrollbar ไว้ตลอด กันหน้าขยับตอนสลับหน้าสั้น/ยาว */
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
   }
   /* กรอบ focus ขึ้นเฉพาะตอนใช้คีย์บอร์ด (Tab) — ไม่ขึ้น/ไม่ค้างตอนแตะบนมือถือ */
   :focus:not(:focus-visible) {
