@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, NavLink } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { useCart } from "./cart/CartContext";
@@ -236,6 +236,17 @@ function CartButton() {
 function AccountMenu() {
   const { user, loading, logout, isStaff } = useAuth();
   const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // ปิดเมนูเมื่อแตะ/คลิกนอกเมนู หรือกด Esc (onBlur ไม่ทำงานบนมือถือ)
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("pointerdown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [open]);
 
   if (loading) return <div className="h-[18px] w-[18px]" />;
 
@@ -250,11 +261,11 @@ function AccountMenu() {
     );
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
         aria-label="บัญชีของฉัน"
+        aria-expanded={open}
         className="flex items-center gap-1.5 text-sub transition-colors hover:text-ink"
       >
         <UserIcon />
@@ -267,16 +278,16 @@ function AccountMenu() {
             <p className="truncate text-[15px] text-sub">{user.email}</p>
           </div>
           <div className="py-1.5 text-[17px]">
-            <Link to="/account" className="block px-4 py-2 text-ink hover:bg-mist">
+            <Link to="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
               บัญชีของฉัน
             </Link>
             {isStaff && (
-              <Link to="/admin" className="block px-4 py-2 text-ink hover:bg-mist">
+              <Link to="/admin" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
                 จัดการร้าน
               </Link>
             )}
             <button
-              onClick={logout}
+              onClick={() => { setOpen(false); logout(); }}
               className="block w-full px-4 py-2 text-left text-ink hover:bg-mist"
             >
               ออกจากระบบ
