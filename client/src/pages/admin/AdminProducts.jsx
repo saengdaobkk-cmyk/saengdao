@@ -12,6 +12,16 @@ const EMPTY = {
   slug: "", importedAt: "", variants: [],
 };
 
+// คอลัมน์ตารางสินค้า (ลากปรับความกว้างได้ · จำค่าไว้ใน localStorage)
+const COLS = [
+  { key: "isbn", label: "รหัส (ISBN)", w: 150 },
+  { key: "title", label: "ชื่อสินค้า", w: 380 },
+  { key: "category", label: "หมวดหมู่", w: 170 },
+  { key: "price", label: "ราคา", w: 120 },
+  { key: "stock", label: "สต็อก", w: 120 },
+  { key: "actions", label: "", w: 150 },
+];
+
 export default function AdminProducts() {
   const { data: books, isLoading } = useAdminBooks();
   const { data: categories } = useCategories();
@@ -22,6 +32,30 @@ export default function AdminProducts() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
+
+  // ความกว้างคอลัมน์ (ลากปรับได้)
+  const [colW, setColW] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem("adminProductColW"));
+      if (Array.isArray(s) && s.length === COLS.length) return s;
+    } catch { /* ใช้ค่าเริ่มต้น */ }
+    return COLS.map((c) => c.w);
+  });
+  const startResize = (idx) => (e) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = colW[idx];
+    const move = (ev) => setColW((w) => { const n = [...w]; n[idx] = Math.max(64, startW + (ev.clientX - startX)); return n; });
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      document.body.style.userSelect = "";
+      setColW((w) => { localStorage.setItem("adminProductColW", JSON.stringify(w)); return w; });
+    };
+    document.body.style.userSelect = "none";
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  };
 
   const filtered = useMemo(() => {
     let list = books || [];
@@ -75,15 +109,24 @@ export default function AdminProducts() {
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full text-left text-[14px]">
+          <table className="table-fixed text-left text-[14px]" style={{ width: colW.reduce((a, b) => a + b, 0) }}>
+            <colgroup>
+              {COLS.map((c, i) => <col key={c.key} style={{ width: colW[i] }} />)}
+            </colgroup>
             <thead className="border-b border-line bg-mist/50 text-[12px] text-sub">
               <tr>
-                <th className="px-4 py-3 font-medium">รหัส (ISBN)</th>
-                <th className="px-4 py-3 font-medium">ชื่อสินค้า</th>
-                <th className="px-4 py-3 font-medium">หมวดหมู่</th>
-                <th className="px-4 py-3 font-medium">ราคา</th>
-                <th className="px-4 py-3 font-medium">สต็อก</th>
-                <th className="px-4 py-3"></th>
+                {COLS.map((c, i) => (
+                  <th key={c.key} className="relative select-none px-4 py-3 font-medium">
+                    <span className="block truncate">{c.label}</span>
+                    {i < COLS.length - 1 && (
+                      <span
+                        onMouseDown={startResize(i)}
+                        title="ลากเพื่อปรับความกว้าง"
+                        className="absolute right-0 top-0 z-10 h-full w-2 cursor-col-resize hover:bg-accent/30"
+                      />
+                    )}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
