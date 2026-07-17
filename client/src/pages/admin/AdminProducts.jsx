@@ -83,9 +83,14 @@ export default function AdminProducts() {
   }, [books, q, cat, status]);
 
   // เรียงตามคอลัมน์ (คลิกหัวตาราง)
-  const [sort, setSort] = useState({ key: null, dir: "asc" });
+  // วน 3 สเต็ป: ปกติ → มาก(desc) → น้อย(asc) → ปกติ
+  const [sort, setSort] = useState({ key: null, dir: "desc" });
   const toggleSort = (key) =>
-    setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
+    setSort((s) => {
+      if (s.key !== key) return { key, dir: "desc" };      // ปกติ → มาก
+      if (s.dir === "desc") return { key, dir: "asc" };     // มาก → น้อย
+      return { key: null, dir: "desc" };                    // น้อย → ปกติ
+    });
 
   const sorted = useMemo(() => {
     const acc = SORT_ACCESS[sort.key];
