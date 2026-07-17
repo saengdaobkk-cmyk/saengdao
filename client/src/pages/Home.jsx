@@ -2,6 +2,7 @@ import BookRow from "../components/BookRow";
 import HeroSlider from "../components/HeroSlider";
 import BrowseSections from "../components/BrowseSections";
 import PublisherMarquee from "../components/PublisherMarquee";
+import PromoRibbon from "../components/PromoRibbon";
 import HotDealSection from "../components/HotDealSection";
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
       <BrowseSections />
 
       {/* โลโก้สำนักพิมพ์เลื่อนวน (ก่อน footer) */}
+      <PromoRibbon />
       <PublisherMarquee />
     </>
   );

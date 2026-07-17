@@ -7,6 +7,7 @@ export const CONTENT_DEFAULTS = [
   { key: "common.marquee_title", section: "common", label: "หัวข้อ section สำนักพิมพ์ (หน้าแรก)", value: "สำนักพิมพ์ที่คัดสรร" },
   { key: "common.brands_eyebrow", section: "common", label: "หัวข้อเล็ก section สำนักพิมพ์", value: "สำนักพิมพ์" },
   { key: "common.brands_subtitle", section: "common", label: "คำโปรย section สำนักพิมพ์", value: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ" },
+  { key: "ribbon.phrases", section: "common", label: "ข้อความแถบโปรฯ เอียง (คั่นด้วย ·)", value: "ส่งฟรีทั่วไทย · ลดสูงสุด 50% · เฉพาะสัปดาห์นี้ · ของแท้ 100%" },
 
   // ===== ตะกร้า =====
   { key: "cart.empty_title", section: "cart", label: "หัวข้อเมื่อตะกร้าว่าง", value: "ตะกร้าว่างเปล่า" },

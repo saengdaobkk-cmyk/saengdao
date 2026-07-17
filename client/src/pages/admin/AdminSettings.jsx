@@ -35,6 +35,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showPublisherMarquee: v })}
           />
+          <ToggleRow
+            title="แถบโปรโมชั่นเอียง (ribbon)"
+            desc="แถบไล่สีเอียง เลื่อนข้อความ+โลโก้ · แก้ข้อความได้ที่ ข้อความในเว็บ → ส่วนกลาง"
+            checked={settings.showPromoRibbon}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showPromoRibbon: v })}
+          />
         </div>
       </section>
 

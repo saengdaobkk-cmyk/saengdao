@@ -6,6 +6,7 @@ const FALLBACK = {
   cartDrawerEnabled: true,
   showCardCategory: false,
   showPublisherMarquee: true,
+  showPromoRibbon: false,
   showCollectionCount: true,
   logoUrl: "",
   logoSize: "56",
