@@ -48,9 +48,6 @@ function BrandSettings({ settings, save }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const logo = settings.logoUrl || "";
-  const [size, setSize] = useState(Number(settings.logoSize) || 56);
-
-  useEffect(() => { setSize(Number(settings.logoSize) || 56); }, [settings.logoSize]);
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -70,12 +67,11 @@ function BrandSettings({ settings, save }) {
   return (
     <section>
       <h2 className="mb-1 text-[15px] font-semibold text-ink">โลโก้ร้าน</h2>
-      <p className="mb-4 text-[12px] text-sub">ใช้บนหน้า "ติดต่อเรา" · แนะนำพื้นหลังโปร่งใส (PNG/SVG)</p>
-      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+      <p className="mb-4 text-[12px] text-sub">ใช้บนแถบเมนู, ท้ายเว็บ และหน้าติดต่อ · แนะนำพื้นหลังโปร่งใส (PNG/SVG)</p>
+      <div className="space-y-6 rounded-2xl border border-line bg-white p-6">
         <div className="flex flex-wrap items-center gap-5">
-          {/* พรีวิวตามขนาดจริง */}
           <div className="flex h-24 w-40 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
-            {logo ? <img src={logo} alt="โลโก้" style={{ height: `${size}px` }} className="w-auto object-contain" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+            {logo ? <img src={logo} alt="โลโก้" className="max-h-16 w-auto object-contain p-2" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
@@ -92,22 +88,42 @@ function BrandSettings({ settings, save }) {
         </div>
 
         {logo && (
-          <div className="border-t border-line pt-5">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-[13px] font-medium text-ink">ขนาดโลโก้ (หน้าติดต่อ)</span>
-              <span className="text-[13px] tabular-nums text-sub">{size}px</span>
-            </div>
-            <input
-              type="range" min="28" max="140" step="2" value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              onMouseUp={() => save.mutate({ logoSize: String(size) }, { onSuccess: () => setSaved(true) })}
-              onTouchEnd={() => save.mutate({ logoSize: String(size) }, { onSuccess: () => setSaved(true) })}
-              className="w-full max-w-md accent-accent"
-            />
+          <div className="space-y-5 border-t border-line pt-5">
+            <p className="text-[13px] font-semibold text-ink">ขนาดโลโก้แต่ละจุด</p>
+            <LogoSizeSlider settings={settings} save={save} settingKey="logoSizeHeader" label="แถบเมนู (บนสุด)" def={28} min={20} max={56} />
+            <LogoSizeSlider settings={settings} save={save} settingKey="logoSizeFooter" label="ท้ายเว็บ (footer)" def={28} min={20} max={72} />
+            <LogoSizeSlider settings={settings} save={save} settingKey="logoSize" label="หน้าติดต่อ" def={56} min={28} max={140} />
           </div>
         )}
       </div>
     </section>
+  );
+}
+
+function LogoSizeSlider({ settings, save, settingKey, label, def, min, max }) {
+  const logo = settings.logoUrl || "";
+  const [size, setSize] = useState(Number(settings[settingKey]) || def);
+  useEffect(() => { setSize(Number(settings[settingKey]) || def); }, [settings, settingKey, def]);
+  const commit = () => save.mutate({ [settingKey]: String(size) });
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[13px] text-ink">{label}</span>
+        <span className="text-[13px] tabular-nums text-sub">{size}px</span>
+      </div>
+      <div className="flex items-center gap-4">
+        <input
+          type="range" min={min} max={max} step="2" value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          onMouseUp={commit}
+          onTouchEnd={commit}
+          className="w-full max-w-sm accent-accent"
+        />
+        <span className="flex h-10 shrink-0 items-center">
+          <img src={logo} alt="" style={{ height: `${size}px` }} className="w-auto object-contain" />
+        </span>
+      </div>
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import { useContent } from "./api/content";
 import { useNav } from "./api/nav";
 import CartDrawer from "./components/CartDrawer";
 import SearchModal from "./components/SearchModal";
+import { img } from "./lib/img";
 
 export default function App() {
   const { t } = useContent();
@@ -40,11 +41,12 @@ export default function App() {
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
                 </svg>
               </button>
-              <Link
-                to="/"
-                className="text-[16px] font-semibold tracking-[0.22em] text-ink"
-              >
-                SAENGDAO
+              <Link to="/" aria-label="SAENGDAO" className="flex items-center">
+                {s.logoUrl ? (
+                  <img src={img(s.logoUrl, 300)} alt="SAENGDAO" style={{ height: `${Number(s.logoSizeHeader) || 28}px` }} className="w-auto object-contain" />
+                ) : (
+                  <span className="text-[16px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
+                )}
               </Link>
             </div>
 
@@ -91,7 +93,11 @@ export default function App() {
         />
         <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex h-12 items-center justify-between border-b border-line px-5">
-            <span className="text-[15px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
+            {s.logoUrl ? (
+              <img src={img(s.logoUrl, 300)} alt="SAENGDAO" style={{ height: `${Number(s.logoSizeHeader) || 28}px` }} className="w-auto object-contain" />
+            ) : (
+              <span className="text-[15px] font-semibold tracking-[0.22em] text-ink">SAENGDAO</span>
+            )}
             <button onClick={() => setMobileOpen(false)} aria-label="ปิด" className="rounded-lg p-1 text-sub hover:bg-mist hover:text-ink">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
             </button>
@@ -129,7 +135,11 @@ export default function App() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {/* แบรนด์ */}
             <div className="lg:col-span-1">
-              <p className="text-[15px] font-semibold tracking-[0.22em]">SAENGDAO</p>
+              {s.logoUrl ? (
+                <img src={img(s.logoUrl, 400)} alt="SAENGDAO" style={{ height: `${Number(s.logoSizeFooter) || 28}px` }} className="w-auto object-contain" />
+              ) : (
+                <p className="text-[15px] font-semibold tracking-[0.22em]">SAENGDAO</p>
+              )}
               <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-sub">
                 {t("common.brand_tagline", "ร้านหนังสือแสงดาว คัดหนังสือดีมาเพื่อคุณ ส่งถึงบ้านทั่วประเทศ")}
               </p>
