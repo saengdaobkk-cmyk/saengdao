@@ -23,19 +23,42 @@ const PAYMENT_STATUS = ["UNPAID", "PENDING_REVIEW", "PAID", "FAILED"];
 /* ---------- Dashboard ---------- */
 router.get("/stats", async (req, res, next) => {
   try {
-    const [orders, pendingReview, books, paidAgg, users] = await Promise.all([
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const [orders, pendingReview, unpaid, toShip, books, lowStock, paidAgg, monthAgg, users, recentOrders, topBooks] = await Promise.all([
       prisma.order.count(),
       prisma.order.count({ where: { paymentStatus: "PENDING_REVIEW" } }),
+      prisma.order.count({ where: { paymentStatus: "UNPAID" } }),
+      prisma.order.count({ where: { paymentStatus: "PAID", status: "PAID" } }),
       prisma.book.count(),
+      prisma.book.count({ where: { active: true, stock: { lte: 5 } } }),
       prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID" } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { paymentStatus: "PAID", createdAt: { gte: monthStart } } }),
       prisma.user.count(),
+      prisma.order.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        select: { id: true, total: true, status: true, paymentStatus: true, createdAt: true, shipName: true, user: { select: { name: true, email: true } } },
+      }),
+      prisma.book.findMany({
+        where: { soldCount: { gt: 0 } },
+        orderBy: { soldCount: "desc" },
+        take: 5,
+        select: { id: true, title: true, soldCount: true, coverImage: true, price: true },
+      }),
     ]);
     res.json({
       orders,
       pendingReview,
+      unpaid,
+      toShip,
       books,
+      lowStock,
       users,
       revenue: Number(paidAgg._sum.total || 0),
+      revenueMonth: Number(monthAgg._sum.total || 0),
+      recentOrders,
+      topBooks,
     });
   } catch (err) {
     next(err);
