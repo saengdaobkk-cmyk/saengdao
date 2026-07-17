@@ -26,7 +26,7 @@ export default function HeroSlider() {
     return <section className="h-[40vh] min-h-[300px] w-full bg-mist" />;
 
   return (
-    <section className="relative aspect-[16/10] w-full overflow-hidden sm:aspect-auto sm:h-[78vh] sm:min-h-[460px]">
+    <section className="relative h-[78vh] min-h-[460px] w-full overflow-hidden">
       {slides.map((s, idx) => {
         const hasImage = !!s.image;
         return (
