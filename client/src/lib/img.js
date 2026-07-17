@@ -5,5 +5,6 @@ export function img(url, width, quality = 70) {
   if (!url.includes("/storage/v1/object/public/")) return url;
   const base = url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
   const sep = base.includes("?") ? "&" : "?";
-  return `${base}${sep}width=${width}&quality=${quality}`;
+  // resize=contain: ย่อตามสัดส่วนจริง (ไม่ใส่ = คงความสูงเดิม → รูปถูกบีบแบน)
+  return `${base}${sep}width=${width}&resize=contain&quality=${quality}`;
 }
