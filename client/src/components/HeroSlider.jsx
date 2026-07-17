@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSlides } from "../api/slides";
+import { useSettings } from "../api/settings";
 import { img } from "../lib/img";
 
 // map ตำแหน่งข้อความ
@@ -10,15 +11,18 @@ const BG_POS = { top: "center top", center: "center", bottom: "center bottom" };
 
 export default function HeroSlider() {
   const { data: slides = [] } = useSlides();
+  const cfg = useSettings();
+  const isSlide = cfg.slideAnimation === "slide";
+  const intervalMs = Math.max(2, Number(cfg.slideInterval) || 6) * 1000;
   const [i, setI] = useState(0);
   const go = useCallback((n) => setI((n + slides.length) % slides.length), [slides.length]);
 
-  // เลื่อนอัตโนมัติ
+  // เลื่อนอัตโนมัติ (หน่วงเวลาตาม setting กลาง)
   useEffect(() => {
     if (slides.length <= 1) return;
-    const t = setInterval(() => setI((p) => (p + 1) % slides.length), 6000);
+    const t = setInterval(() => setI((p) => (p + 1) % slides.length), intervalMs);
     return () => clearInterval(t);
-  }, [slides.length]);
+  }, [slides.length, intervalMs]);
 
   // กัน index เกินหลังข้อมูลเปลี่ยน
   useEffect(() => {
@@ -35,12 +39,13 @@ export default function HeroSlider() {
         return (
           <div
             key={s.id}
-            className="absolute inset-0 bg-cover transition-opacity duration-[1100ms] ease-out"
+            className={`absolute inset-0 bg-cover ease-out ${isSlide ? "transition-transform duration-700" : "transition-opacity duration-[1100ms]"}`}
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
               backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
               backgroundPosition: hasImage ? (BG_POS[s.imagePosition] || "center") : undefined,
-              opacity: idx === i ? 1 : 0,
+              opacity: isSlide ? 1 : idx === i ? 1 : 0,
+              transform: isSlide ? `translateX(${(idx - i) * 100}%)` : undefined,
             }}
             aria-hidden={idx !== i}
           >

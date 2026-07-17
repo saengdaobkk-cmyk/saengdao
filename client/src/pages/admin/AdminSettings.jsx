@@ -67,40 +67,43 @@ function BrandSettings({ settings, save }) {
   return (
     <section>
       <h2 className="mb-1 text-[15px] font-semibold text-ink">โลโก้ร้าน</h2>
-      <p className="mb-4 text-[12px] text-sub">ใช้บนแถบเมนู, ท้ายเว็บ และหน้าติดต่อ · แนะนำพื้นหลังโปร่งใส (PNG/SVG)</p>
+      <p className="mb-4 text-[12px] text-sub">ตัวอักษร SAENGDAO ใช้บนแถบเมนู + ท้ายเว็บ (ปรับขนาดได้) · รูปโลโก้ใช้บนหน้าติดต่อ</p>
       <div className="space-y-6 rounded-2xl border border-line bg-white p-6">
-        <div className="flex flex-wrap items-center gap-5">
-          <div className="flex h-24 w-40 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
-            {logo ? <img src={logo} alt="โลโก้" className="max-h-16 w-auto object-contain p-2" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
-              {busy ? "กำลังอัปโหลด..." : logo ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
-              <input type="file" accept="image/*" onChange={onFile} className="hidden" />
-            </label>
-            {logo && (
-              <button type="button" onClick={() => { save.mutate({ logoUrl: "" }); setSaved(false); }} className="text-[13px] text-sub hover:text-red-600">
-                ลบโลโก้
-              </button>
-            )}
-            {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
-          </div>
+        {/* ขนาดตัวอักษรโลโก้ */}
+        <div className="space-y-5">
+          <p className="text-[13px] font-semibold text-ink">ขนาดตัวอักษร SAENGDAO</p>
+          <LogoSizeSlider settings={settings} save={save} type="text" settingKey="logoSizeHeader" label="แถบเมนู (บนสุด)" def={16} min={12} max={28} />
+          <LogoSizeSlider settings={settings} save={save} type="text" settingKey="logoSizeFooter" label="ท้ายเว็บ (footer)" def={15} min={12} max={28} />
         </div>
 
-        {logo && (
-          <div className="space-y-5 border-t border-line pt-5">
-            <p className="text-[13px] font-semibold text-ink">ขนาดโลโก้แต่ละจุด</p>
-            <LogoSizeSlider settings={settings} save={save} settingKey="logoSizeHeader" label="แถบเมนู (บนสุด)" def={28} min={20} max={56} />
-            <LogoSizeSlider settings={settings} save={save} settingKey="logoSizeFooter" label="ท้ายเว็บ (footer)" def={28} min={20} max={72} />
-            <LogoSizeSlider settings={settings} save={save} settingKey="logoSize" label="หน้าติดต่อ" def={56} min={28} max={140} />
+        {/* รูปโลโก้ (หน้าติดต่อ) */}
+        <div className="space-y-5 border-t border-line pt-5">
+          <p className="text-[13px] font-semibold text-ink">รูปโลโก้ (หน้าติดต่อ)</p>
+          <div className="flex flex-wrap items-center gap-5">
+            <div className="flex h-24 w-40 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+              {logo ? <img src={logo} alt="โลโก้" className="max-h-16 w-auto object-contain p-2" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+                {busy ? "กำลังอัปโหลด..." : logo ? "เปลี่ยนโลโก้" : "อัปโหลดโลโก้"}
+                <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+              </label>
+              {logo && (
+                <button type="button" onClick={() => { save.mutate({ logoUrl: "" }); setSaved(false); }} className="text-[13px] text-sub hover:text-red-600">
+                  ลบโลโก้
+                </button>
+              )}
+              {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+            </div>
           </div>
-        )}
+          {logo && <LogoSizeSlider settings={settings} save={save} type="image" settingKey="logoSize" label="ขนาดบนหน้าติดต่อ" def={56} min={28} max={140} />}
+        </div>
       </div>
     </section>
   );
 }
 
-function LogoSizeSlider({ settings, save, settingKey, label, def, min, max }) {
+function LogoSizeSlider({ settings, save, settingKey, label, def, min, max, type = "image" }) {
   const logo = settings.logoUrl || "";
   const [size, setSize] = useState(Number(settings[settingKey]) || def);
   useEffect(() => { setSize(Number(settings[settingKey]) || def); }, [settings, settingKey, def]);
@@ -113,14 +116,18 @@ function LogoSizeSlider({ settings, save, settingKey, label, def, min, max }) {
       </div>
       <div className="flex items-center gap-4">
         <input
-          type="range" min={min} max={max} step="2" value={size}
+          type="range" min={min} max={max} step={type === "text" ? 1 : 2} value={size}
           onChange={(e) => setSize(Number(e.target.value))}
           onMouseUp={commit}
           onTouchEnd={commit}
           className="w-full max-w-sm accent-accent"
         />
         <span className="flex h-10 shrink-0 items-center">
-          <img src={logo} alt="" style={{ height: `${size}px` }} className="w-auto object-contain" />
+          {type === "text" ? (
+            <span className="font-semibold tracking-[0.22em] text-ink" style={{ fontSize: `${size}px` }}>SAENGDAO</span>
+          ) : (
+            <img src={logo} alt="" style={{ height: `${size}px` }} className="w-auto object-contain" />
+          )}
         </span>
       </div>
     </div>

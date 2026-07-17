@@ -9,8 +9,10 @@ const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarque
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "logoSize", // ความสูงโลโก้ (px) หน้าติดต่อ
-  "logoSizeHeader", // ความสูงโลโก้ (px) แถบเมนูบน
-  "logoSizeFooter", // ความสูงโลโก้ (px) ท้ายเว็บ
+  "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
+  "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
+  "slideInterval", // หน่วงเวลาเปลี่ยนสไลด์ (วินาที)
+  "slideAnimation", // เอฟเฟกต์เปลี่ยนสไลด์: fade|slide
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร

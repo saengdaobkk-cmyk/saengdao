@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAdminSlides, useSaveSlide, useDeleteSlide, uploadImage } from "../../api/admin";
+import { useSettings, useUpdateSettings } from "../../api/settings";
 
 const EMPTY = {
   eyebrow: "", title: "", subtitle: "", ctaText: "เลือกซื้อเลย", ctaLink: "#catalog",
@@ -19,6 +20,8 @@ export default function AdminSlides() {
 
   return (
     <div>
+      <SlideGlobalSettings />
+
       <div className="mb-5 flex items-center justify-between">
         <p className="text-[14px] text-sub">{slides?.length || 0} สไลด์ · เรียงตามลำดับ order</p>
         <button
@@ -249,6 +252,37 @@ function SlideForm({ slide, onClose }) {
 }
 
 // ตาราง 3×3 เลือกตำแหน่งข้อความ (แบบ Elementor)
+// setting กลางของสไลด์ทุกตัว — หน่วงเวลา + เอฟเฟกต์
+function SlideGlobalSettings() {
+  const settings = useSettings();
+  const update = useUpdateSettings();
+  const interval = Math.max(2, Number(settings.slideInterval) || 6);
+  const anim = settings.slideAnimation || "fade";
+  return (
+    <div className="mb-5 rounded-2xl border border-line bg-white p-5">
+      <p className="mb-3 text-[13px] font-semibold text-ink">ตั้งค่าสไลด์ (ใช้กับทุกสไลด์)</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[13px] text-ink">หน่วงเวลาเปลี่ยนสไลด์</span>
+            <span className="text-[13px] tabular-nums text-sub">{interval} วิ</span>
+          </div>
+          <input
+            type="range" min="2" max="15" step="1" value={interval}
+            onChange={(e) => update.mutate({ slideInterval: e.target.value })}
+            className="w-full accent-accent"
+          />
+        </div>
+        <div>
+          <span className="mb-1.5 block text-[13px] text-ink">เอฟเฟกต์เปลี่ยนสไลด์</span>
+          <Seg value={anim} onChange={(v) => update.mutate({ slideAnimation: v })}
+            options={[["fade", "จางเข้า-ออก (fade)"], ["slide", "เลื่อนแนวนอน (slide)"]]} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Seg({ value, onChange, options, disabled }) {
   return (
     <div className="flex gap-2">
