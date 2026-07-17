@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { priceInfo } from "../lib/pricing";
 import { img } from "../lib/img";
@@ -10,7 +12,15 @@ export default function BookCard({ book }) {
   const { showCardCategory } = useSettings();
   const { add } = useCart();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [added, setAdded] = useState(false);
+
+  // โหลดข้อมูลเล่มล่วงหน้าตอนชี้เมาส์ → กดแล้วหน้าสินค้าขึ้นทันที
+  const prefetch = () =>
+    qc.prefetchQuery({
+      queryKey: ["book", book.id],
+      queryFn: async () => (await api.get(`/books/${book.id}`)).data,
+    });
 
   // มี variant → ใช้ผลรวมสต็อกของ variant, ไม่มี → ใช้สต็อกของเล่ม
   const stock = book.variants?.length ? book.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0) : book.stock;
@@ -30,7 +40,7 @@ export default function BookCard({ book }) {
   };
 
   return (
-    <Link to={`/books/${book.id}`} className="group block">
+    <Link to={`/books/${book.id}`} onMouseEnter={prefetch} onFocus={prefetch} className="group block">
       {/* ปก */}
       <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         {book.coverImage ? (

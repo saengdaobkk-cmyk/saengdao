@@ -37,7 +37,17 @@ import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
 
-const queryClient = new QueryClient();
+// cache ข้อมูล 1 นาที + เก็บไว้ 5 นาที → กลับเข้าหน้าเดิมภายในเวลานี้แสดงทันที ไม่ต้องโหลดใหม่
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60,
+      gcTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
