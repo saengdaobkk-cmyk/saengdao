@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSlides } from "../api/slides";
+import { img } from "../lib/img";
 
 // map ตำแหน่งข้อความ
 const ALIGN = { left: "items-start text-left", center: "items-center text-center", right: "items-end text-right" };
@@ -35,7 +36,7 @@ export default function HeroSlider() {
             className="absolute inset-0 bg-cover bg-center transition-opacity duration-[1100ms] ease-out"
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
-              backgroundImage: hasImage ? `url(${s.image})` : undefined,
+              backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
               opacity: idx === i ? 1 : 0,
             }}
             aria-hidden={idx !== i}

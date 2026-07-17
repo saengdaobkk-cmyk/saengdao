@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
+import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
 
 export default function CartDrawer() {
@@ -90,7 +91,7 @@ export default function CartDrawer() {
                 <li key={item.key} className="flex gap-3 py-4">
                   <div className="flex h-20 w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-mist">
                     {item.coverImage ? (
-                      <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                      <img src={img(item.coverImage, 160)} alt={item.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-xl opacity-25">𝐀</span>
                     )}

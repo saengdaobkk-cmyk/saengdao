@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCategories } from "../api/books";
+import { img } from "../lib/img";
 
 // โทนสีพื้นการ์ดหมวดหมู่ (fallback เมื่อยังไม่มีรูป — วนลูป)
 const TILES = [
@@ -39,7 +40,7 @@ export default function BrowseSections() {
                   className="group relative aspect-[16/10] w-[260px] shrink-0 snap-start overflow-hidden rounded-2xl sm:w-[340px]"
                 >
                   {c.image ? (
-                    <img src={c.image} alt={c.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    <img src={img(c.image, 700)} alt={c.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   ) : (
                     <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${TILES[i % TILES.length]}`}>
                       <span className="text-7xl font-bold text-white/25">{c.name[0]}</span>

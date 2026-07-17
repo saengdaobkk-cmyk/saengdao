@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
 import { useContent } from "../api/content";
+import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
 
 export default function Cart() {
@@ -41,7 +42,7 @@ export default function Cart() {
             <li key={item.key} className="flex gap-4 py-5">
               <div className="flex h-24 w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-mist">
                 {item.coverImage ? (
-                  <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                  <img src={img(item.coverImage, 200)} alt={item.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-2xl opacity-25">𝐀</span>
                 )}

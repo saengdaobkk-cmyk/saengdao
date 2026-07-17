@@ -4,6 +4,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import { priceInfo } from "../lib/pricing";
+import { img } from "../lib/img";
 
 // lightbox ค้นหาแบบ live — ค้นจาก ชื่อ/ผู้เขียน/ผู้แปล/ISBN
 export default function SearchModal({ open, onClose }) {
@@ -101,7 +102,7 @@ export default function SearchModal({ open, onClose }) {
                         className="flex items-center gap-4 px-5 py-2.5 transition hover:bg-mist"
                       >
                         <div className="h-14 w-10 shrink-0 overflow-hidden rounded-md bg-mist ring-1 ring-line">
-                          {b.coverImage && <img src={b.coverImage} alt="" className="h-full w-full object-cover" />}
+                          {b.coverImage && <img src={img(b.coverImage, 120)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p title={b.title} className="truncate text-[14px] font-medium text-ink">{b.title}</p>

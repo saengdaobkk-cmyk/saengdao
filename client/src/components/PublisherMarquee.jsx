@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
+import { img } from "../lib/img";
 
 // แถบโลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ — ขับด้วย requestAnimationFrame (ไม่พึ่ง CSS animation ที่ iOS กระพริบ)
 export default function PublisherMarquee() {
@@ -51,7 +52,7 @@ export default function PublisherMarquee() {
               className="flex h-12 shrink-0 items-center justify-center px-8 opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
             >
               {p.image ? (
-                <img src={p.image} alt={p.name} className="h-10 w-auto max-w-[150px] object-contain" />
+                <img src={img(p.image, 300)} alt={p.name} loading="lazy" decoding="async" className="h-10 w-auto max-w-[150px] object-contain" />
               ) : (
                 <span className="whitespace-nowrap text-[17px] font-semibold tracking-tight text-ink/70">{p.name}</span>
               )}

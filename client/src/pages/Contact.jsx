@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
+import { img } from "../lib/img";
 
 export default function Contact() {
   const s = useSettings();
@@ -29,7 +30,7 @@ export default function Contact() {
       {/* หัวเพจ */}
       <div className="mx-auto max-w-2xl text-center">
         {s.logoUrl ? (
-          <img src={s.logoUrl} alt="SAENGDAO" style={{ height: `${Number(s.logoSize) || 56}px` }} className="mx-auto mb-6 w-auto object-contain" />
+          <img src={img(s.logoUrl, 400)} alt="SAENGDAO" style={{ height: `${Number(s.logoSize) || 56}px` }} className="mx-auto mb-6 w-auto object-contain" />
         ) : (
           <p className="mb-5 text-[15px] font-semibold tracking-[0.28em] text-ink">SAENGDAO</p>
         )}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatPrice } from "../lib/format";
 import { priceInfo } from "../lib/pricing";
+import { img } from "../lib/img";
 import { useSettings } from "../api/settings";
 import { useCart } from "../cart/CartContext";
 
@@ -34,8 +35,10 @@ export default function BookCard({ book }) {
       <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         {book.coverImage ? (
           <img
-            src={book.coverImage}
+            src={img(book.coverImage, 500)}
             alt={book.title}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
         ) : (

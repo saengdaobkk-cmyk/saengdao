@@ -8,6 +8,7 @@ import BookCard from "../components/BookCard";
 import FlipBook from "../components/FlipBook";
 import { formatPrice } from "../lib/format";
 import { priceInfo } from "../lib/pricing";
+import { img } from "../lib/img";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -44,8 +45,8 @@ export default function BookDetail() {
   const effStock = hasVariants ? (variant ? variant.stock : null) : book?.stock;
 
   // รูปทั้งหมด (ปกหน้า → ปกหลัง → แกลเลอรี) สำหรับ lightbox
-  const front = variant?.coverImage || book?.coverImage;
-  const back = variant?.backCoverImage || book?.backCoverImage;
+  const front = img(variant?.coverImage || book?.coverImage, 800);
+  const back = img(variant?.backCoverImage || book?.backCoverImage, 800);
   const gallery = book?.galleryImages || [];
   const allImages = [front, back, ...gallery].filter(Boolean);
   const openLb = (src) => setLbIndex(Math.max(0, allImages.indexOf(src)));
@@ -167,7 +168,7 @@ export default function BookDetail() {
               {gallery.map((src, i) => (
                 <button key={i} onClick={() => openLb(src)}
                   className="h-20 w-[62px] overflow-hidden rounded-lg border border-line transition hover:border-ink/40 hover:-translate-y-0.5">
-                  <img src={src} alt="" className="h-full w-full object-cover" />
+                  <img src={img(src, 160)} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
