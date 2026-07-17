@@ -2,7 +2,17 @@ import { useMemo, useState } from "react";
 import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf } from "../../api/admin";
 import { useCategories, useTermList } from "../../api/books";
 import { formatPrice } from "../../lib/format";
+import { priceInfo } from "../../lib/pricing";
 import ImportBooks from "./ImportBooks";
+
+const stockOf = (b) => (b.variants?.length ? b.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0) : b.stock);
+const SORT_ACCESS = {
+  isbn: (b) => b.isbn || "",
+  title: (b) => b.title || "",
+  category: (b) => b.category?.name || "",
+  price: (b) => Number(priceInfo(b).price) || 0,
+  stock: (b) => Number(stockOf(b)) || 0,
+};
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
@@ -72,6 +82,22 @@ export default function AdminProducts() {
     return list;
   }, [books, q, cat, status]);
 
+  // เรียงตามคอลัมน์ (คลิกหัวตาราง)
+  const [sort, setSort] = useState({ key: null, dir: "asc" });
+  const toggleSort = (key) =>
+    setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
+
+  const sorted = useMemo(() => {
+    const acc = SORT_ACCESS[sort.key];
+    if (!acc) return filtered;
+    const dir = sort.dir === "asc" ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      const va = acc(a), vb = acc(b);
+      if (typeof va === "number") return (va - vb) * dir;
+      return String(va).localeCompare(String(vb), "th") * dir;
+    });
+  }, [filtered, sort]);
+
   if (editing) return <BookForm book={editing} categories={categories || []} onClose={() => setEditing(null)} />;
 
   return (
@@ -115,22 +141,40 @@ export default function AdminProducts() {
             </colgroup>
             <thead className="border-b border-line bg-mist/50 text-[12px] text-sub">
               <tr>
-                {COLS.map((c, i) => (
-                  <th key={c.key} className="relative select-none px-4 py-3 font-medium">
-                    <span className="block truncate">{c.label}</span>
-                    {i < COLS.length - 1 && (
-                      <span
-                        onMouseDown={startResize(i)}
-                        title="ลากเพื่อปรับความกว้าง"
-                        className="absolute right-0 top-0 z-10 h-full w-2 cursor-col-resize hover:bg-accent/30"
-                      />
-                    )}
-                  </th>
-                ))}
+                {COLS.map((c, i) => {
+                  const sortable = !!SORT_ACCESS[c.key];
+                  const activeSort = sort.key === c.key;
+                  return (
+                    <th key={c.key} className="relative select-none px-4 py-3 font-medium">
+                      {sortable ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleSort(c.key)}
+                          className={`flex items-center gap-1 truncate transition-colors hover:text-ink ${activeSort ? "text-ink" : ""}`}
+                        >
+                          <span className="truncate">{c.label}</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
+                            className={`shrink-0 transition ${activeSort ? "opacity-100" : "opacity-25"} ${activeSort && sort.dir === "desc" ? "rotate-180" : ""}`}>
+                            <path d="m6 15 6-6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <span className="block truncate">{c.label}</span>
+                      )}
+                      {i < COLS.length - 1 && (
+                        <span
+                          onMouseDown={startResize(i)}
+                          title="ลากเพื่อปรับความกว้าง"
+                          className="absolute right-0 top-0 z-10 h-full w-2 cursor-col-resize hover:bg-accent/30"
+                        />
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {filtered.map((b) => (
+              {sorted.map((b) => (
                 <tr key={b.id} className={`hover:bg-mist/30 ${b.active === false ? "bg-mist/20" : ""}`}>
                   <td className="px-4 py-3 text-[12px] text-sub">{b.isbn || "—"}</td>
                   <td className="px-4 py-3">
