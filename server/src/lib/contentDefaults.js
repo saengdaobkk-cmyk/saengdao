@@ -4,7 +4,9 @@ export const CONTENT_DEFAULTS = [
   // ===== ส่วนกลาง =====
   { key: "common.brand_tagline", section: "common", label: "สโลแกนใต้โลโก้ (footer)", value: "ร้านหนังสือแสงดาว คัดหนังสือดีมาเพื่อคุณ ส่งถึงบ้านทั่วประเทศ" },
   { key: "footer.copyright", section: "common", label: "ข้อความลิขสิทธิ์ (footer)", value: "© 2026 SAENGDAO — ร้านหนังสือออนไลน์" },
-  { key: "common.marquee_title", section: "common", label: "หัวข้อแถบโลโก้สำนักพิมพ์ (หน้าแรก)", value: "สำนักพิมพ์ที่ร่วมกับเรา" },
+  { key: "common.marquee_title", section: "common", label: "หัวข้อ section สำนักพิมพ์ (หน้าแรก)", value: "สำนักพิมพ์ที่คัดสรร" },
+  { key: "common.brands_eyebrow", section: "common", label: "หัวข้อเล็ก section สำนักพิมพ์", value: "สำนักพิมพ์" },
+  { key: "common.brands_subtitle", section: "common", label: "คำโปรย section สำนักพิมพ์", value: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ" },
 
   // ===== ตะกร้า =====
   { key: "cart.empty_title", section: "cart", label: "หัวข้อเมื่อตะกร้าว่าง", value: "ตะกร้าว่างเปล่า" },

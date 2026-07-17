@@ -1,64 +1,49 @@
-import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 import { img } from "../lib/img";
 
-// แถบโลโก้สำนักพิมพ์เลื่อนวนไม่รู้จบ — ขับด้วย requestAnimationFrame (ไม่พึ่ง CSS animation ที่ iOS กระพริบ)
+// section สำนักพิมพ์ — การ์ดโลโก้เรียงกลางจอ
 export default function PublisherMarquee() {
   const { data } = useTermDirectory("PUBLISHER");
   const { showPublisherMarquee } = useSettings();
   const { t } = useContent();
-  const trackRef = useRef(null);
   const items = (data || []).filter((p) => p?.slug);
-  const enough = items.length >= 2;
 
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track || !enough) return;
-    let raf, x = 0, last = performance.now();
-    const SPEED = 45; // px/วินาที
-    const tick = (now) => {
-      const dt = Math.min(50, now - last) / 1000;
-      last = now;
-      x -= SPEED * dt;
-      const half = track.scrollWidth / 2; // ความกว้าง 1 กลุ่ม (track = 2 กลุ่ม)
-      if (half > 0 && -x >= half) x += half; // วนกลับแบบไร้รอยต่อ
-      track.style.transform = `translate3d(${x}px, 0, 0)`;
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [enough, items.length]);
-
-  if (!showPublisherMarquee || !enough) return null;
-
-  // ทำซ้ำให้เต็มจอ (อย่างน้อย ~16 รายการ) แล้ววาง 2 ชุด → เลื่อนครบ 1 ชุดแล้ววนกลับเนียน
-  const reps = Math.max(2, Math.ceil(16 / items.length));
-  const group = Array.from({ length: reps }, () => items).flat();
-  const loop = [...group, ...group];
+  if (!showPublisherMarquee || items.length < 2) return null;
 
   return (
-    <section className="mt-6 border-t border-line bg-white pb-6 pt-7">
-      <p className="mb-5 text-center text-[13px] font-medium tracking-tight text-sub">{t("common.marquee_title", "สำนักพิมพ์ที่ร่วมกับเรา")}</p>
-      <div className="marquee relative">
-        <div ref={trackRef} className="flex" style={{ transform: "translate3d(0,0,0)" }}>
-          {loop.map((p, i) => (
-            <Link
-              key={i}
-              to={`/publisher/${p.slug}`}
-              title={p.name}
-              className="flex h-12 shrink-0 items-center justify-center px-8 opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-            >
-              {p.image ? (
-                <img src={img(p.image, 300)} alt={p.name} loading="lazy" decoding="async" className="h-10 w-auto max-w-[150px] object-contain" />
-              ) : (
-                <span className="whitespace-nowrap text-[17px] font-semibold tracking-tight text-ink/70">{p.name}</span>
-              )}
-            </Link>
-          ))}
-        </div>
+    <section className="mx-auto max-w-page px-5 py-16 sm:py-20">
+      <div className="mx-auto max-w-xl text-center">
+        <p className="text-[13px] font-medium tracking-tight text-accent">{t("common.brands_eyebrow", "สำนักพิมพ์")}</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">
+          {t("common.marquee_title", "สำนักพิมพ์ที่คัดสรร")}
+        </h2>
+        <p className="mt-3 text-[15px] text-sub">{t("common.brands_subtitle", "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ")}</p>
+      </div>
+
+      <div className="mt-10 flex flex-wrap justify-center gap-4">
+        {items.map((p) => (
+          <Link
+            key={p.slug}
+            to={`/publisher/${p.slug}`}
+            title={p.name}
+            className="group flex h-24 w-24 items-center justify-center rounded-2xl border border-line bg-white p-4 transition hover:border-ink/20 hover:shadow-md sm:h-28 sm:w-28"
+          >
+            {p.image ? (
+              <img
+                src={img(p.image, 300)}
+                alt={p.name}
+                loading="lazy"
+                decoding="async"
+                className="max-h-12 max-w-full object-contain transition duration-300 group-hover:scale-105 sm:max-h-14"
+              />
+            ) : (
+              <span className="line-clamp-3 text-center text-[13px] font-semibold tracking-tight text-ink/70">{p.name}</span>
+            )}
+          </Link>
+        ))}
       </div>
     </section>
   );
