@@ -4,6 +4,7 @@ import { useAdminSlides, useSaveSlide, useDeleteSlide, uploadImage } from "../..
 const EMPTY = {
   eyebrow: "", title: "", subtitle: "", ctaText: "เลือกซื้อเลย", ctaLink: "#catalog",
   image: "", bgColor: "#1d1d1f", dark: true, align: "center", valign: "center", overlay: 0,
+  overlayGradient: false, titleSize: "md", imagePosition: "center",
   linkUrl: "", textColor: "", buttonColor: "", buttonTextColor: "", order: 0, active: true,
 };
 
@@ -106,15 +107,22 @@ function SlideForm({ slide, onClose }) {
 
         {/* Live preview — สะท้อนตำแหน่งข้อความ */}
         <div
-          className={`relative mb-6 flex h-44 flex-col overflow-hidden rounded-2xl bg-cover bg-center p-5 ${ALIGN[form.align]} ${VALIGN[form.valign]}`}
-          style={{ background: form.image ? undefined : form.bgColor, backgroundImage: form.image ? `url(${form.image})` : undefined }}
+          className={`relative mb-6 flex h-44 flex-col overflow-hidden rounded-2xl bg-cover p-5 ${ALIGN[form.align]} ${VALIGN[form.valign]}`}
+          style={{
+            background: form.image ? undefined : form.bgColor,
+            backgroundImage: form.image ? `url(${form.image})` : undefined,
+            backgroundPosition: form.image ? ({ top: "center top", center: "center", bottom: "center bottom" }[form.imagePosition] || "center") : undefined,
+          }}
         >
           {form.image && form.overlay > 0 && (
             <div className="absolute inset-0" style={{ backgroundColor: form.dark ? "#000" : "#fff", opacity: form.overlay / 100 }} />
           )}
+          {form.image && form.overlayGradient && (
+            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(to top, ${form.dark ? "rgba(0,0,0,.65)" : "rgba(255,255,255,.7)"}, transparent 62%)` }} />
+          )}
           <div className={`relative max-w-[70%] ${form.dark ? "text-white" : "text-ink"}`} style={form.textColor ? { color: form.textColor } : undefined}>
             {form.eyebrow && <p className="text-[10px] opacity-80">{form.eyebrow}</p>}
-            <p className="whitespace-pre-line text-lg font-semibold leading-tight">{form.title || "หัวข้อสไลด์"}</p>
+            <p className={`whitespace-pre-line font-semibold leading-tight ${{ sm: "text-base", md: "text-lg", lg: "text-xl" }[form.titleSize] || "text-lg"}`}>{form.title || "หัวข้อสไลด์"}</p>
             {form.ctaText && (
               <span
                 className="mt-2 inline-block rounded-full bg-accent px-3 py-1 text-[11px] text-white"
@@ -184,6 +192,23 @@ function SlideForm({ slide, onClose }) {
             </F>
           </div>
 
+          {/* ขนาดหัวข้อ + โฟกัสรูป */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <F label="ขนาดหัวข้อ">
+              <Seg value={form.titleSize} onChange={(v) => setForm((f) => ({ ...f, titleSize: v }))}
+                options={[["sm", "เล็ก"], ["md", "กลาง"], ["lg", "ใหญ่"]]} />
+            </F>
+            <F label="โฟกัสรูป (เมื่อมีรูป)">
+              <Seg value={form.imagePosition} disabled={!form.image} onChange={(v) => setForm((f) => ({ ...f, imagePosition: v }))}
+                options={[["top", "บน"], ["center", "กลาง"], ["bottom", "ล่าง"]]} />
+            </F>
+          </div>
+          <label className={`flex items-center gap-2 text-[13px] ${form.image ? "text-ink" : "text-sub"}`}>
+            <input type="checkbox" checked={!!form.overlayGradient} disabled={!form.image}
+              onChange={(e) => setForm((f) => ({ ...f, overlayGradient: e.target.checked }))} className="h-4 w-4 accent-accent" />
+            แรเงาไล่ระดับจากล่าง (ช่วยให้ตัวหนังสืออ่านง่ายบนรูป)
+          </label>
+
           <div className="grid grid-cols-2 gap-4">
             <F label="ลิงก์ปุ่ม (CTA)"><Inp value={form.ctaLink} onChange={set("ctaLink")} /></F>
             <F label="ลิงก์เมื่อคลิกที่รูป (ถ้ามี)"><Inp value={form.linkUrl} onChange={set("linkUrl")} placeholder="เช่น /books/xxx หรือ https://..." /></F>
@@ -224,6 +249,26 @@ function SlideForm({ slide, onClose }) {
 }
 
 // ตาราง 3×3 เลือกตำแหน่งข้อความ (แบบ Elementor)
+function Seg({ value, onChange, options, disabled }) {
+  return (
+    <div className="flex gap-2">
+      {options.map(([v, l]) => (
+        <button
+          key={v}
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange(v)}
+          className={`flex-1 rounded-lg border px-3 py-2 text-[13px] transition disabled:opacity-40 ${
+            value === v ? "border-ink bg-ink text-white" : "border-line text-ink hover:bg-mist"
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PositionPicker({ align, valign, onChange }) {
   const rows = ["top", "center", "bottom"];
   const cols = ["left", "center", "right"];

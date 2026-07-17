@@ -58,6 +58,9 @@ model Slide {
   align     String   @default("center") // แนวนอน: left|center|right
   valign    String   @default("center") // แนวตั้ง: top|center|bottom
   overlay   Int      @default(0) // ความเข้มแผ่นแรเงาบนรูป 0-100 (0=เห็นรูปชัด)
+  overlayGradient Boolean @default(false) // แรเงาไล่ระดับจากล่าง (อ่านง่ายบนรูป)
+  titleSize       String   @default("md") // ขนาดหัวข้อ: sm|md|lg
+  imagePosition   String   @default("center") // โฟกัสรูป: top|center|bottom
   linkUrl         String? // คลิกที่รูป banner ไปที่ URL นี้
   textColor       String? // สีตัวอักษร (override dark)
   buttonColor     String? // สีพื้นปุ่ม CTA

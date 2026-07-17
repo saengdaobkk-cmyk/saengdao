@@ -5,6 +5,8 @@ import { img } from "../lib/img";
 // map ตำแหน่งข้อความ
 const ALIGN = { left: "items-start text-left", center: "items-center text-center", right: "items-end text-right" };
 const VALIGN = { top: "justify-start pt-24", center: "justify-center", bottom: "justify-end pb-24" };
+const TITLE_SIZE = { sm: "text-[32px] sm:text-5xl", md: "text-[44px] sm:text-6xl", lg: "text-[52px] sm:text-7xl" };
+const BG_POS = { top: "center top", center: "center", bottom: "center bottom" };
 
 export default function HeroSlider() {
   const { data: slides = [] } = useSlides();
@@ -33,10 +35,11 @@ export default function HeroSlider() {
         return (
           <div
             key={s.id}
-            className="absolute inset-0 bg-cover bg-center transition-opacity duration-[1100ms] ease-out"
+            className="absolute inset-0 bg-cover transition-opacity duration-[1100ms] ease-out"
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
               backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
+              backgroundPosition: hasImage ? (BG_POS[s.imagePosition] || "center") : undefined,
               opacity: idx === i ? 1 : 0,
             }}
             aria-hidden={idx !== i}
@@ -48,6 +51,15 @@ export default function HeroSlider() {
                 style={{
                   backgroundColor: s.dark ? "#000" : "#fff",
                   opacity: s.overlay / 100,
+                }}
+              />
+            )}
+            {/* แรเงาไล่ระดับจากล่าง — ช่วยให้ตัวหนังสืออ่านง่ายบนรูป */}
+            {hasImage && s.overlayGradient && (
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `linear-gradient(to top, ${s.dark ? "rgba(0,0,0,.65)" : "rgba(255,255,255,.7)"}, transparent 62%)`,
                 }}
               />
             )}
@@ -73,7 +85,7 @@ export default function HeroSlider() {
                     </p>
                   )}
                   <h1
-                    className={`whitespace-pre-line text-[44px] font-semibold leading-[1.05] tracking-tightest sm:text-6xl ${
+                    className={`whitespace-pre-line font-semibold leading-[1.05] tracking-tightest ${TITLE_SIZE[s.titleSize] || TITLE_SIZE.md} ${
                       s.dark ? "text-white" : "text-ink"
                     }`}
                     style={s.textColor ? { color: s.textColor } : undefined}
