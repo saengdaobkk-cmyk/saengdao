@@ -4,25 +4,49 @@ import { useAuth } from "../../auth/AuthContext";
 import { useAdminStats } from "../../api/admin";
 
 // adminOnly: true = เฉพาะแอดมินเต็ม · พนักงาน (STAFF) เห็นเฉพาะที่ไม่มี flag
-const nav = [
-  { to: "/admin", label: "ภาพรวม", end: true, icon: HomeIcon },
-  { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
-  { to: "/admin/products", label: "สินค้า", icon: ProductIcon },
-  { to: "/admin/collections", label: "Collection", icon: FolderIcon },
-  { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
-  { to: "/admin/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
-  { to: "/admin/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
-  { to: "/admin/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
-  { to: "/admin/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
-  { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
-  { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
-  { to: "/admin/users", label: "ผู้ใช้งาน (เจ้าหน้าที่)", icon: UsersIcon, adminOnly: true },
-  { to: "/admin/integrations", label: "การเชื่อมต่อ", icon: PlugIcon, adminOnly: true },
+// จัดกลุ่มเมนู: หัวข้อกลุ่ม (title) + รายการย่อย (items)
+const NAV_GROUPS = [
+  {
+    title: null,
+    items: [{ to: "/admin", label: "ภาพรวม", end: true, icon: HomeIcon }],
+  },
+  {
+    title: "การขาย",
+    items: [
+      { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
+      { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
+      { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
+      { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
+    ],
+  },
+  {
+    title: "สินค้า",
+    items: [
+      { to: "/admin/products", label: "สินค้า", icon: ProductIcon },
+      { to: "/admin/collections", label: "หมวดหมู่ & สำนักพิมพ์", icon: FolderIcon },
+    ],
+  },
+  {
+    title: "หน้าร้าน",
+    items: [
+      { to: "/admin/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
+      { to: "/admin/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
+      { to: "/admin/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
+      { to: "/admin/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
+    ],
+  },
+  {
+    title: "ระบบ",
+    items: [
+      { to: "/admin/users", label: "ผู้ใช้งาน", icon: UsersIcon, adminOnly: true },
+      { to: "/admin/integrations", label: "การเชื่อมต่อ", icon: PlugIcon, adminOnly: true },
+      { to: "/admin/settings", label: "ตั้งค่า", icon: GearIcon, adminOnly: true },
+    ],
+  },
 ];
-const settingsItem = { to: "/admin/settings", label: "ตั้งค่า", icon: GearIcon, adminOnly: true };
 
 // path ที่เฉพาะแอดมินเต็ม (กัน STAFF เข้าตรงๆ ผ่าน URL)
-const ADMIN_ONLY_PATHS = ["/admin/pages", "/admin/slides", "/admin/content", "/admin/coupons", "/admin/users", "/admin/integrations", "/admin/settings"];
+const ADMIN_ONLY_PATHS = ["/admin/pages", "/admin/slides", "/admin/home-layout", "/admin/content", "/admin/coupons", "/admin/shipping", "/admin/users", "/admin/integrations", "/admin/settings"];
 
 const TITLES = {
   "/admin": "ภาพรวม",
@@ -58,61 +82,75 @@ export default function AdminLayout() {
   if (!isAdmin && ADMIN_ONLY_PATHS.some((p) => location.pathname.startsWith(p)))
     return <Navigate to="/admin" replace />;
 
-  const navItems = nav.filter((n) => isAdmin || !n.adminOnly);
+  const groups = NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((it) => isAdmin || !it.adminOnly) }))
+    .filter((g) => g.items.length > 0);
   const title = TITLES[location.pathname] || "จัดการร้าน";
 
   return (
     <div className="min-h-screen bg-mist text-ink">
       {/* overlay มือถือ */}
-      {open && <div onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-ink/30 lg:hidden" />}
+      {open && <div onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm lg:hidden" />}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-white transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-white transition-transform duration-300 lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-14 items-center gap-2 border-b border-line px-5">
-          <span className="text-[15px] font-semibold tracking-[0.18em]">SAENGDAO</span>
-          <span className="rounded bg-ink px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-white">{isAdmin ? "ADMIN" : "STAFF"}</span>
+        <div className="flex h-16 items-center gap-2.5 border-b border-line px-5">
+          <span className="text-[16px] font-semibold tracking-[0.2em]">SAENGDAO</span>
+          <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wide ${isAdmin ? "bg-ink text-white" : "bg-accent/10 text-accent"}`}>
+            {isAdmin ? "ADMIN" : "STAFF"}
+          </span>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems.map((n) => (
-            <SideLink key={n.to} item={n} onClick={() => setOpen(false)} />
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          {groups.map((g, gi) => (
+            <div key={gi} className={gi > 0 ? "mt-4" : ""}>
+              {g.title && (
+                <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-sub/60">{g.title}</p>
+              )}
+              <div className="space-y-0.5">
+                {g.items.map((it) => (
+                  <SideLink key={it.to} item={it} onClick={() => setOpen(false)} />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
-        <div className="space-y-1 border-t border-line p-3">
-          {isAdmin && <SideLink item={settingsItem} onClick={() => setOpen(false)} />}
+        <div className="border-t border-line p-3">
           <Link
             to="/"
+            target="_blank"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-sub transition hover:bg-mist hover:text-ink"
           >
             <StoreIcon />
-            ดูหน้าร้าน
+            <span className="flex-1">ดูหน้าร้าน</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M7 17 17 7M9 7h8v8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </Link>
           <AccountBox />
         </div>
       </aside>
 
       {/* เนื้อหา */}
-      <div className="lg:pl-60">
+      <div className="lg:pl-64">
         {/* แถบบน */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-white/80 px-5 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white/80 px-5 backdrop-blur-xl sm:px-8">
           <button
             onClick={() => setOpen(true)}
             aria-label="เมนู"
-            className="rounded-lg p-1.5 text-ink hover:bg-mist lg:hidden"
+            className="-ml-1 rounded-lg p-1.5 text-ink hover:bg-mist lg:hidden"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
             </svg>
           </button>
-          <h1 className="text-[16px] font-semibold tracking-tight text-ink">{title}</h1>
+          <h1 className="text-[18px] font-semibold tracking-tight text-ink">{title}</h1>
         </header>
 
-        <main className="w-full px-5 py-8 sm:px-8">
+        <main className="mx-auto w-full max-w-[1400px] px-5 py-8 sm:px-8">
           <Outlet />
         </main>
       </div>
@@ -131,12 +169,12 @@ function SideLink({ item, onClick }) {
       onClick={onClick}
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition ${
-          isActive ? "bg-ink text-white" : "text-sub hover:bg-mist hover:text-ink"
+          isActive ? "bg-ink font-medium text-white shadow-sm" : "text-sub hover:bg-mist hover:text-ink"
         }`
       }
     >
       <Icon />
-      <span className="flex-1">{item.label}</span>
+      <span className="flex-1 truncate">{item.label}</span>
       {count > 0 && (
         <span className="rounded-full bg-amber-500 px-1.5 text-[11px] font-semibold text-white">{count}</span>
       )}
@@ -147,14 +185,17 @@ function SideLink({ item, onClick }) {
 function AccountBox() {
   const { user, logout } = useAuth();
   return (
-    <div className="mt-1 flex items-center gap-2 rounded-xl px-3 py-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-mist text-[13px] font-medium text-ink">
+    <div className="mt-1 flex items-center gap-2.5 rounded-xl bg-mist/60 px-3 py-2.5">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-[14px] font-semibold text-white">
         {(user.name || user.email)[0].toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[12px] font-medium text-ink">{user.name || "ผู้ดูแล"}</p>
-        <button onClick={logout} className="text-[11px] text-sub hover:text-red-600">ออกจากระบบ</button>
+        <p className="truncate text-[13px] font-medium text-ink">{user.name || "ผู้ดูแล"}</p>
+        <p className="truncate text-[11px] text-sub">{user.email}</p>
       </div>
+      <button onClick={logout} title="ออกจากระบบ" className="rounded-lg p-1.5 text-sub transition hover:bg-white hover:text-red-600">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 12H4m3-3-3 3 3 3M10 4h7a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
     </div>
   );
 }
