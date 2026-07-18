@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Outlet, Link, NavLink } from "react-router-dom";
+import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { useCart } from "./cart/CartContext";
 import { useSettings } from "./api/settings";
@@ -14,6 +14,18 @@ export default function App() {
   const { data: nav = [] } = useNav();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  // header โปร่งใสทับสไลด์ (หน้าแรก + ยังไม่ scroll) → ทึบเมื่อ scroll
+  useEffect(() => {
+    const onScroll = () => setScrolled((window.scrollY || 0) > 30);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const isHome = location.pathname === "/";
+  const overHero = s.transparentHeader !== false && isHome && !scrolled;
 
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
@@ -26,15 +38,15 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
-      {/* เมนูกระจกฝ้า ลอยติดบน */}
-      <header className="sticky top-0 z-50">
-        <div className="border-b border-line/70 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
+      {/* เมนูลอยติดบน — โปร่งใสทับสไลด์ตอนอยู่บนสุดหน้าแรก */}
+      <header className="fixed inset-x-0 top-0 z-50">
+        <div className={`transition-colors duration-300 ${overHero ? "" : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}>
           <div className="mx-auto flex h-12 max-w-page items-center justify-between px-5">
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setMobileOpen(true)}
                 aria-label="เมนู"
-                className="-ml-1 rounded-lg p-1 text-ink transition hover:bg-mist sm:hidden"
+                className={`-ml-1 rounded-lg p-1 transition sm:hidden ${overHero ? "text-white hover:bg-white/15" : "text-ink hover:bg-mist"}`}
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
@@ -42,7 +54,7 @@ export default function App() {
               </button>
               <Link
                 to="/"
-                className="font-semibold tracking-[0.22em] text-ink"
+                className={`font-semibold tracking-[0.22em] transition-colors ${overHero ? "text-white" : "text-ink"}`}
                 style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}
               >
                 SAENGDAO
@@ -57,7 +69,9 @@ export default function App() {
                   end={n.url === "/"}
                   className={({ isActive }) =>
                     `text-[14px] tracking-tight transition-colors ${
-                      isActive ? "text-ink" : "text-sub hover:text-ink"
+                      overHero
+                        ? isActive ? "text-white" : "text-white/80 hover:text-white"
+                        : isActive ? "text-ink" : "text-sub hover:text-ink"
                     }`
                   }
                 >
@@ -66,19 +80,19 @@ export default function App() {
               ))}
             </nav>
 
-            <div className="flex items-center gap-5 text-ink">
+            <div className="flex items-center gap-5">
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="ค้นหา"
-                className="group text-sub transition-colors hover:text-ink"
+                className={`group transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
               >
                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
                   className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
                   <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
                 </svg>
               </button>
-              <CartButton />
-              <AccountMenu />
+              <CartButton overHero={overHero} />
+              <AccountMenu overHero={overHero} />
             </div>
           </div>
         </div>
@@ -118,7 +132,7 @@ export default function App() {
         </div>
       </div>
 
-      <main className="flex-1">
+      <main className={`flex-1 ${isHome && s.transparentHeader !== false ? "" : "pt-12"}`}>
         <Outlet />
       </main>
 
@@ -204,7 +218,7 @@ function Social({ label, href, children }) {
   );
 }
 
-function CartButton() {
+function CartButton({ overHero }) {
   const { count, openDrawer } = useCart();
   const { cartDrawerEnabled } = useSettings();
   const [bump, setBump] = useState(false);
@@ -234,7 +248,7 @@ function CartButton() {
     </>
   );
 
-  const cls = "group relative inline-flex items-center text-sub transition-colors hover:text-ink";
+  const cls = `group relative inline-flex items-center transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`;
   // เปิด setting → เปิด drawer, ปิด → ไปหน้า /cart เต็มจอ
   return cartDrawerEnabled ? (
     <button onClick={openDrawer} aria-label="ตะกร้า" className={cls}>{inner}</button>
@@ -243,7 +257,7 @@ function CartButton() {
   );
 }
 
-function AccountMenu() {
+function AccountMenu({ overHero }) {
   const { user, loading, logout, isStaff } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -264,7 +278,7 @@ function AccountMenu() {
     return (
       <Link
         to="/login"
-        className="text-[13px] tracking-tight text-sub transition-colors hover:text-ink"
+        className={`text-[13px] tracking-tight transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
       >
         เข้าสู่ระบบ
       </Link>
@@ -276,7 +290,7 @@ function AccountMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-label="บัญชีของฉัน"
         aria-expanded={open}
-        className="group flex items-center gap-1.5 text-sub transition-colors hover:text-ink"
+        className={`group flex items-center gap-1.5 transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
       >
         <span className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
           <UserIcon />

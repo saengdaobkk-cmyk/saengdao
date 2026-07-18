@@ -8,6 +8,7 @@ const FALLBACK = {
   showPublisherMarquee: true,
   showPromoRibbon: false,
   showTextMarquee: false,
+  transparentHeader: true,
   showCollectionCount: true,
   logoUrl: "",
   logoSize: "56",

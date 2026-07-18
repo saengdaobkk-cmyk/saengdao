@@ -49,6 +49,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showTextMarquee: v })}
           />
+          <ToggleRow
+            title="แถบเมนูโปร่งใสทับสไลด์ (หน้าแรก)"
+            desc="เปิด: เมนูบนโปร่งใสทับสไลด์ ตัวอักษรขาว แล้วทึบเมื่อเลื่อนลง · เหมาะกับสไลด์พื้นเข้ม/มีรูป · ปิดถ้าสไลด์พื้นสว่าง"
+            checked={settings.transparentHeader}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ transparentHeader: v })}
+          />
         </div>
       </section>
 
