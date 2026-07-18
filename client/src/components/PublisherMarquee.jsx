@@ -29,7 +29,7 @@ export default function PublisherMarquee() {
             key={p.slug}
             to={`/publisher/${p.slug}`}
             title={p.name}
-            className="overflow-hidden rounded-xl border border-line bg-white transition hover:border-ink/25 hover:shadow-md"
+            className="overflow-hidden rounded-xl border border-line bg-white transition-all duration-200 ease-out hover:-translate-y-1.5 hover:border-ink/25 hover:shadow-lg"
           >
             {p.image ? (
               <img
