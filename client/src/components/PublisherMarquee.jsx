@@ -29,15 +29,15 @@ export default function PublisherMarquee() {
             key={p.slug}
             to={`/publisher/${p.slug}`}
             title={p.name}
-            className="group flex h-24 w-24 items-center justify-center rounded-2xl border border-line bg-white p-4 transition hover:border-ink/20 hover:shadow-md sm:h-28 sm:w-28"
+            className="group flex h-28 w-32 items-center justify-center rounded-2xl border border-line bg-white p-4 transition hover:border-ink/20 hover:shadow-md sm:h-32 sm:w-40"
           >
             {p.image ? (
               <img
-                src={img(p.image, 300)}
+                src={img(p.image, 400)}
                 alt={p.name}
                 loading="lazy"
                 decoding="async"
-                className="max-h-12 max-w-full object-contain transition duration-300 group-hover:scale-105 sm:max-h-14"
+                className="max-h-16 max-w-[85%] object-contain transition duration-300 group-hover:scale-105 sm:max-h-20"
               />
             ) : (
               <span className="line-clamp-3 text-center text-[13px] font-semibold tracking-tight text-ink/70">{p.name}</span>
