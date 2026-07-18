@@ -21,12 +21,13 @@ export function useDeleteRule() {
   });
 }
 
-// ส่วนลดอัตโนมัติสำหรับ checkout
-export function useAutoDiscount(subtotal, qty) {
+// ส่วนลดอัตโนมัติสำหรับ checkout (ส่งรายการสินค้าไปคิดตามขอบเขต)
+export function useAutoDiscount(items) {
+  const payload = (items || []).map((i) => ({ bookId: i.id, price: i.price, quantity: i.quantity }));
   return useQuery({
-    queryKey: ["discount-preview", subtotal, qty],
-    queryFn: async () => (await api.post("/discounts/preview", { subtotal, qty })).data,
-    enabled: subtotal > 0,
+    queryKey: ["discount-preview", payload],
+    queryFn: async () => (await api.post("/discounts/preview", { items: payload })).data,
+    enabled: payload.length > 0,
     staleTime: 1000 * 30,
   });
 }

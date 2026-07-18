@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { formatPrice } from "../../lib/format";
 import { useDiscountRules, useSaveRule, useDeleteRule } from "../../api/discounts";
+import { useAdminBooks } from "../../api/admin";
 
 const EMPTY = {
   name: "", priority: 0, minSubtotal: "", minQty: "",
   discountType: "PERCENT", discountValue: "", maxDiscount: "",
+  productScope: "ALL", productIds: [],
   startAt: "", endAt: "", active: true,
 };
 
@@ -23,7 +25,43 @@ function ruleSummary(r) {
   const disc = r.discountType === "PERCENT"
     ? `ลด ${Number(r.discountValue)}%${r.maxDiscount != null ? ` (สูงสุด ${formatPrice(r.maxDiscount)})` : ""}`
     : `ลด ${formatPrice(r.discountValue)}`;
-  return `${cond.length ? cond.join(" · ") + " → " : "ทุกออเดอร์ → "}${disc}`;
+  const scope =
+    r.productScope === "INCLUDE" ? ` · เฉพาะ ${r.productIds?.length || 0} รายการ` :
+    r.productScope === "EXCLUDE" ? ` · ยกเว้น ${r.productIds?.length || 0} รายการ` : "";
+  return `${cond.length ? cond.join(" · ") + " → " : "ทุกออเดอร์ → "}${disc}${scope}`;
+}
+
+function ProductPicker({ selected, onChange }) {
+  const { data: books = [] } = useAdminBooks();
+  const [q, setQ] = useState("");
+  const sel = new Set(selected);
+  const toggle = (id) => {
+    const next = new Set(sel);
+    next.has(id) ? next.delete(id) : next.add(id);
+    onChange([...next]);
+  };
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return (books || []).filter((b) => !s || [b.title, b.isbn, b.author].some((x) => x?.toLowerCase().includes(s))).slice(0, 80);
+  }, [books, q]);
+  return (
+    <div className="mt-2 rounded-lg border border-line">
+      <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาหนังสือ / ISBN / ผู้เขียน" className="flex-1 bg-transparent text-[13px] outline-none" />
+        <span className="shrink-0 text-[12px] text-sub">เลือกแล้ว {selected.length}</span>
+      </div>
+      <div className="max-h-56 overflow-y-auto p-1">
+        {filtered.map((b) => (
+          <label key={b.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-mist">
+            <input type="checkbox" checked={sel.has(b.id)} onChange={() => toggle(b.id)} className="h-4 w-4 accent-accent" />
+            <span className="truncate text-[13px] text-ink">{b.title}</span>
+            <span className="ml-auto shrink-0 text-[12px] text-sub">{formatPrice(b.price)}</span>
+          </label>
+        ))}
+        {filtered.length === 0 && <p className="px-2 py-3 text-center text-[12px] text-sub">ไม่พบสินค้า</p>}
+      </div>
+    </div>
+  );
 }
 
 export default function AdminDiscountRules() {
@@ -40,6 +78,7 @@ export default function AdminDiscountRules() {
       minSubtotal: Number(r.minSubtotal) || "", minQty: r.minQty || "",
       discountType: r.discountType, discountValue: Number(r.discountValue) || "",
       maxDiscount: r.maxDiscount != null ? Number(r.maxDiscount) : "",
+      productScope: r.productScope || "ALL", productIds: r.productIds || [],
       startAt: toLocalInput(r.startAt), endAt: toLocalInput(r.endAt), active: r.active,
     });
     setError("");
@@ -115,6 +154,19 @@ export default function AdminDiscountRules() {
               <Field label="เพดานส่วนลด (บาท)"><input type="number" min="0" value={form.maxDiscount} onChange={set("maxDiscount")} placeholder="ไม่จำกัด" className={inp} /></Field>
             )}
           </div>
+
+          <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ขอบเขตสินค้า</p>
+          <select value={form.productScope} onChange={set("productScope")} className={inp}>
+            <option value="ALL">สินค้าทั้งหมด</option>
+            <option value="INCLUDE">เฉพาะสินค้าที่กำหนด</option>
+            <option value="EXCLUDE">ยกเว้นสินค้าที่กำหนด</option>
+          </select>
+          {form.productScope !== "ALL" && (
+            <ProductPicker
+              selected={form.productIds}
+              onChange={(ids) => setForm((f) => ({ ...f, productIds: ids }))}
+            />
+          )}
 
           <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ช่วงเวลา (ไม่บังคับ)</p>
           <div className="grid gap-3 sm:grid-cols-2">

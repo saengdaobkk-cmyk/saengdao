@@ -525,6 +525,8 @@ function ruleData(body) {
     discountType: type,
     discountValue: num(body.discountValue),
     maxDiscount: body.maxDiscount === "" || body.maxDiscount == null ? null : num(body.maxDiscount),
+    productScope: ["ALL", "INCLUDE", "EXCLUDE"].includes(body.productScope) ? body.productScope : "ALL",
+    productIds: Array.isArray(body.productIds) ? body.productIds.filter((x) => typeof x === "string") : [],
     startAt: toDate(body.startAt),
     endAt: toDate(body.endAt),
   };

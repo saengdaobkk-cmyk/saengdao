@@ -285,6 +285,8 @@ model DiscountRule {
   discountType  String    @default("PERCENT") // PERCENT | FIXED
   discountValue Decimal   @default(0) @db.Decimal(10, 2)
   maxDiscount   Decimal?  @db.Decimal(10, 2) // เพดานส่วนลด (เฉพาะแบบ %)
+  productScope  String    @default("ALL") // ALL | INCLUDE | EXCLUDE
+  productIds    String[]  @default([]) // รายการ book id สำหรับ INCLUDE/EXCLUDE
   startAt       DateTime?
   endAt         DateTime?
   createdAt     DateTime  @default(now())

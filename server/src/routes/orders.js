@@ -274,8 +274,9 @@ router.post("/", async (req, res, next) => {
       }
 
       // ส่วนลดอัตโนมัติจาก Discount Rules (คิดจาก server กันปลอม)
-      const qty = orderItems.reduce((n, it) => n + it.quantity, 0);
-      const rule = await computeCartRuleDiscount(subtotal, qty);
+      const rule = await computeCartRuleDiscount(
+        orderItems.map((it) => ({ bookId: it.bookId, price: it.price, quantity: it.quantity }))
+      );
       const ruleDiscount = rule.discount || 0;
 
       const total = Math.max(0, subtotal - discount - ruleDiscount) + shippingFee;

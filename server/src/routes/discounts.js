@@ -3,11 +3,12 @@ import { computeCartRuleDiscount } from "../lib/discountRules.js";
 
 const router = Router();
 
-// POST /api/discounts/preview — ส่วนลดอัตโนมัติจากยอด/จำนวนชิ้น (แสดงตอน checkout)
+// POST /api/discounts/preview — ส่วนลดอัตโนมัติจากรายการสินค้า (แสดงตอน checkout)
+// body: { items: [{ bookId, price, quantity }] }
 router.post("/preview", async (req, res, next) => {
   try {
-    const { subtotal, qty } = req.body || {};
-    res.json(await computeCartRuleDiscount(subtotal, qty));
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    res.json(await computeCartRuleDiscount(items));
   } catch (err) {
     next(err);
   }
