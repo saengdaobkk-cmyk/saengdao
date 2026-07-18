@@ -516,17 +516,33 @@ function ruleData(body) {
   const type = body.discountType === "FIXED" ? "FIXED" : "PERCENT";
   const toDate = (v) => (v ? new Date(v) : null);
   const num = (v) => Math.max(0, Number(v) || 0);
+  const tiers = Array.isArray(body.bulkTiers)
+    ? body.bulkTiers
+        .map((t) => ({
+          minQty: parseInt(t.minQty) || 0,
+          discountType: t.discountType === "FIXED" ? "FIXED" : "PERCENT",
+          discountValue: num(t.discountValue),
+          maxDiscount: t.maxDiscount === "" || t.maxDiscount == null ? null : num(t.maxDiscount),
+        }))
+        .filter((t) => t.discountValue > 0)
+    : [];
   return {
     name: String(body.name || "").trim(),
     active: body.active !== false,
     priority: parseInt(body.priority) || 0,
+    ruleType: ["CART", "BULK", "BOGO"].includes(body.ruleType) ? body.ruleType : "CART",
     minSubtotal: num(body.minSubtotal),
     minQty: parseInt(body.minQty) || 0,
     discountType: type,
     discountValue: num(body.discountValue),
     maxDiscount: body.maxDiscount === "" || body.maxDiscount == null ? null : num(body.maxDiscount),
+    bulkTiers: tiers,
+    buyQty: parseInt(body.buyQty) || 0,
+    getQty: parseInt(body.getQty) || 0,
+    getPercent: Math.min(100, Math.max(0, body.getPercent == null || body.getPercent === "" ? 100 : parseInt(body.getPercent))),
     productScope: ["ALL", "INCLUDE", "EXCLUDE"].includes(body.productScope) ? body.productScope : "ALL",
     productIds: Array.isArray(body.productIds) ? body.productIds.filter((x) => typeof x === "string") : [],
+    categoryIds: Array.isArray(body.categoryIds) ? body.categoryIds.filter((x) => typeof x === "string") : [],
     startAt: toDate(body.startAt),
     endAt: toDate(body.endAt),
   };

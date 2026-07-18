@@ -2,13 +2,22 @@ import { useState, useMemo } from "react";
 import { formatPrice } from "../../lib/format";
 import { useDiscountRules, useSaveRule, useDeleteRule } from "../../api/discounts";
 import { useAdminBooks } from "../../api/admin";
+import { useCategories } from "../../api/books";
 
 const EMPTY = {
-  name: "", priority: 0, minSubtotal: "", minQty: "",
+  name: "", priority: 0, ruleType: "CART", minSubtotal: "", minQty: "",
   discountType: "PERCENT", discountValue: "", maxDiscount: "",
-  productScope: "ALL", productIds: [],
+  bulkTiers: [{ minQty: "", discountType: "PERCENT", discountValue: "", maxDiscount: "" }],
+  buyQty: "", getQty: "", getPercent: 100,
+  productScope: "ALL", productIds: [], categoryIds: [],
   startAt: "", endAt: "", active: true,
 };
+
+const RULE_TYPES = [
+  ["CART", "ส่วนลดปกติ"],
+  ["BULK", "ขั้นบันได (ตามจำนวน)"],
+  ["BOGO", "ซื้อ X แถม/ลด Y"],
+];
 
 const toLocalInput = (iso) => {
   if (!iso) return "";
@@ -19,16 +28,27 @@ const toLocalInput = (iso) => {
 };
 
 function ruleSummary(r) {
-  const cond = [];
-  if (Number(r.minSubtotal) > 0) cond.push(`ยอด ≥ ${formatPrice(r.minSubtotal)}`);
-  if (Number(r.minQty) > 0) cond.push(`≥ ${r.minQty} ชิ้น`);
-  const disc = r.discountType === "PERCENT"
-    ? `ลด ${Number(r.discountValue)}%${r.maxDiscount != null ? ` (สูงสุด ${formatPrice(r.maxDiscount)})` : ""}`
-    : `ลด ${formatPrice(r.discountValue)}`;
+  let core;
+  if (r.ruleType === "BOGO") {
+    const pct = r.getPercent ?? 100;
+    core = `ซื้อ ${r.buyQty} แถม ${r.getQty}${pct < 100 ? ` (ลด ${pct}%)` : ""}`;
+  } else if (r.ruleType === "BULK") {
+    const n = Array.isArray(r.bulkTiers) ? r.bulkTiers.length : 0;
+    core = `ขั้นบันได ${n} ระดับ`;
+  } else {
+    const cond = [];
+    if (Number(r.minSubtotal) > 0) cond.push(`ยอด ≥ ${formatPrice(r.minSubtotal)}`);
+    if (Number(r.minQty) > 0) cond.push(`≥ ${r.minQty} ชิ้น`);
+    const disc = r.discountType === "PERCENT"
+      ? `ลด ${Number(r.discountValue)}%${r.maxDiscount != null ? ` (สูงสุด ${formatPrice(r.maxDiscount)})` : ""}`
+      : `ลด ${formatPrice(r.discountValue)}`;
+    core = `${cond.length ? cond.join(" · ") + " → " : "ทุกออเดอร์ → "}${disc}`;
+  }
+  const nItems = (r.productIds?.length || 0) + (r.categoryIds?.length || 0);
   const scope =
-    r.productScope === "INCLUDE" ? ` · เฉพาะ ${r.productIds?.length || 0} รายการ` :
-    r.productScope === "EXCLUDE" ? ` · ยกเว้น ${r.productIds?.length || 0} รายการ` : "";
-  return `${cond.length ? cond.join(" · ") + " → " : "ทุกออเดอร์ → "}${disc}${scope}`;
+    r.productScope === "INCLUDE" ? ` · เฉพาะ ${nItems} รายการ` :
+    r.productScope === "EXCLUDE" ? ` · ยกเว้น ${nItems} รายการ` : "";
+  return `${core}${scope}`;
 }
 
 function ProductPicker({ selected, onChange }) {
@@ -64,6 +84,30 @@ function ProductPicker({ selected, onChange }) {
   );
 }
 
+function CategoryPicker({ selected, onChange }) {
+  const { data: cats = [] } = useCategories();
+  const sel = new Set(selected);
+  const toggle = (id) => {
+    const next = new Set(sel);
+    next.has(id) ? next.delete(id) : next.add(id);
+    onChange([...next]);
+  };
+  if (!cats.length) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {cats.map((c) => {
+        const on = sel.has(c.id);
+        return (
+          <button type="button" key={c.id} onClick={() => toggle(c.id)}
+            className={`rounded-full border px-3 py-1.5 text-[13px] transition ${on ? "border-accent bg-accent/10 text-accent" : "border-line text-sub hover:border-ink/25"}`}>
+            {c.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminDiscountRules() {
   const { data: rules = [], isLoading } = useDiscountRules();
   const save = useSaveRule();
@@ -73,17 +117,28 @@ export default function AdminDiscountRules() {
 
   const openNew = () => { setForm({ ...EMPTY }); setError(""); };
   const openEdit = (r) => {
+    const tiers = Array.isArray(r.bulkTiers) && r.bulkTiers.length
+      ? r.bulkTiers.map((t) => ({
+          minQty: t.minQty ?? "", discountType: t.discountType || "PERCENT",
+          discountValue: Number(t.discountValue) || "", maxDiscount: t.maxDiscount != null ? Number(t.maxDiscount) : "",
+        }))
+      : [{ minQty: "", discountType: "PERCENT", discountValue: "", maxDiscount: "" }];
     setForm({
-      id: r.id, name: r.name, priority: r.priority,
+      id: r.id, name: r.name, priority: r.priority, ruleType: r.ruleType || "CART",
       minSubtotal: Number(r.minSubtotal) || "", minQty: r.minQty || "",
       discountType: r.discountType, discountValue: Number(r.discountValue) || "",
       maxDiscount: r.maxDiscount != null ? Number(r.maxDiscount) : "",
-      productScope: r.productScope || "ALL", productIds: r.productIds || [],
+      bulkTiers: tiers,
+      buyQty: r.buyQty || "", getQty: r.getQty || "", getPercent: r.getPercent ?? 100,
+      productScope: r.productScope || "ALL", productIds: r.productIds || [], categoryIds: r.categoryIds || [],
       startAt: toLocalInput(r.startAt), endAt: toLocalInput(r.endAt), active: r.active,
     });
     setError("");
   };
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setTier = (i, k, v) => setForm((f) => ({ ...f, bulkTiers: f.bulkTiers.map((t, j) => (j === i ? { ...t, [k]: v } : t)) }));
+  const addTier = () => setForm((f) => ({ ...f, bulkTiers: [...f.bulkTiers, { minQty: "", discountType: "PERCENT", discountValue: "", maxDiscount: "" }] }));
+  const delTier = (i) => setForm((f) => ({ ...f, bulkTiers: f.bulkTiers.filter((_, j) => j !== i) }));
 
   const submit = (e) => {
     e.preventDefault();
@@ -135,37 +190,93 @@ export default function AdminDiscountRules() {
             <input value={form.name} onChange={set("name")} placeholder="เช่น ซื้อครบ 1,000 ลด 10%" className={inp} />
           </Field>
 
-          <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">เงื่อนไข (เว้นว่าง = ไม่กำหนด)</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="ยอดซื้อขั้นต่ำ (บาท)"><input type="number" min="0" value={form.minSubtotal} onChange={set("minSubtotal")} placeholder="เช่น 1000" className={inp} /></Field>
-            <Field label="จำนวนชิ้นขั้นต่ำ"><input type="number" min="0" value={form.minQty} onChange={set("minQty")} placeholder="เช่น 3" className={inp} /></Field>
+          <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ประเภทกฎ</p>
+          <div className="flex flex-wrap gap-2">
+            {RULE_TYPES.map(([v, label]) => (
+              <button type="button" key={v} onClick={() => setForm((f) => ({ ...f, ruleType: v }))}
+                className={`rounded-full border px-4 py-2 text-[13px] transition ${form.ruleType === v ? "border-accent bg-accent/10 text-accent" : "border-line text-sub hover:border-ink/25"}`}>
+                {label}
+              </button>
+            ))}
           </div>
 
-          <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ส่วนลด</p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field label="ประเภท">
-              <select value={form.discountType} onChange={set("discountType")} className={inp}>
-                <option value="PERCENT">เปอร์เซ็นต์ (%)</option>
-                <option value="FIXED">จำนวนเงิน (บาท)</option>
-              </select>
-            </Field>
-            <Field label={form.discountType === "PERCENT" ? "ลด (%)" : "ลด (บาท)"}><input type="number" min="0" value={form.discountValue} onChange={set("discountValue")} className={inp} /></Field>
-            {form.discountType === "PERCENT" && (
-              <Field label="เพดานส่วนลด (บาท)"><input type="number" min="0" value={form.maxDiscount} onChange={set("maxDiscount")} placeholder="ไม่จำกัด" className={inp} /></Field>
-            )}
-          </div>
+          {form.ruleType === "CART" && (
+            <>
+              <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">เงื่อนไข (เว้นว่าง = ไม่กำหนด)</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="ยอดซื้อขั้นต่ำ (บาท)"><input type="number" min="0" value={form.minSubtotal} onChange={set("minSubtotal")} placeholder="เช่น 1000" className={inp} /></Field>
+                <Field label="จำนวนชิ้นขั้นต่ำ"><input type="number" min="0" value={form.minQty} onChange={set("minQty")} placeholder="เช่น 3" className={inp} /></Field>
+              </div>
+              <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ส่วนลด</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Field label="ประเภท">
+                  <select value={form.discountType} onChange={set("discountType")} className={inp}>
+                    <option value="PERCENT">เปอร์เซ็นต์ (%)</option>
+                    <option value="FIXED">จำนวนเงิน (บาท)</option>
+                  </select>
+                </Field>
+                <Field label={form.discountType === "PERCENT" ? "ลด (%)" : "ลด (บาท)"}><input type="number" min="0" value={form.discountValue} onChange={set("discountValue")} className={inp} /></Field>
+                {form.discountType === "PERCENT" && (
+                  <Field label="เพดานส่วนลด (บาท)"><input type="number" min="0" value={form.maxDiscount} onChange={set("maxDiscount")} placeholder="ไม่จำกัด" className={inp} /></Field>
+                )}
+              </div>
+            </>
+          )}
+
+          {form.ruleType === "BULK" && (
+            <>
+              <p className="mb-1 mt-5 text-[13px] font-semibold text-ink">ราคาขั้นบันได (ยิ่งซื้อมาก ยิ่งลดมาก)</p>
+              <p className="mb-2 text-[12px] text-sub">คิดจากจำนวนชิ้นในกลุ่มสินค้าที่เข้าเงื่อนไข — ระบบเลือกขั้นสูงสุดที่ถึงให้อัตโนมัติ</p>
+              <div className="space-y-2">
+                {form.bulkTiers.map((t, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2">
+                    <Field label="ตั้งแต่ (ชิ้น)"><input type="number" min="1" value={t.minQty} onChange={(e) => setTier(i, "minQty", e.target.value)} className={inp} /></Field>
+                    <Field label="ประเภท">
+                      <select value={t.discountType} onChange={(e) => setTier(i, "discountType", e.target.value)} className={inp}>
+                        <option value="PERCENT">%</option>
+                        <option value="FIXED">บาท</option>
+                      </select>
+                    </Field>
+                    <Field label={t.discountType === "PERCENT" ? "ลด (%)" : "ลด (บาท)"}><input type="number" min="0" value={t.discountValue} onChange={(e) => setTier(i, "discountValue", e.target.value)} className={inp} /></Field>
+                    <button type="button" onClick={() => delTier(i)} disabled={form.bulkTiers.length === 1} className="mb-1 rounded-lg border border-line px-3 py-2 text-[13px] text-sub hover:text-red-600 disabled:opacity-40">ลบ</button>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={addTier} className="mt-2 text-[13px] text-accent">+ เพิ่มขั้น</button>
+            </>
+          )}
+
+          {form.ruleType === "BOGO" && (
+            <>
+              <p className="mb-1 mt-5 text-[13px] font-semibold text-ink">ซื้อ X แถม/ลด Y</p>
+              <p className="mb-2 text-[12px] text-sub">เช่น ซื้อ 2 แถม 1 (ลด 100%) — ส่วนลดจะไปตกที่ชิ้นราคาถูกที่สุดในกลุ่ม</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Field label="ซื้อ (ชิ้น)"><input type="number" min="1" value={form.buyQty} onChange={set("buyQty")} placeholder="เช่น 2" className={inp} /></Field>
+                <Field label="แถม/ลด (ชิ้น)"><input type="number" min="1" value={form.getQty} onChange={set("getQty")} placeholder="เช่น 1" className={inp} /></Field>
+                <Field label="ลดชิ้นที่แถม (%)"><input type="number" min="0" max="100" value={form.getPercent} onChange={set("getPercent")} placeholder="100 = ฟรี" className={inp} /></Field>
+              </div>
+            </>
+          )}
 
           <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ขอบเขตสินค้า</p>
           <select value={form.productScope} onChange={set("productScope")} className={inp}>
             <option value="ALL">สินค้าทั้งหมด</option>
-            <option value="INCLUDE">เฉพาะสินค้าที่กำหนด</option>
-            <option value="EXCLUDE">ยกเว้นสินค้าที่กำหนด</option>
+            <option value="INCLUDE">เฉพาะสินค้า / หมวดที่กำหนด</option>
+            <option value="EXCLUDE">ยกเว้นสินค้า / หมวดที่กำหนด</option>
           </select>
           {form.productScope !== "ALL" && (
-            <ProductPicker
-              selected={form.productIds}
-              onChange={(ids) => setForm((f) => ({ ...f, productIds: ids }))}
-            />
+            <>
+              <p className="mb-1 mt-3 text-[12px] font-medium text-sub">เลือกตามหมวดหมู่</p>
+              <CategoryPicker
+                selected={form.categoryIds}
+                onChange={(ids) => setForm((f) => ({ ...f, categoryIds: ids }))}
+              />
+              <p className="mb-1 mt-3 text-[12px] font-medium text-sub">หรือเลือกรายเล่ม</p>
+              <ProductPicker
+                selected={form.productIds}
+                onChange={(ids) => setForm((f) => ({ ...f, productIds: ids }))}
+              />
+            </>
           )}
 
           <p className="mb-2 mt-5 text-[13px] font-semibold text-ink">ช่วงเวลา (ไม่บังคับ)</p>

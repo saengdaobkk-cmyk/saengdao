@@ -282,11 +282,17 @@ model DiscountRule {
   priority      Int       @default(0) // เลขน้อย = สำคัญก่อน (เมื่อส่วนลดเท่ากัน)
   minSubtotal   Decimal   @default(0) @db.Decimal(10, 2) // ยอดซื้อขั้นต่ำ (0 = ไม่กำหนด)
   minQty        Int       @default(0) // จำนวนชิ้นขั้นต่ำ (0 = ไม่กำหนด)
-  discountType  String    @default("PERCENT") // PERCENT | FIXED
+  ruleType      String    @default("CART") // CART | BULK | BOGO
+  discountType  String    @default("PERCENT") // PERCENT | FIXED (CART)
   discountValue Decimal   @default(0) @db.Decimal(10, 2)
   maxDiscount   Decimal?  @db.Decimal(10, 2) // เพดานส่วนลด (เฉพาะแบบ %)
+  bulkTiers     Json? // BULK: [{ minQty, discountType, discountValue, maxDiscount }]
+  buyQty        Int       @default(0) // BOGO: ซื้อ X
+  getQty        Int       @default(0) // BOGO: แถม/ลด Y
+  getPercent    Int       @default(100) // BOGO: ลด Y กี่ % (100 = ฟรี)
   productScope  String    @default("ALL") // ALL | INCLUDE | EXCLUDE
-  productIds    String[]  @default([]) // รายการ book id สำหรับ INCLUDE/EXCLUDE
+  productIds    String[]  @default([]) // รายการ book id
+  categoryIds   String[]  @default([]) // รายการ category id (นับร่วมกับ productIds)
   startAt       DateTime?
   endAt         DateTime?
   createdAt     DateTime  @default(now())
