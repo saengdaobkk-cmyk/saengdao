@@ -15,6 +15,7 @@ const FALLBACK = {
   logoSizeFooter: "15",
   slideInterval: "6",
   slideAnimation: "fade",
+  homeSectionOrder: "",
   promptpayId: "",
   promptpayName: "",
   bankName: "",

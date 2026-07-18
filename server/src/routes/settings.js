@@ -13,6 +13,7 @@ const STRING_KEYS = [
   "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
   "slideInterval", // หน่วงเวลาเปลี่ยนสไลด์ (วินาที)
   "slideAnimation", // เอฟเฟกต์เปลี่ยนสไลด์: fade|slide
+  "homeSectionOrder", // ลำดับ section หน้าแรก (JSON array)
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร

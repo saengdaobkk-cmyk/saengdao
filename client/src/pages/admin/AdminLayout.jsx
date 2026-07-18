@@ -12,6 +12,7 @@ const nav = [
   { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
   { to: "/admin/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
   { to: "/admin/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
+  { to: "/admin/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
   { to: "/admin/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
   { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
   { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
@@ -34,6 +35,7 @@ const TITLES = {
   "/admin/customers": "ลูกค้า",
   "/admin/pages": "เพจ / เมนูนำทาง",
   "/admin/slides": "สไลด์หน้าแรก",
+  "/admin/home-layout": "จัดวางหน้าแรก",
   "/admin/content": "ข้อความในเว็บ",
   "/admin/coupons": "โค้ดส่วนลด",
   "/admin/shipping": "ช่องทางจัดส่ง",
@@ -175,3 +177,4 @@ function PlugIcon() { return <svg {...base()}><path d="M9 2v6M15 2v6M7 8h10v3a5 
 function UsersIcon() { return <svg {...base()}><circle cx="9" cy="8" r="3" /><path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5" /><path d="M16 5.5a3 3 0 0 1 0 5.5M17.5 20c0-2.3-1-3.8-2.5-4.6" /></svg>; }
 function CustomerIcon() { return <svg {...base()}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>; }
 function TruckIcon() { return <svg {...base()}><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17.5" cy="18" r="1.6" /></svg>; }
+function LayoutIcon() { return <svg {...base()}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16M9 9v11" /></svg>; }

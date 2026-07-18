@@ -28,6 +28,7 @@ import AdminProducts from "./pages/admin/AdminProducts.jsx";
 import AdminCollections, { CategoryManager, TermManager } from "./pages/admin/AdminCollections.jsx";
 import AdminNav from "./pages/admin/AdminNav.jsx";
 import AdminSlides from "./pages/admin/AdminSlides.jsx";
+import AdminHomeLayout from "./pages/admin/AdminHomeLayout.jsx";
 import AdminContent from "./pages/admin/AdminContent.jsx";
 import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
@@ -92,6 +93,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 </Route>
                 <Route path="pages" element={<AdminNav />} />
                 <Route path="slides" element={<AdminSlides />} />
+                <Route path="home-layout" element={<AdminHomeLayout />} />
                 <Route path="content" element={<AdminContent />} />
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="orders" element={<AdminOrders />} />
