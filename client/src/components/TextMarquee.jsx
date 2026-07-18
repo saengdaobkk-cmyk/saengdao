@@ -25,24 +25,26 @@ export default function TextMarquee() {
 
   useEffect(() => {
     if (!showTextMarquee) return;
-    let raf, x1 = 0, x2 = 0, inited = false, last = performance.now();
-    const SPEED = 70; // px/วินาที
-    const tick = (now) => {
-      const dt = Math.min(50, now - last) / 1000;
-      last = now;
+    let ticking = false, y = window.scrollY || 0;
+    const FACTOR = 0.6; // เลื่อนหน้า 1px → ตัวอักษรขยับ 0.6px
+    const apply = () => {
+      ticking = false;
       const h1 = (row1.current?.scrollWidth || 0) / 2;
       const h2 = (row2.current?.scrollWidth || 0) / 2;
-      if (!inited && h2) { x2 = -h2; inited = true; }
-      x1 -= SPEED * dt;         // แถวบนเลื่อนซ้าย
-      x2 += SPEED * dt;         // แถวล่างเลื่อนขวา
-      if (h1 && -x1 >= h1) x1 += h1;
-      if (h2 && x2 >= 0) x2 -= h2;
-      if (row1.current) row1.current.style.transform = `translate3d(${x1}px, 0, 0)`;
-      if (row2.current) row2.current.style.transform = `translate3d(${x2}px, 0, 0)`;
-      raf = requestAnimationFrame(tick);
+      if (row1.current && h1) row1.current.style.transform = `translate3d(${-(((y * FACTOR) % h1))}px, 0, 0)`; // เลื่อนซ้าย
+      if (row2.current && h2) row2.current.style.transform = `translate3d(${((y * FACTOR) % h2) - h2}px, 0, 0)`; // เลื่อนขวา
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const onScroll = () => {
+      y = window.scrollY || 0;
+      if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+    };
+    apply();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, [showTextMarquee, text]);
 
   if (!showTextMarquee) return null;
