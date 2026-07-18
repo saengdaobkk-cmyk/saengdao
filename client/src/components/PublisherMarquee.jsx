@@ -37,10 +37,10 @@ export default function PublisherMarquee() {
                 alt={p.name}
                 loading="lazy"
                 decoding="async"
-                className="block h-20 w-auto object-contain sm:h-24"
+                className="block h-24 w-auto object-contain sm:h-28"
               />
             ) : (
-              <span className="flex h-20 items-center justify-center px-5 text-center text-[14px] font-semibold tracking-tight text-ink/70 sm:h-24">{p.name}</span>
+              <span className="flex h-24 items-center justify-center px-6 text-center text-[15px] font-semibold tracking-tight text-ink/70 sm:h-28">{p.name}</span>
             )}
           </Link>
         ))}
