@@ -16,6 +16,7 @@ const NAV_GROUPS = [
       { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
       { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
       { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
+      { to: "/admin/discount-rules", label: "กฎส่วนลดอัตโนมัติ", icon: DiscountIcon, adminOnly: true },
       { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
     ],
   },
@@ -46,7 +47,7 @@ const NAV_GROUPS = [
 ];
 
 // path ที่เฉพาะแอดมินเต็ม (กัน STAFF เข้าตรงๆ ผ่าน URL)
-const ADMIN_ONLY_PATHS = ["/admin/pages", "/admin/slides", "/admin/home-layout", "/admin/content", "/admin/coupons", "/admin/shipping", "/admin/users", "/admin/integrations", "/admin/settings"];
+const ADMIN_ONLY_PATHS = ["/admin/pages", "/admin/slides", "/admin/home-layout", "/admin/content", "/admin/coupons", "/admin/discount-rules", "/admin/shipping", "/admin/users", "/admin/integrations", "/admin/settings"];
 
 const TITLES = {
   "/admin": "ภาพรวม",
@@ -62,6 +63,7 @@ const TITLES = {
   "/admin/home-layout": "จัดวางหน้าแรก",
   "/admin/content": "ข้อความในเว็บ",
   "/admin/coupons": "โค้ดส่วนลด",
+  "/admin/discount-rules": "กฎส่วนลดอัตโนมัติ",
   "/admin/shipping": "ช่องทางจัดส่ง",
   "/admin/users": "ผู้ใช้งาน (เจ้าหน้าที่)",
   "/admin/integrations": "การเชื่อมต่อ",
@@ -219,3 +221,4 @@ function UsersIcon() { return <svg {...base()}><circle cx="9" cy="8" r="3" /><pa
 function CustomerIcon() { return <svg {...base()}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>; }
 function TruckIcon() { return <svg {...base()}><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17.5" cy="18" r="1.6" /></svg>; }
 function LayoutIcon() { return <svg {...base()}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16M9 9v11" /></svg>; }
+function DiscountIcon() { return <svg {...base()}><path d="M9 15l6-6" /><circle cx="9" cy="9" r="1.2" /><circle cx="15" cy="15" r="1.2" /><path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" /></svg>; }

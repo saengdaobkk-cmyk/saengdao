@@ -163,6 +163,12 @@ function OrderRow({ order, open, onToggle }) {
                     <span>{formatPrice(Number(it.price) * it.quantity)}</span>
                   </li>
                 ))}
+                {Number(order.ruleDiscount) > 0 && (
+                  <li className="flex justify-between text-emerald-600">
+                    <span>{order.ruleName || "ส่วนลดอัตโนมัติ"}</span>
+                    <span>−{formatPrice(order.ruleDiscount)}</span>
+                  </li>
+                )}
                 {Number(order.discount) > 0 && (
                   <li className="flex justify-between text-emerald-600">
                     <span>ส่วนลด {order.discountCode && `(${order.discountCode})`}</span>

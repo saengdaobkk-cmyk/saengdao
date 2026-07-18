@@ -7,6 +7,7 @@ import { formatPrice } from "../lib/format";
 import { messageFor } from "../lib/validation";
 import { useContent } from "../api/content";
 import { useShipping } from "../api/shipping";
+import { useAutoDiscount } from "../api/discounts";
 
 const PAYMENTS = [
   { value: "PROMPTPAY", label: "พร้อมเพย์ (PromptPay)", desc: "สแกน QR จ่ายเงิน แล้วแนบสลิป" },
@@ -15,7 +16,7 @@ const PAYMENTS = [
 ];
 
 export default function Checkout() {
-  const { items, subtotal, clear } = useCart();
+  const { items, subtotal, count, clear } = useCart();
   const { user, loading } = useAuth();
   const { t } = useContent();
   const navigate = useNavigate();
@@ -75,9 +76,11 @@ export default function Checkout() {
   const setR = (k) => (e) => setReceipt((r) => ({ ...r, [k]: e.target.value }));
 
   const discount = coupon?.discount || 0;
+  const { data: auto } = useAutoDiscount(subtotal, count);
+  const ruleDiscount = auto?.discount || 0;
   const selectedShipping = shippingMethods.find((m) => m.id === shippingMethodId) || null;
   const shippingFee = selectedShipping ? Math.max(0, Math.round(Number(selectedShipping.fee))) : 0;
-  const total = Math.max(0, subtotal - discount + shippingFee);
+  const total = Math.max(0, subtotal - discount - ruleDiscount) + shippingFee;
 
   const applyCoupon = async () => {
     setCouponError("");
@@ -325,6 +328,12 @@ export default function Checkout() {
               <span>{t("checkout.subtotal", "ยอดรวมสินค้า")}</span>
               <span className="text-ink">{formatPrice(subtotal)}</span>
             </div>
+            {ruleDiscount > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>{auto?.name || "ส่วนลดอัตโนมัติ"}</span>
+                <span>−{formatPrice(ruleDiscount)}</span>
+              </div>
+            )}
             {discount > 0 && (
               <div className="flex justify-between text-emerald-600">
                 <span>{t("checkout.discount", "ส่วนลด")}</span>

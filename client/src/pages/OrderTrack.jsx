@@ -179,8 +179,14 @@ function OrderResult({ data, code, phone, onUpdated }) {
         ))}
       </ul>
 
-      {(Number(order.discount) > 0 || Number(order.shippingFee) > 0) && (
+      {(Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.shippingFee) > 0) && (
         <div className="mt-4 space-y-2 text-[14px]">
+          {Number(order.ruleDiscount) > 0 && (
+            <div className="flex justify-between">
+              <span className="text-sub">{order.ruleName || "ส่วนลดอัตโนมัติ"}</span>
+              <span className="text-emerald-600">−{formatPrice(order.ruleDiscount)}</span>
+            </div>
+          )}
           {Number(order.discount) > 0 && (
             <div className="flex justify-between">
               <span className="text-sub">ส่วนลด</span>

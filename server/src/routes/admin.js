@@ -13,7 +13,7 @@ import { ensureNav } from "../lib/navDefaults.js";
 const router = Router();
 router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
 // เมนูเฉพาะแอดมินเต็ม — STAFF เข้าไม่ได้ (พนักงานเห็นแค่ สินค้า/คำสั่งซื้อ/collection)
-["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder"].forEach((p) =>
+["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder", "/discount-rules"].forEach((p) =>
   router.use(p, requireAdmin)
 );
 
@@ -507,6 +507,68 @@ router.patch("/shipping-reorder", async (req, res, next) => {
     );
     res.json({ ok: true });
   } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- Discount Rules (ส่วนลดอัตโนมัติ) ---------- */
+function ruleData(body) {
+  const type = body.discountType === "FIXED" ? "FIXED" : "PERCENT";
+  const toDate = (v) => (v ? new Date(v) : null);
+  const num = (v) => Math.max(0, Number(v) || 0);
+  return {
+    name: String(body.name || "").trim(),
+    active: body.active !== false,
+    priority: parseInt(body.priority) || 0,
+    minSubtotal: num(body.minSubtotal),
+    minQty: parseInt(body.minQty) || 0,
+    discountType: type,
+    discountValue: num(body.discountValue),
+    maxDiscount: body.maxDiscount === "" || body.maxDiscount == null ? null : num(body.maxDiscount),
+    startAt: toDate(body.startAt),
+    endAt: toDate(body.endAt),
+  };
+}
+
+router.get("/discount-rules", async (req, res, next) => {
+  try {
+    res.json(await prisma.discountRule.findMany({ orderBy: [{ priority: "asc" }, { createdAt: "desc" }] }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/discount-rules", async (req, res, next) => {
+  try {
+    const data = ruleData(req.body);
+    if (!data.name) return res.status(400).json({ error: "กรอกชื่อกฎ" });
+    res.status(201).json(await prisma.discountRule.create({ data }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/discount-rules/:id", async (req, res, next) => {
+  try {
+    // toggle active อย่างเดียว
+    if (Object.keys(req.body).length === 1 && "active" in req.body) {
+      return res.json(await prisma.discountRule.update({ where: { id: req.params.id }, data: { active: !!req.body.active } }));
+    }
+    const data = ruleData(req.body);
+    if (!data.name) return res.status(400).json({ error: "กรอกชื่อกฎ" });
+    res.json(await prisma.discountRule.update({ where: { id: req.params.id }, data }));
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ error: "ไม่พบกฎ" });
+    next(err);
+  }
+});
+
+router.delete("/discount-rules/:id", async (req, res, next) => {
+  try {
+    await prisma.discountRule.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.code === "P2025") return res.json({ ok: true });
     next(err);
   }
 });

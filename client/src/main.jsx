@@ -33,6 +33,7 @@ import AdminContent from "./pages/admin/AdminContent.jsx";
 import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
 import AdminCoupons from "./pages/admin/AdminCoupons.jsx";
+import AdminDiscountRules from "./pages/admin/AdminDiscountRules.jsx";
 import AdminShipping from "./pages/admin/AdminShipping.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
@@ -98,6 +99,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="discount-rules" element={<AdminDiscountRules />} />
                 <Route path="shipping" element={<AdminShipping />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="users" element={<AdminUsers />} />

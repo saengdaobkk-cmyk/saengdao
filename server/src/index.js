@@ -15,6 +15,7 @@ import contentRouter from "./routes/content.js";
 import termsRouter from "./routes/terms.js";
 import navRouter from "./routes/nav.js";
 import shippingRouter from "./routes/shipping.js";
+import discountsRouter from "./routes/discounts.js";
 import previewRouter from "./routes/preview.js";
 import adminRouter from "./routes/admin.js";
 import { syncStockFromZort } from "./lib/zort.js";
@@ -62,6 +63,7 @@ app.use("/api/content", contentRouter);
 app.use("/api/terms", termsRouter);
 app.use("/api/nav", navRouter);
 app.use("/api/shipping", shippingRouter);
+app.use("/api/discounts", discountsRouter);
 app.use("/api/preview", previewRouter);
 app.use("/api/admin", adminRouter);
 

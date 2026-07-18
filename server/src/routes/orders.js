@@ -8,6 +8,7 @@ import { effectivePrice } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
+import { computeCartRuleDiscount } from "../lib/discountRules.js";
 
 // แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
 async function attachTrackingLink(order) {
@@ -80,6 +81,8 @@ function publicOrder(o) {
     paymentStatus: o.paymentStatus,
     paymentMethod: o.paymentMethod,
     discount: o.discount,
+    ruleDiscount: o.ruleDiscount,
+    ruleName: o.ruleName,
     shippingMethod: o.shippingMethod,
     shippingFee: o.shippingFee,
     total: o.total,
@@ -270,7 +273,12 @@ router.post("/", async (req, res, next) => {
         shippingName = method.name;
       }
 
-      const total = subtotal - discount + shippingFee;
+      // ส่วนลดอัตโนมัติจาก Discount Rules (คิดจาก server กันปลอม)
+      const qty = orderItems.reduce((n, it) => n + it.quantity, 0);
+      const rule = await computeCartRuleDiscount(subtotal, qty);
+      const ruleDiscount = rule.discount || 0;
+
+      const total = Math.max(0, subtotal - discount - ruleDiscount) + shippingFee;
 
       return tx.order.create({
         data: {
@@ -278,6 +286,8 @@ router.post("/", async (req, res, next) => {
           total,
           discount,
           discountCode: coupon?.code || null,
+          ruleDiscount,
+          ruleName: ruleDiscount > 0 ? rule.name : null,
           shippingMethod: shippingName,
           shippingFee,
           status: "PENDING",
