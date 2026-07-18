@@ -51,19 +51,21 @@
 }
 .cart-badge-pop { animation: cartBadgePop 0.4s ease; }
 
-/* การ์ดสำนักพิมพ์ — เด้งสปริงตอน hover (เด้งขึ้นแล้วเซ็ตเทิลนุ่มๆ) */
-.brand-card { transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; }
+/* การ์ดสำนักพิมพ์ — เด้งนุ่มๆ สุ่มทิศทาง (--bx/--by ตั้งจาก JS ตอน hover) */
+.brand-card {
+  --bx: 0px;
+  --by: -8px;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
 .brand-card:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 12px 28px rgba(23, 22, 27, 0.14);
-  animation: brandBounce 0.5s cubic-bezier(0.28, 0.84, 0.42, 1);
+  transform: translate(calc(var(--bx) * 0.55), calc(var(--by) * 0.55)) scale(1.025);
+  box-shadow: 0 12px 26px rgba(23, 22, 27, 0.12);
+  animation: brandBounce 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes brandBounce {
-  0%   { transform: translateY(0) scale(1); }
-  45%  { transform: translateY(-15px) scale(1.07); }
-  70%  { transform: translateY(-1px) scale(1.0); }
-  85%  { transform: translateY(-8px) scale(1.04); }
-  100% { transform: translateY(-6px) scale(1.03); }
+  0%   { transform: translate(0, 0) scale(1); }
+  55%  { transform: translate(var(--bx), var(--by)) scale(1.045); }
+  100% { transform: translate(calc(var(--bx) * 0.55), calc(var(--by) * 0.55)) scale(1.025); }
 }
 
 /* ซ่อน scrollbar แนวนอน (carousel) */

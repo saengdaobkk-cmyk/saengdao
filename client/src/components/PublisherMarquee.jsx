@@ -13,6 +13,14 @@ export default function PublisherMarquee() {
 
   if (!showPublisherMarquee || items.length < 2) return null;
 
+  // สุ่มทิศทางเด้งทุกครั้งที่ชี้เมาส์
+  const randomBounce = (e) => {
+    const a = Math.random() * Math.PI * 2;
+    const d = 8 + Math.random() * 5; // 8–13px
+    e.currentTarget.style.setProperty("--bx", `${(Math.cos(a) * d).toFixed(1)}px`);
+    e.currentTarget.style.setProperty("--by", `${(Math.sin(a) * d).toFixed(1)}px`);
+  };
+
   return (
     <section className="mx-auto max-w-page px-5 py-16 sm:py-20">
       <div className="mx-auto max-w-xl text-center">
@@ -29,6 +37,7 @@ export default function PublisherMarquee() {
             key={p.slug}
             to={`/publisher/${p.slug}`}
             title={p.name}
+            onMouseEnter={randomBounce}
             className="brand-card overflow-hidden rounded-xl border border-line bg-white hover:border-ink/25"
           >
             {p.image ? (
