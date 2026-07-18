@@ -7,6 +7,7 @@ const FALLBACK = {
   showCardCategory: false,
   showPublisherMarquee: true,
   showPromoRibbon: false,
+  showTextMarquee: false,
   showCollectionCount: true,
   logoUrl: "",
   logoSize: "56",

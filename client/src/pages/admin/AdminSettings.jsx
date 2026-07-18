@@ -42,6 +42,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showPromoRibbon: v })}
           />
+          <ToggleRow
+            title="แถบตัวอักษรใหญ่เลื่อน (2 แถว)"
+            desc="ตัวอักษรใหญ่ 2 แถว เลื่อนสวนทาง (ฟ้า/เหลือง) · แก้ข้อความที่ ข้อความในเว็บ → ส่วนกลาง"
+            checked={settings.showTextMarquee}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showTextMarquee: v })}
+          />
         </div>
       </section>
 
