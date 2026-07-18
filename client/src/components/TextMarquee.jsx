@@ -53,12 +53,12 @@ export default function TextMarquee() {
   return (
     <section className="overflow-hidden bg-mist py-10 sm:py-14">
       <div className="overflow-hidden">
-        <div ref={row1} className={`${rowCls} text-accent`} style={{ transform: "translate3d(0,0,0)" }}>
+        <div ref={row1} className={`${rowCls} text-ink`} style={{ transform: "translate3d(0,0,0)" }}>
           {rep.map((_, i) => <Words key={i} text={text} />)}
         </div>
       </div>
       <div className="mt-3 overflow-hidden">
-        <div ref={row2} className={`${rowCls} text-amber-400`} style={{ transform: "translate3d(0,0,0)" }}>
+        <div ref={row2} className={`${rowCls} text-accent`} style={{ transform: "translate3d(0,0,0)" }}>
           {rep.map((_, i) => <Words key={i} text={text} />)}
         </div>
       </div>
