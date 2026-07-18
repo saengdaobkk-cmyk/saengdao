@@ -29,7 +29,7 @@ export default function PublisherMarquee() {
             key={p.slug}
             to={`/publisher/${p.slug}`}
             title={p.name}
-            className="group flex h-28 w-32 items-center justify-center rounded-2xl border border-line bg-white p-4 transition hover:border-ink/20 hover:shadow-md sm:h-32 sm:w-40"
+            className="overflow-hidden rounded-xl border border-line bg-white transition hover:border-ink/25 hover:shadow-md"
           >
             {p.image ? (
               <img
@@ -37,10 +37,10 @@ export default function PublisherMarquee() {
                 alt={p.name}
                 loading="lazy"
                 decoding="async"
-                className="max-h-16 max-w-[85%] object-contain transition duration-300 group-hover:scale-105 sm:max-h-20"
+                className="block h-20 w-auto object-contain sm:h-24"
               />
             ) : (
-              <span className="line-clamp-3 text-center text-[13px] font-semibold tracking-tight text-ink/70">{p.name}</span>
+              <span className="flex h-20 items-center justify-center px-5 text-center text-[14px] font-semibold tracking-tight text-ink/70 sm:h-24">{p.name}</span>
             )}
           </Link>
         ))}
