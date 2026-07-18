@@ -239,3 +239,38 @@ export function useDeleteCustomer() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "customers"] }),
   });
 }
+
+/* ---------- CRM: โปรไฟล์ 360 / โน้ต / แต้ม ---------- */
+export const useCustomerTags = () =>
+  useQuery({ queryKey: ["admin", "customer-tags"], queryFn: async () => (await api.get("/admin/customer-tags")).data });
+
+export const useCustomerDetail = (id) =>
+  useQuery({
+    queryKey: ["admin", "customer", id],
+    queryFn: async () => (await api.get(`/admin/customers/${id}`)).data,
+    enabled: !!id,
+  });
+
+function useCrmMutation(mutationFn) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn,
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin", "customer", vars.id] });
+      qc.invalidateQueries({ queryKey: ["admin", "customers"] });
+      qc.invalidateQueries({ queryKey: ["admin", "customer-tags"] });
+    },
+  });
+}
+
+export const useAddNote = () =>
+  useCrmMutation(async ({ id, ...data }) => (await api.post(`/admin/customers/${id}/notes`, data)).data);
+
+export const useToggleNote = () =>
+  useCrmMutation(async ({ noteId, ...data }) => (await api.patch(`/admin/customers/notes/${noteId}`, data)).data);
+
+export const useDeleteNote = () =>
+  useCrmMutation(async ({ noteId }) => (await api.delete(`/admin/customers/notes/${noteId}`)).data);
+
+export const useAdjustPoints = () =>
+  useCrmMutation(async ({ id, ...data }) => (await api.post(`/admin/customers/${id}/points`, data)).data);

@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "logoSize", // ความสูงโลโก้ (px) หน้าติดต่อ
@@ -28,6 +28,7 @@ const STRING_KEYS = [
   "socialFacebook",
   "socialInstagram",
   "socialLine",
+  "loyaltyBahtPerPoint", // ยอดซื้อ (บาท) ต่อ 1 แต้ม เช่น 100 = ทุก 100 บาทได้ 1 แต้ม
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -46,6 +47,8 @@ const DEFAULTS = {
   socialFacebook: "",
   socialInstagram: "",
   socialLine: "",
+  loyaltyEnabled: false,
+  loyaltyBahtPerPoint: "100",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด

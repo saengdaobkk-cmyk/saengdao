@@ -119,9 +119,43 @@ model User {
   receiptTaxId   String?
   receiptAddress String?
   role      Role     @default(USER)
+  // CRM
+  tags      String[]       @default([]) // แท็ก/กลุ่มลูกค้า เช่น VIP, ขายส่ง
+  points    Int            @default(0)  // ยอดแต้มสะสมคงเหลือ (สรุปจาก PointEntry)
   orders    Order[]
+  crmNotes  CustomerNote[]
+  pointLogs PointEntry[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// โน้ต / ประวัติการติดตามลูกค้า (CRM timeline)
+model CustomerNote {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body       String
+  kind       String   @default("NOTE") // NOTE | CALL | FOLLOWUP
+  done       Boolean  @default(false) // สำหรับ FOLLOWUP: ทำแล้วหรือยัง
+  dueAt      DateTime? // กำหนดวันติดตาม (FOLLOWUP)
+  authorName String? // แอดมินที่บันทึก
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+// รายการเดินแต้มสะสม (ledger) — ยอดคงเหลืออยู่ที่ User.points
+model PointEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta     Int // + ได้แต้ม / - ใช้แต้ม
+  reason    String
+  orderId   String? // อ้างอิงออเดอร์ (ถ้าได้จากการซื้อ)
+  authorName String? // แอดมินที่ปรับ (ถ้าปรับมือ)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Category {

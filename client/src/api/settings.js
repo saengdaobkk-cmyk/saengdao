@@ -30,6 +30,8 @@ const FALLBACK = {
   socialFacebook: "",
   socialInstagram: "",
   socialLine: "",
+  loyaltyEnabled: false,
+  loyaltyBahtPerPoint: "100",
 };
 
 export function useSettings() {

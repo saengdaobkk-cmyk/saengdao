@@ -59,9 +59,47 @@ export default function AdminSettings() {
         </div>
       </section>
 
+      <LoyaltySettings settings={settings} save={update} />
       <ContactSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
+  );
+}
+
+function LoyaltySettings({ settings, save }) {
+  const [per, setPer] = useState(settings.loyaltyBahtPerPoint || "100");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { setPer(settings.loyaltyBahtPerPoint || "100"); }, [settings.loyaltyBahtPerPoint]);
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">แต้มสะสม (Loyalty)</h2>
+      <p className="mb-4 text-[12px] text-sub">ลูกค้าได้แต้มอัตโนมัติเมื่อออเดอร์ถูกยืนยันชำระเงิน · ปรับ/หักแต้มด้วยมือได้ที่หน้า “ลูกค้า”</p>
+      <div className="divide-y divide-line rounded-2xl border border-line bg-white">
+        <ToggleRow
+          title="เปิดระบบแต้มสะสม"
+          desc="เปิด: ทุกออเดอร์ที่ชำระเงินแล้วจะได้แต้มตามอัตราด้านล่างโดยอัตโนมัติ"
+          checked={settings.loyaltyEnabled}
+          disabled={save.isPending}
+          onChange={(v) => save.mutate({ loyaltyEnabled: v })}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+          <div>
+            <p className="text-[14px] font-medium text-ink">อัตราการได้แต้ม</p>
+            <p className="text-[12px] text-sub">ยอดซื้อทุกๆ กี่บาท ได้ 1 แต้ม (ปัดลง)</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-sub">ทุก</span>
+            <input type="number" min="1" value={per} onChange={(e) => { setPer(e.target.value); setSaved(false); }}
+              className="w-24 rounded-lg border border-line px-3 py-2 text-center text-[14px] outline-none focus:border-ink/30" />
+            <span className="text-[13px] text-sub">บาท = 1 แต้ม</span>
+            <button
+              onClick={() => save.mutate({ loyaltyBahtPerPoint: String(Math.max(1, parseInt(per) || 100)) }, { onSuccess: () => setSaved(true) })}
+              className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90">บันทึก</button>
+            {saved && <span className="text-[13px] text-emerald-600">✓</span>}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

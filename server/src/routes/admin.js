@@ -656,7 +656,10 @@ router.patch("/orders/:id", async (req, res, next) => {
 
     const order = await prisma.order.update({ where: { id: req.params.id }, data });
 
-    // ยืนยันชำระเงินแล้ว → ส่งออเดอร์ไป ZORT อัตโนมัติ (best-effort ไม่บล็อกการอนุมัติ)
+    // ยืนยันชำระเงินแล้ว → สะสมแต้ม + ส่งออเดอร์ไป ZORT อัตโนมัติ (best-effort)
+    if (data.paymentStatus === "PAID") {
+      await awardLoyaltyPoints(order).catch((e) => console.error("loyalty:", e.message));
+    }
     let zort;
     if (data.paymentStatus === "PAID" && !order.zortOrderId) {
       zort = await pushOrderToZort(order.id).catch((e) => ({ ok: false, error: e.message }));
@@ -1070,9 +1073,27 @@ router.delete("/users/:id", async (req, res, next) => {
 });
 
 /* ---------- Customers (ลูกค้า — เจ้าหน้าที่ดู/แก้ข้อมูลได้) ---------- */
+// สะสมแต้มเมื่อออเดอร์ชำระเงินแล้ว (idempotent — ออเดอร์ละครั้ง)
+async function awardLoyaltyPoints(order) {
+  const rows = await prisma.setting.findMany({ where: { key: { in: ["loyaltyEnabled", "loyaltyBahtPerPoint"] } } });
+  const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  if (map.loyaltyEnabled !== "true") return;
+  const per = Number(map.loyaltyBahtPerPoint) || 0;
+  if (per <= 0) return;
+  const pts = Math.floor(Number(order.total) / per);
+  if (pts <= 0) return;
+  const existing = await prisma.pointEntry.findFirst({ where: { orderId: order.id, delta: { gt: 0 } } });
+  if (existing) return; // ให้แต้มไปแล้ว
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: order.userId }, data: { points: { increment: pts } } }),
+    prisma.pointEntry.create({ data: { userId: order.userId, delta: pts, reason: "สะสมจากการซื้อ", orderId: order.id } }),
+  ]);
+}
+
 const customerPublic = (u) => ({
   id: u.id, email: u.email, name: u.name, phone: u.phone, address: u.address,
   receiptName: u.receiptName, receiptTaxId: u.receiptTaxId, receiptAddress: u.receiptAddress,
+  tags: u.tags || [], points: u.points || 0,
   createdAt: u.createdAt,
 });
 
@@ -1083,11 +1104,81 @@ router.get("/customers", async (req, res, next) => {
       orderBy: { createdAt: "desc" },
       select: {
         id: true, email: true, name: true, phone: true, address: true,
-        receiptName: true, receiptTaxId: true, receiptAddress: true, createdAt: true,
+        receiptName: true, receiptTaxId: true, receiptAddress: true,
+        tags: true, points: true, createdAt: true,
         _count: { select: { orders: true } },
       },
     });
-    res.json(rows.map((c) => ({ ...customerPublic(c), orderCount: c._count.orders })));
+    // ยอดใช้จ่าย + วันสั่งล่าสุด (นับเฉพาะออเดอร์ที่ไม่ยกเลิก)
+    const agg = await prisma.order.groupBy({
+      by: ["userId"],
+      where: { status: { not: "CANCELLED" } },
+      _sum: { total: true },
+      _max: { createdAt: true },
+    });
+    const stat = new Map(agg.map((a) => [a.userId, a]));
+    res.json(rows.map((c) => {
+      const s = stat.get(c.id);
+      return {
+        ...customerPublic(c),
+        orderCount: c._count.orders,
+        totalSpent: Number(s?._sum.total || 0),
+        lastOrderAt: s?._max.createdAt || null,
+      };
+    }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// รวมแท็กทั้งหมดที่เคยใช้ (ช่วย auto-complete)
+router.get("/customer-tags", async (req, res, next) => {
+  try {
+    const rows = await prisma.user.findMany({ where: { role: "USER" }, select: { tags: true } });
+    const set = new Set();
+    rows.forEach((r) => (r.tags || []).forEach((t) => set.add(t)));
+    res.json([...set].sort());
+  } catch (err) {
+    next(err);
+  }
+});
+
+// โปรไฟล์ลูกค้า 360° — ข้อมูล + สถิติ + ออเดอร์ + โน้ต + แต้ม
+router.get("/customers/:id", async (req, res, next) => {
+  try {
+    const u = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!u || u.role !== "USER") return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    const [orders, notes, points] = await Promise.all([
+      prisma.order.findMany({
+        where: { userId: u.id },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true, total: true, status: true, paymentStatus: true, paymentMethod: true,
+          createdAt: true, _count: { select: { items: true } },
+        },
+      }),
+      prisma.customerNote.findMany({ where: { userId: u.id }, orderBy: { createdAt: "desc" } }),
+      prisma.pointEntry.findMany({ where: { userId: u.id }, orderBy: { createdAt: "desc" }, take: 100 }),
+    ]);
+    const paid = orders.filter((o) => o.status !== "CANCELLED");
+    const totalSpent = paid.reduce((s, o) => s + Number(o.total), 0);
+    res.json({
+      ...customerPublic(u),
+      stats: {
+        orderCount: orders.length,
+        paidCount: paid.length,
+        totalSpent,
+        avgOrder: paid.length ? Math.round(totalSpent / paid.length) : 0,
+        firstOrderAt: orders.length ? orders[orders.length - 1].createdAt : null,
+        lastOrderAt: orders.length ? orders[0].createdAt : null,
+      },
+      orders: orders.map((o) => ({
+        id: o.id, total: Number(o.total), status: o.status, paymentStatus: o.paymentStatus,
+        paymentMethod: o.paymentMethod, itemCount: o._count.items, createdAt: o.createdAt,
+      })),
+      notes,
+      pointLogs: points,
+    });
   } catch (err) {
     next(err);
   }
@@ -1114,6 +1205,9 @@ router.patch("/customers/:id", async (req, res, next) => {
       if (exists && exists.id !== target.id) return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
       data.email = email;
     }
+    if (Array.isArray(b.tags)) {
+      data.tags = [...new Set(b.tags.map((t) => String(t).trim()).filter(Boolean))];
+    }
     const user = await prisma.user.update({ where: { id: target.id }, data });
     res.json(customerPublic(user));
   } catch (err) {
@@ -1132,6 +1226,72 @@ router.delete("/customers/:id", async (req, res, next) => {
       return res.status(409).json({ error: "ลบไม่ได้ — ลูกค้ามีคำสั่งซื้อแล้ว" });
     await prisma.user.delete({ where: { id: target.id } });
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRM: โน้ต / การติดตาม ──
+router.post("/customers/:id/notes", async (req, res, next) => {
+  try {
+    const u = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!u || u.role !== "USER") return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    const body = String(req.body?.body || "").trim();
+    if (!body) return res.status(400).json({ error: "กรอกข้อความ" });
+    const kind = ["NOTE", "CALL", "FOLLOWUP"].includes(req.body?.kind) ? req.body.kind : "NOTE";
+    const note = await prisma.customerNote.create({
+      data: {
+        userId: u.id, body, kind,
+        dueAt: kind === "FOLLOWUP" && req.body?.dueAt ? new Date(req.body.dueAt) : null,
+        authorName: req.user?.name || req.user?.email || null,
+      },
+    });
+    res.status(201).json(note);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/customers/notes/:noteId", async (req, res, next) => {
+  try {
+    const data = {};
+    if (req.body?.done !== undefined) data.done = !!req.body.done;
+    if (req.body?.body !== undefined) data.body = String(req.body.body).trim();
+    const note = await prisma.customerNote.update({ where: { id: req.params.noteId }, data });
+    res.json(note);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/customers/notes/:noteId", async (req, res, next) => {
+  try {
+    await prisma.customerNote.delete({ where: { id: req.params.noteId } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRM: ปรับแต้มสะสมด้วยมือ (บวก/ลบ) ──
+router.post("/customers/:id/points", async (req, res, next) => {
+  try {
+    const u = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!u || u.role !== "USER") return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    const delta = Math.trunc(Number(req.body?.delta) || 0);
+    if (!delta) return res.status(400).json({ error: "ระบุจำนวนแต้ม (+/-)" });
+    if (u.points + delta < 0) return res.status(400).json({ error: "แต้มคงเหลือไม่พอ" });
+    const [user, entry] = await prisma.$transaction([
+      prisma.user.update({ where: { id: u.id }, data: { points: { increment: delta } } }),
+      prisma.pointEntry.create({
+        data: {
+          userId: u.id, delta,
+          reason: String(req.body?.reason || "").trim() || (delta > 0 ? "ปรับเพิ่มโดยแอดมิน" : "ปรับลดโดยแอดมิน"),
+          authorName: req.user?.name || req.user?.email || null,
+        },
+      }),
+    ]);
+    res.status(201).json({ points: user.points, entry });
   } catch (err) {
     next(err);
   }
