@@ -49,7 +49,10 @@ export default function PromoRibbon() {
 
   return (
     <section className="relative overflow-hidden py-12 sm:py-16">
-      <div className="-ml-[10%] w-[120%] -rotate-2 bg-gradient-to-r from-rose-100 via-fuchsia-100 to-indigo-100 py-4 shadow-sm">
+      <div
+        className="-ml-[10%] w-[120%] -rotate-2 py-4 shadow-sm"
+        style={{ backgroundImage: "linear-gradient(to right, #e9f2ff, #d3e6ff, #e9f2ff)" }}
+      >
         <div className="overflow-hidden">
           <div ref={trackRef} className="flex w-max items-center gap-12 whitespace-nowrap px-6" style={{ transform: "translate3d(0,0,0)" }}>
             {loop.map((it, i) =>
