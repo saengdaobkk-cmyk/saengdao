@@ -40,8 +40,8 @@ export default function TextMarquee() {
       <div className="-rotate-2">
         <div ref={row1} className={`${rowCls} text-ink`} style={{ transform: "translate3d(0,0,0)" }}><Repeat /></div>
       </div>
-      {/* แถวล่าง (ฟ้า) เอียงขึ้น — ไม่ทับกัน */}
-      <div className="mt-3 rotate-2 sm:mt-5">
+      {/* แถวล่าง (ฟ้า) — ตรง ไม่เอียง */}
+      <div className="mt-3 sm:mt-5">
         <div ref={row2} className={`${rowCls} text-accent`} style={{ transform: "translate3d(0,0,0)" }}><Repeat /></div>
       </div>
     </section>
