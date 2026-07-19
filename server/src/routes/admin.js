@@ -613,7 +613,7 @@ router.get("/orders", async (req, res, next) => {
             receiptName: true, receiptTaxId: true, receiptAddress: true,
           },
         },
-        items: { include: { book: { select: { title: true } } } },
+        items: { include: { book: { select: { title: true, isbn: true, sku: true } } } },
       },
     });
     // แนบลิงก์ tracking ให้แต่ละออเดอร์ (ไปรษณีย์ไทย = เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)

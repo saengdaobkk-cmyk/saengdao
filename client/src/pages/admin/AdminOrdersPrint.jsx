@@ -57,20 +57,37 @@ export default function AdminOrdersPrint() {
         </div>
       </div>
 
-      {list.map((o) => (
-        <div className={doc === "label" ? "sheet label-sheet" : "sheet"} key={o.id}>
-          {doc === "picking" && <Picking o={o} shopName={shopName} />}
-          {doc === "label" && <Label o={o} shopName={shopName} settings={settings} />}
-          {doc === "invoice" && <Invoice o={o} shopName={shopName} settings={settings} />}
-        </div>
-      ))}
+      {doc === "picking" ? (
+        <div className="sheet"><PickingCombined list={list} shopName={shopName} /></div>
+      ) : (
+        list.map((o) => (
+          <div className={doc === "label" ? "sheet label-sheet" : "sheet"} key={o.id}>
+            {doc === "label" && <Label o={o} shopName={shopName} settings={settings} />}
+            {doc === "invoice" && <Invoice o={o} shopName={shopName} settings={settings} />}
+          </div>
+        ))
+      )}
     </div>
   );
 }
 
-/* ── ใบจัดเตรียมสินค้า (Picking) ── */
-function Picking({ o, shopName }) {
-  const totalQty = o.items.reduce((s, it) => s + it.quantity, 0);
+/* ── ใบจัดเตรียมสินค้า (Picking) — รวมทุกออเดอร์เป็นรายการเดียว ── */
+function PickingCombined({ list, shopName }) {
+  // รวมจำนวนตามสินค้า (bookId + variant)
+  const map = new Map();
+  for (const o of list) {
+    for (const it of o.items) {
+      const key = `${it.bookId}|${it.variantId || ""}`;
+      const code = it.book.isbn || it.book.sku || "-";
+      const name = it.book.title + (it.variantName ? ` (${it.variantName})` : "");
+      const cur = map.get(key) || { code, name, qty: 0 };
+      cur.qty += it.quantity;
+      map.set(key, cur);
+    }
+  }
+  const rows = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, "th"));
+  const totalQty = rows.reduce((s, r) => s + r.qty, 0);
+
   return (
     <>
       <div className="head">
@@ -79,31 +96,34 @@ function Picking({ o, shopName }) {
           <p className="muted">{shopName}</p>
         </div>
         <div className="right">
-          <p className="big">{oid(o.id)}</p>
-          <p className="muted">{fmtDateFull(o.createdAt)}</p>
+          <p className="muted">{fmtDateFull(new Date())}</p>
+          <p className="muted">{list.length} ออเดอร์ · {rows.length} รายการ</p>
         </div>
       </div>
 
-      <div className="row2">
-        <div><span className="muted">ลูกค้า</span><p>{o.shipName} · {o.shipPhone}</p></div>
-        <div><span className="muted">จัดส่ง</span><p>{o.shippingMethod || "-"}</p></div>
-      </div>
-
       <table className="tbl">
-        <thead><tr><th style={{ width: 40 }}>#</th><th>รายการสินค้า</th><th className="c" style={{ width: 90 }}>จำนวน</th><th className="c" style={{ width: 70 }}>เก็บแล้ว</th></tr></thead>
+        <thead>
+          <tr>
+            <th style={{ width: 36 }}>#</th>
+            <th style={{ width: 120 }}>รหัสสินค้า</th>
+            <th>รายการสินค้า</th>
+            <th className="c" style={{ width: 80 }}>จำนวน</th>
+            <th className="c" style={{ width: 70 }}>จัดแล้ว</th>
+          </tr>
+        </thead>
         <tbody>
-          {o.items.map((it, i) => (
-            <tr key={it.id}>
+          {rows.map((r, i) => (
+            <tr key={i}>
               <td>{i + 1}</td>
-              <td>{it.book.title}{it.variantName && <span className="muted"> ({it.variantName})</span>}</td>
-              <td className="c big">× {it.quantity}</td>
+              <td>{r.code}</td>
+              <td>{r.name}</td>
+              <td className="c big">× {r.qty}</td>
               <td className="c">☐</td>
             </tr>
           ))}
         </tbody>
-        <tfoot><tr><td colSpan={2} className="r bold">รวมจำนวน</td><td className="c bold">{totalQty}</td><td /></tr></tfoot>
+        <tfoot><tr><td colSpan={3} className="r bold">รวมจำนวน</td><td className="c bold">{totalQty}</td><td /></tr></tfoot>
       </table>
-      {o.note && <p className="note">📝 หมายเหตุ: {o.note}</p>}
     </>
   );
 }
