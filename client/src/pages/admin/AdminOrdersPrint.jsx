@@ -197,47 +197,85 @@ function Barcode({ value }) {
 }
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
+const ORDER_STATUS_TH = { PENDING: "รอดำเนินการ", PAID: "กำลังดำเนินการ", SHIPPED: "จัดส่งแล้ว", COMPLETED: "สำเร็จ", CANCELLED: "ยกเลิก" };
+
 function Invoice({ o, shopName, settings }) {
   const subtotal = o.items.reduce((s, it) => s + Number(it.price) * it.quantity, 0);
+  const code = (it) => it.book.isbn || it.book.sku || "-";
   return (
-    <>
-      <div className="head">
-        <div>
-          <h1>{o.needReceipt ? "ใบเสร็จรับเงิน / ใบกำกับภาษีอย่างย่อ" : "ใบแจ้งหนี้"}</h1>
-          <p className="bold">{shopName}</p>
-          {settings.contactAddress && <p className="muted sm">{settings.contactAddress}</p>}
-          {settings.contactPhone && <p className="muted sm">โทร. {settings.contactPhone}</p>}
-        </div>
-        <div className="right">
-          <p className="big">{oid(o.id)}</p>
-          <p className="muted">{fmtDateFull(o.createdAt)}</p>
-          <p className="muted sm">ชำระโดย: {PAYMENT_LABEL[o.paymentMethod] || o.paymentMethod}</p>
-        </div>
-      </div>
-
-      <div className="row2">
-        <div>
-          <span className="muted">ลูกค้า / จัดส่งถึง</span>
-          <p className="bold">{o.shipName} · {o.shipPhone}</p>
-          <p className="sm">{o.shipAddress}</p>
-          {o.email && <p className="sm muted">{o.email}</p>}
-        </div>
-        {o.needReceipt && (
+    <div className="inv">
+      {/* หัวกระดาษ */}
+      <div className="inv-top">
+        <div className="inv-brand">
+          {settings.logoUrl && <img className="inv-logo" src={settings.logoUrl} alt="" />}
           <div>
-            <span className="muted">ออกใบเสร็จในนาม</span>
-            <p className="bold">{o.receiptName}</p>
-            {o.receiptTaxId && <p className="sm">เลขผู้เสียภาษี {o.receiptTaxId}</p>}
-            <p className="sm">{o.receiptAddress}</p>
+            <div className="inv-shop">{shopName}</div>
+            {settings.contactAddress && <div className="inv-shop-sub">{settings.contactAddress}</div>}
+            <div className="inv-shop-sub">
+              {settings.contactPhone && `โทร. ${settings.contactPhone}`}
+              {settings.contactEmail && `${settings.contactPhone ? " · " : ""}${settings.contactEmail}`}
+            </div>
           </div>
-        )}
+        </div>
+        <div className="inv-title-box">
+          <div className="inv-title">ใบสั่งซื้อ</div>
+          <table className="inv-meta">
+            <tbody>
+              <tr><td>เลขที่</td><td>{oid(o.id)}</td></tr>
+              <tr><td>วันที่</td><td>{fmtDateFull(o.createdAt)}</td></tr>
+              <tr><td>ชำระโดย</td><td>{PAYMENT_LABEL[o.paymentMethod] || o.paymentMethod}</td></tr>
+              <tr><td>สถานะ</td><td>{ORDER_STATUS_TH[o.status] || o.status}</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <table className="tbl">
-        <thead><tr><th style={{ width: 34 }}>#</th><th>รายการ</th><th className="c" style={{ width: 60 }}>จำนวน</th><th className="r" style={{ width: 90 }}>ราคา</th><th className="r" style={{ width: 100 }}>รวม</th></tr></thead>
+      {/* ผู้ขาย / ลูกค้า */}
+      <div className="inv-parties">
+        <div className="inv-box">
+          <div className="inv-box-h">จัดส่งถึง (ลูกค้า)</div>
+          <div className="inv-box-b">
+            <b>{o.shipName}</b> · {o.shipPhone}
+            <div>{o.shipAddress}</div>
+            {o.email && <div className="muted">{o.email}</div>}
+          </div>
+        </div>
+        <div className="inv-box">
+          <div className="inv-box-h">รายละเอียด</div>
+          <div className="inv-box-b">
+            <div>วิธีจัดส่ง: <b>{o.shippingMethod || "-"}</b></div>
+            {o.needReceipt ? (
+              <>
+                <div className="inv-hr" />
+                <div className="muted">ออกใบกำกับภาษีในนาม</div>
+                <b>{o.receiptName}</b>
+                {o.receiptTaxId && <div>เลขผู้เสียภาษี {o.receiptTaxId}</div>}
+                <div>{o.receiptAddress}</div>
+              </>
+            ) : (
+              o.note && <div className="muted">หมายเหตุ: {o.note}</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ตารางสินค้า */}
+      <table className="inv-tbl">
+        <thead>
+          <tr>
+            <th style={{ width: 32 }}>#</th>
+            <th style={{ width: 110 }}>รหัสสินค้า</th>
+            <th>รายการ</th>
+            <th className="c" style={{ width: 54 }}>จำนวน</th>
+            <th className="r" style={{ width: 92 }}>ราคา/หน่วย</th>
+            <th className="r" style={{ width: 100 }}>รวม</th>
+          </tr>
+        </thead>
         <tbody>
           {o.items.map((it, i) => (
             <tr key={it.id}>
               <td>{i + 1}</td>
+              <td>{code(it)}</td>
               <td>{it.book.title}{it.variantName && <span className="muted"> ({it.variantName})</span>}</td>
               <td className="c">{it.quantity}</td>
               <td className="r">{formatPrice(it.price)}</td>
@@ -247,24 +285,27 @@ function Invoice({ o, shopName, settings }) {
         </tbody>
       </table>
 
-      <div className="sum">
-        <Line label="ยอดรวมสินค้า" value={formatPrice(subtotal)} />
-        {Number(o.ruleDiscount) > 0 && <Line label={o.ruleName || "ส่วนลดอัตโนมัติ"} value={"−" + formatPrice(o.ruleDiscount)} />}
-        {Number(o.discount) > 0 && <Line label={"ส่วนลด" + (o.discountCode ? ` (${o.discountCode})` : "")} value={"−" + formatPrice(o.discount)} />}
-        {Number(o.pointsDiscount) > 0 && <Line label={`ใช้ ${o.pointsUsed} แต้ม`} value={"−" + formatPrice(o.pointsDiscount)} />}
-        {Number(o.shippingFee) > 0 && <Line label={"ค่าจัดส่ง" + (o.shippingMethod ? ` · ${o.shippingMethod}` : "")} value={formatPrice(o.shippingFee)} />}
-        <Line label="ยอดชำระทั้งสิ้น" value={formatPrice(o.total)} total />
+      {/* สรุปยอด */}
+      <div className="inv-bottom">
+        <div className="inv-note">
+          {o.needReceipt && o.note && <div>หมายเหตุ: {o.note}</div>}
+          <div className="inv-thanks">ขอบคุณที่อุดหนุน {shopName} 🙏</div>
+        </div>
+        <div className="inv-sum">
+          <div className="inv-sumline"><span>ยอดรวมสินค้า</span><span>{formatPrice(subtotal)}</span></div>
+          {Number(o.ruleDiscount) > 0 && <div className="inv-sumline"><span>{o.ruleName || "ส่วนลดอัตโนมัติ"}</span><span>−{formatPrice(o.ruleDiscount)}</span></div>}
+          {Number(o.discount) > 0 && <div className="inv-sumline"><span>ส่วนลด{o.discountCode ? ` (${o.discountCode})` : ""}</span><span>−{formatPrice(o.discount)}</span></div>}
+          {Number(o.pointsDiscount) > 0 && <div className="inv-sumline"><span>ใช้ {o.pointsUsed} แต้ม</span><span>−{formatPrice(o.pointsDiscount)}</span></div>}
+          {Number(o.shippingFee) > 0 && <div className="inv-sumline"><span>ค่าจัดส่ง</span><span>{formatPrice(o.shippingFee)}</span></div>}
+          <div className="inv-sum-total"><span>ยอดชำระทั้งสิ้น</span><span>{formatPrice(o.total)}</span></div>
+        </div>
       </div>
-      {o.note && <p className="note">หมายเหตุ: {o.note}</p>}
-    </>
-  );
-}
 
-function Line({ label, value, total }) {
-  return (
-    <div className={`sumline${total ? " total" : ""}`}>
-      <span>{label}</span>
-      <span>{value}</span>
+      {/* ลายเซ็น */}
+      <div className="inv-sign">
+        <div><div className="inv-sign-line" />ผู้จัดเตรียมสินค้า</div>
+        <div><div className="inv-sign-line" />ผู้รับสินค้า / วันที่</div>
+      </div>
     </div>
   );
 }
@@ -297,6 +338,40 @@ const BASE_CSS = `
 .sumline { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
 .sumline.total { border-top: 2px solid #1d1d1f; margin-top: 6px; padding-top: 8px; font-size: 16px; font-weight: 700; }
 .note { margin-top: 16px; font-size: 12px; color: #555; }
+
+/* ── ใบสั่งซื้อ (Invoice) — ฟอร์มเต็ม ── */
+.inv { color: #1d1d1f; font-size: 13px; }
+.inv-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 3px solid #1d1d1f; padding-bottom: 14px; }
+.inv-brand { display: flex; gap: 12px; align-items: flex-start; }
+.inv-logo { max-height: 54px; max-width: 130px; object-fit: contain; }
+.inv-shop { font-size: 20px; font-weight: 800; line-height: 1.2; }
+.inv-shop-sub { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.45; }
+.inv-title-box { text-align: right; min-width: 210px; }
+.inv-title { font-size: 24px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
+.inv-meta { margin-left: auto; border-collapse: collapse; font-size: 12px; }
+.inv-meta td { padding: 1.5px 0 1.5px 12px; }
+.inv-meta td:first-child { color: #999; text-align: right; }
+.inv-meta td:last-child { font-weight: 600; }
+.inv-parties { display: flex; gap: 14px; margin: 16px 0; }
+.inv-box { flex: 1; border: 1px solid #d8d8dd; border-radius: 8px; overflow: hidden; }
+.inv-box-h { background: #f5f5f7; padding: 6px 12px; font-size: 11px; font-weight: 700; color: #555; letter-spacing: .5px; border-bottom: 1px solid #e5e5e7; }
+.inv-box-b { padding: 10px 12px; font-size: 12.5px; line-height: 1.55; }
+.inv-hr { border-top: 1px dashed #ccc; margin: 6px 0; }
+.inv-tbl { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 12.5px; }
+.inv-tbl th { background: #1d1d1f; color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; font-size: 12px; }
+.inv-tbl th.c, .inv-tbl td.c { text-align: center; }
+.inv-tbl th.r, .inv-tbl td.r { text-align: right; }
+.inv-tbl td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+.inv-tbl tbody tr:nth-child(even) { background: #fafafa; }
+.inv-bottom { display: flex; justify-content: space-between; gap: 24px; margin-top: 16px; }
+.inv-note { flex: 1; font-size: 12px; color: #555; }
+.inv-thanks { margin-top: 10px; font-size: 13px; font-weight: 700; color: #1d1d1f; }
+.inv-sum { width: 270px; }
+.inv-sumline { display: flex; justify-content: space-between; padding: 4px 2px; font-size: 13px; }
+.inv-sum-total { display: flex; justify-content: space-between; margin-top: 8px; padding: 11px 14px; border-radius: 8px; background: #1d1d1f; color: #fff; font-size: 16px; font-weight: 800; }
+.inv-sign { display: flex; justify-content: space-between; gap: 48px; margin-top: 44px; }
+.inv-sign > div { flex: 1; text-align: center; font-size: 12px; color: #555; }
+.inv-sign-line { border-top: 1px solid #999; margin: 0 16px 6px; }
 
 /* ── ใบปะหน้าพัสดุ (100×150mm) ── */
 .lbl { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column;
