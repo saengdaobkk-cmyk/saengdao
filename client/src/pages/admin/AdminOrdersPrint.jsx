@@ -129,30 +129,63 @@ function Label({ o, shopName, settings }) {
 
       {/* ผู้รับ */}
       <div className="lbl-to">
-        <span className="lbl-tag lbl-tag-to">ผู้รับ · TO</span>
+        <span className="lbl-tag">ผู้รับ · TO</span>
         <div className="lbl-name">{o.shipName}</div>
         <div className="lbl-phone">โทร. {o.shipPhone}</div>
         <div className="lbl-addr">{o.shipAddress}</div>
       </div>
 
-      {/* ล่าง: โลโก้ / QR LINE + ระวังแตก */}
+      {/* ล่าง: โลโก้ / QR LINE + สติ๊กเกอร์ระวังแตก */}
       <div className="lbl-foot">
-        <div className="lbl-brand">
-          {logo && <img className="lbl-logo" src={logo} alt="" />}
-          {qr && (
-            <div className="lbl-qr">
-              <img src={qr} alt="LINE QR" />
-              <span>เพิ่มเพื่อน LINE</span>
-            </div>
-          )}
-        </div>
-        <div className="lbl-fragile">
-          <div className="lbl-fragile-big">⚠ ระวังแตก</div>
-          <div className="lbl-fragile-sm">สินค้าหนังสือ · ห้ามพับ / โยน</div>
-        </div>
+        {(logo || qr) && (
+          <div className="lbl-brand">
+            {logo ? <img className="lbl-logo" src={logo} alt="" /> : <span />}
+            {qr && (
+              <div className="lbl-qr">
+                <img src={qr} alt="LINE QR" />
+                <span>เพิ่มเพื่อน LINE</span>
+              </div>
+            )}
+          </div>
+        )}
+        <FragileBlock />
       </div>
     </div>
   );
+}
+
+/* ป้ายระวังแตก — ไอคอน 4 ช่อง ภาษาไทย */
+function FragileBlock() {
+  return (
+    <div className="frag">
+      <div className="frag-title">ระวังแตก</div>
+      <div className="frag-icons">
+        <FragIcon label="ระวังแตก"><IcoGlass /></FragIcon>
+        <FragIcon label="ห้ามคว่ำ"><IcoUp /></FragIcon>
+        <FragIcon label="ห้ามเหยียบ"><IcoNoStep /></FragIcon>
+        <FragIcon label="กันความชื้น"><IcoUmbrella /></FragIcon>
+      </div>
+      <div className="frag-care">โปรดถือด้วยความระมัดระวัง</div>
+    </div>
+  );
+}
+
+function FragIcon({ label, children }) {
+  return <div className="frag-ic">{children}<span>{label}</span></div>;
+}
+
+const ico = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round" };
+function IcoGlass() {
+  return <svg {...ico}><path d="M7 3h10l-1.2 6a4 4 0 0 1-7.6 0L7 3Z" /><path d="M12 15v5M8.5 20h7" /><path d="M12 3l-1.6 3 2.2 1-1.1 2" stroke="#fff" strokeWidth="2.4" /><path d="M12 3l-1.6 3 2.2 1-1.1 2" /></svg>;
+}
+function IcoUp() {
+  return <svg {...ico}><path d="M8 21V7M8 7 5 10M8 7l3 3" /><path d="M16 21V7M16 7l-3 3M16 7l3 3" /><path d="M4 4h16" /></svg>;
+}
+function IcoNoStep() {
+  return <svg {...ico}><rect x="4" y="15" width="16" height="5" rx="1" /><path d="M8 15c0-3 1-6 4-6s4 2 4 4" /><circle cx="12" cy="11" r="8.5" /><path d="M6 5l12 12" /></svg>;
+}
+function IcoUmbrella() {
+  return <svg {...ico}><path d="M4 12a8 8 0 0 1 16 0Z" /><path d="M12 12v6a2 2 0 0 1-4 0" /><path d="M17 3l-1 2M20 6l-2 1" /></svg>;
 }
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
@@ -265,10 +298,10 @@ const BASE_CSS = `
 .lbl-carrier-name { font-size: 19pt; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: .3px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lbl-carrier-id { font-size: 11pt; font-weight: 700; white-space: nowrap; }
-/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำเด่น */
-.lbl-tag { display: inline-block; background: #1d1d1f; color: #fff; font-size: 8pt; font-weight: 800;
-  letter-spacing: .5px; padding: 1mm 3mm; border-radius: 1.2mm; margin-bottom: 2mm; }
-.lbl-tag-to { font-size: 9.5pt; padding: 1.2mm 3.5mm; }
+/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำ ขนาด+ความยาวเท่ากัน */
+.lbl-tag { display: inline-block; box-sizing: border-box; min-width: 26mm; text-align: center;
+  background: #1d1d1f; color: #fff; font-size: 8.5pt; font-weight: 800; letter-spacing: .5px;
+  padding: 1.2mm 3mm; border-radius: 1.2mm; margin-bottom: 2mm; }
 .lbl-from { padding: 3mm 4mm; border-bottom: 0.4mm dashed #999; }
 .lbl-from-name { font-size: 13pt; font-weight: 800; line-height: 1.2; }
 .lbl-from-body { font-size: 10pt; line-height: 1.4; color: #222; margin-top: 0.8mm; }
@@ -276,16 +309,21 @@ const BASE_CSS = `
 .lbl-name { font-size: 21pt; font-weight: 800; line-height: 1.15; }
 .lbl-phone { font-size: 13.5pt; font-weight: 700; margin-top: 1.5mm; }
 .lbl-addr { font-size: 12.5pt; line-height: 1.5; margin-top: 2.5mm; }
-/* ล่าง: โลโก้ / QR + ระวังแตก */
-.lbl-foot { display: flex; align-items: center; justify-content: space-between; gap: 3mm; padding: 3mm 4mm; min-height: 24mm; }
-.lbl-brand { display: flex; align-items: center; gap: 3mm; }
-.lbl-logo { max-height: 15mm; max-width: 34mm; object-fit: contain; }
+/* ล่าง: โลโก้ / QR + สติ๊กเกอร์ระวังแตก */
+.lbl-foot { display: flex; flex-direction: column; gap: 2mm; padding: 2.5mm 3mm; }
+.lbl-brand { display: flex; align-items: center; justify-content: space-between; gap: 3mm; }
+.lbl-logo { max-height: 13mm; max-width: 34mm; object-fit: contain; }
 .lbl-qr { display: flex; flex-direction: column; align-items: center; }
-.lbl-qr img { width: 20mm; height: 20mm; object-fit: contain; }
-.lbl-qr span { font-size: 6.5pt; font-weight: 600; margin-top: 0.5mm; }
-.lbl-fragile { text-align: center; margin-left: auto; }
-.lbl-fragile-big { font-size: 15pt; font-weight: 800; color: #c0271e; line-height: 1.1; }
-.lbl-fragile-sm { font-size: 8pt; font-weight: 600; color: #333; margin-top: 0.5mm; }
+.lbl-qr img { width: 16mm; height: 16mm; object-fit: contain; }
+.lbl-qr span { font-size: 6pt; font-weight: 600; margin-top: 0.3mm; }
+/* ป้ายระวังแตก */
+.frag { border: 0.6mm solid #c0271e; border-radius: 1.5mm; padding: 1.8mm 2.5mm; color: #c0271e; }
+.frag-title { text-align: center; font-size: 15pt; font-weight: 900; letter-spacing: 1px; line-height: 1; }
+.frag-icons { display: flex; justify-content: space-between; gap: 1.5mm; margin: 1.5mm 0; }
+.frag-ic { flex: 1; text-align: center; }
+.frag-ic svg { width: 8.5mm; height: 8.5mm; }
+.frag-ic span { display: block; font-size: 6pt; font-weight: 700; margin-top: 0.2mm; }
+.frag-care { text-align: center; font-size: 8pt; font-weight: 700; letter-spacing: .3px; border-top: 0.3mm solid #eab; padding-top: 1mm; }
 
 @media print {
   .no-print { display: none !important; }
