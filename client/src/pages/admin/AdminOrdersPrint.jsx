@@ -384,10 +384,9 @@ const BASE_CSS = `
 /* บาร์โค้ดเลขออเดอร์ */
 .lbl-barcode { display: flex; justify-content: center; padding: 2mm 4mm 1.5mm; border-bottom: 0.4mm solid #ddd; }
 .lbl-barcode-svg { width: auto; max-width: 100%; height: 15mm; }
-/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำ ขนาด+ความยาวเท่ากัน (ไม่ยืดในกล่อง flex) */
-.lbl-tag { display: inline-block; align-self: flex-start; box-sizing: border-box; width: 30mm; text-align: center;
-  background: #1d1d1f; color: #fff; font-size: 8.5pt; font-weight: 800; letter-spacing: .5px;
-  padding: 1.2mm 3mm; border-radius: 1.2mm; margin-bottom: 2mm; }
+/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำ พอดีกับข้อความ (align-self กันยืดในกล่อง flex) */
+.lbl-tag { display: inline-block; align-self: flex-start; background: #1d1d1f; color: #fff;
+  font-size: 8.5pt; font-weight: 800; letter-spacing: .5px; padding: 1.2mm 3.5mm; border-radius: 1.2mm; margin-bottom: 2mm; }
 .lbl-from { padding: 3mm 4mm; border-bottom: 0.4mm dashed #999; }
 .lbl-from-name { font-size: 13pt; font-weight: 800; line-height: 1.2; }
 .lbl-from-body { font-size: 10pt; line-height: 1.4; color: #222; margin-top: 0.8mm; }
