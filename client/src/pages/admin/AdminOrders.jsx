@@ -47,10 +47,14 @@ const FILTERS = [
   { key: "completed", label: "สำเร็จ", match: (o) => o.status === "COMPLETED" },
 ];
 
+const PAGE_SIZES = [20, 50, 100];
+
 export default function AdminOrders() {
   const { data: orders, isLoading } = useAdminOrders();
   const [openId, setOpenId] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [pageSize, setPageSize] = useState(20);
+  const [page, setPage] = useState(1);
 
   const counts = useMemo(() => {
     const c = {};
@@ -62,6 +66,11 @@ export default function AdminOrders() {
   if (!orders?.length) return <p className="py-12 text-center text-sub">ยังไม่มีคำสั่งซื้อ</p>;
 
   const list = orders.filter(FILTERS.find((f) => f.key === filter).match);
+  const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = list.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const from = list.length ? (safePage - 1) * pageSize + 1 : 0;
+  const to = Math.min(safePage * pageSize, list.length);
 
   return (
     <div>
@@ -70,7 +79,7 @@ export default function AdminOrders() {
         {FILTERS.map((f) => (
           <button
             key={f.key}
-            onClick={() => setFilter(f.key)}
+            onClick={() => { setFilter(f.key); setPage(1); }}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-[13px] transition ${
               filter === f.key ? "bg-ink text-white" : "bg-mist text-ink/70 hover:bg-line"
             }`}
@@ -82,6 +91,23 @@ export default function AdminOrders() {
           </button>
         ))}
       </div>
+
+      {/* แถบควบคุม: จำนวนผลลัพธ์ + เลือกจำนวนต่อหน้า */}
+      {list.length > 0 && (
+        <div className="mb-2 flex items-center justify-between gap-3 px-1 text-[12px] text-sub">
+          <span>แสดง {from}–{to} จาก {list.length}</span>
+          <label className="flex items-center gap-2">
+            <span>ต่อหน้า</span>
+            <select
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+              className="rounded-lg border border-line bg-white px-2 py-1 text-[12px] text-ink outline-none focus:border-ink/30"
+            >
+              {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </label>
+        </div>
+      )}
 
       {/* หัวตาราง (เดสก์ท็อป) */}
       <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[12px] text-sub lg:grid">
@@ -96,12 +122,52 @@ export default function AdminOrders() {
       {list.length === 0 ? (
         <p className="py-12 text-center text-sub">ไม่มีคำสั่งซื้อในหมวดนี้</p>
       ) : (
-        <div className="divide-y divide-line rounded-b-2xl">
-          {list.map((o) => (
-            <OrderRow key={o.id} order={o} open={openId === o.id} onToggle={() => setOpenId(openId === o.id ? null : o.id)} />
-          ))}
-        </div>
+        <>
+          <div className="divide-y divide-line rounded-b-2xl">
+            {pageItems.map((o) => (
+              <OrderRow key={o.id} order={o} open={openId === o.id} onToggle={() => setOpenId(openId === o.id ? null : o.id)} />
+            ))}
+          </div>
+          {pageCount > 1 && <Pager page={safePage} totalPages={pageCount} onChange={setPage} />}
+        </>
       )}
+    </div>
+  );
+}
+
+// เลขหน้าแบบ 1 … 4 5 6 … 20
+function pageWindow(cur, total) {
+  const keep = new Set([1, total, cur, cur - 1, cur + 1]);
+  const arr = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const out = [];
+  let prev = 0;
+  for (const p of arr) {
+    if (p - prev > 1) out.push("…");
+    out.push(p);
+    prev = p;
+  }
+  return out;
+}
+
+function Pager({ page, totalPages, onChange }) {
+  const arrow = "flex h-9 w-9 items-center justify-center rounded-full text-[15px] text-ink transition hover:bg-mist disabled:opacity-30 disabled:hover:bg-transparent";
+  return (
+    <div className="mt-6 flex items-center justify-center gap-1">
+      <button onClick={() => onChange(page - 1)} disabled={page === 1} aria-label="ก่อนหน้า" className={arrow}>‹</button>
+      {pageWindow(page, totalPages).map((p, i) =>
+        p === "…" ? (
+          <span key={`e${i}`} className="px-1.5 text-[14px] text-sub">…</span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onChange(p)}
+            className={`h-9 min-w-9 rounded-full px-3 text-[14px] transition ${p === page ? "bg-ink font-medium text-white" : "text-ink hover:bg-mist"}`}
+          >
+            {p}
+          </button>
+        )
+      )}
+      <button onClick={() => onChange(page + 1)} disabled={page === totalPages} aria-label="ถัดไป" className={arrow}>›</button>
     </div>
   );
 }
