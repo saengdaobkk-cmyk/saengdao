@@ -197,8 +197,6 @@ function Barcode({ value }) {
 }
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
-const ORDER_STATUS_TH = { PENDING: "รอดำเนินการ", PAID: "กำลังดำเนินการ", SHIPPED: "จัดส่งแล้ว", COMPLETED: "สำเร็จ", CANCELLED: "ยกเลิก" };
-
 function Invoice({ o, shopName, settings }) {
   const subtotal = o.items.reduce((s, it) => s + Number(it.price) * it.quantity, 0);
   const code = (it) => it.book.isbn || it.book.sku || "-";
@@ -224,7 +222,6 @@ function Invoice({ o, shopName, settings }) {
               <tr><td>เลขที่</td><td>{oid(o.id)}</td></tr>
               <tr><td>วันที่</td><td>{fmtDateFull(o.createdAt)}</td></tr>
               <tr><td>ชำระโดย</td><td>{PAYMENT_LABEL[o.paymentMethod] || o.paymentMethod}</td></tr>
-              <tr><td>สถานะ</td><td>{ORDER_STATUS_TH[o.status] || o.status}</td></tr>
             </tbody>
           </table>
         </div>
