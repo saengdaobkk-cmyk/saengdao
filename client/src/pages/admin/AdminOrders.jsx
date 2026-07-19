@@ -41,7 +41,7 @@ const ORDER_TH = Object.fromEntries(STATUS);
 const FILTERS = [
   { key: "all", label: "ทั้งหมด", match: () => true },
   { key: "review", label: "รอตรวจสลิป", match: (o) => o.paymentStatus === "PENDING_REVIEW" },
-  { key: "unpaid", label: "ยังไม่ชำระ", match: (o) => o.paymentStatus === "UNPAID" },
+  { key: "unpaid", label: "ยังไม่ชำระ", match: (o) => o.paymentStatus === "UNPAID" && o.status !== "CANCELLED" },
   { key: "processing", label: "กำลังดำเนินการ", match: (o) => o.paymentStatus === "PAID" && o.status === "PAID" },
   { key: "shipped", label: "จัดส่งแล้ว", match: (o) => o.status === "SHIPPED" },
   { key: "completed", label: "สำเร็จ", match: (o) => o.status === "COMPLETED" },
