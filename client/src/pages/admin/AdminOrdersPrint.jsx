@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import JsBarcode from "jsbarcode";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { useAdminOrders } from "../../api/admin";
@@ -117,6 +118,11 @@ function Label({ o, shopName, settings }) {
         <span className="lbl-carrier-id">{oid(o.id)}</span>
       </div>
 
+      {/* บาร์โค้ดเลขออเดอร์ */}
+      <div className="lbl-barcode">
+        <Barcode value={o.id.slice(0, 8).toUpperCase()} />
+      </div>
+
       {/* ผู้ส่ง */}
       <div className="lbl-from">
         <span className="lbl-tag">ผู้ส่ง · FROM</span>
@@ -153,6 +159,20 @@ function Label({ o, shopName, settings }) {
       </div>
     </div>
   );
+}
+
+/* บาร์โค้ด Code128 ของเลขออเดอร์ */
+function Barcode({ value }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    try {
+      JsBarcode(ref.current, value, { format: "CODE128", displayValue: true, fontSize: 15, height: 42, width: 1.7, margin: 0, fontOptions: "bold" });
+    } catch {
+      /* ค่าไม่รองรับ */
+    }
+  }, [value]);
+  return <svg ref={ref} className="lbl-barcode-svg" />;
 }
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
@@ -261,12 +281,15 @@ const BASE_CSS = `
 .lbl { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column;
   border: 0.6mm solid #1d1d1f; overflow: hidden; }
 .lbl-carrier { display: flex; align-items: center; justify-content: space-between; gap: 3mm;
-  background: #1d1d1f; color: #fff; padding: 3mm 4mm; }
-.lbl-carrier-name { font-size: 19pt; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: .3px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  background: #1d1d1f; color: #fff; padding: 2.5mm 4mm; }
+.lbl-carrier-name { flex: 1; min-width: 0; font-size: 15pt; font-weight: 800; line-height: 1.1;
+  text-transform: uppercase; letter-spacing: .2px; word-break: break-word; }
 .lbl-carrier-id { font-size: 11pt; font-weight: 700; white-space: nowrap; }
-/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำ ขนาด+ความยาวเท่ากัน */
-.lbl-tag { display: inline-block; box-sizing: border-box; min-width: 26mm; text-align: center;
+/* บาร์โค้ดเลขออเดอร์ */
+.lbl-barcode { display: flex; justify-content: center; padding: 2mm 4mm 1.5mm; border-bottom: 0.4mm solid #ddd; }
+.lbl-barcode-svg { width: auto; max-width: 100%; height: 15mm; }
+/* แท็ก ผู้ส่ง/ผู้รับ — ชิปดำ ขนาด+ความยาวเท่ากัน (ไม่ยืดในกล่อง flex) */
+.lbl-tag { display: inline-block; align-self: flex-start; box-sizing: border-box; width: 30mm; text-align: center;
   background: #1d1d1f; color: #fff; font-size: 8.5pt; font-weight: 800; letter-spacing: .5px;
   padding: 1.2mm 3mm; border-radius: 1.2mm; margin-bottom: 2mm; }
 .lbl-from { padding: 3mm 4mm; border-bottom: 0.4mm dashed #999; }
@@ -279,9 +302,9 @@ const BASE_CSS = `
 /* ล่าง: โลโก้ / QR + ระวังแตก */
 .lbl-foot { display: flex; align-items: center; justify-content: space-between; gap: 3mm; padding: 3mm 4mm; min-height: 24mm; }
 .lbl-brand { display: flex; align-items: center; gap: 3mm; }
-.lbl-logo { max-height: 15mm; max-width: 34mm; object-fit: contain; }
+.lbl-logo { max-height: 20mm; max-width: 40mm; object-fit: contain; }
 .lbl-qr { display: flex; flex-direction: column; align-items: center; }
-.lbl-qr img { width: 20mm; height: 20mm; object-fit: contain; }
+.lbl-qr img { width: 18mm; height: 18mm; object-fit: contain; }
 .lbl-qr span { font-size: 6.5pt; font-weight: 600; margin-top: 0.5mm; }
 .lbl-fragile { text-align: center; margin-left: auto; }
 .lbl-fragile-big { font-size: 15pt; font-weight: 800; color: #c0271e; line-height: 1.1; }
