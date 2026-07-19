@@ -103,6 +103,18 @@ export function useUpdateOrder() {
   });
 }
 
+export function useEditOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...body }) => (await api.patch(`/admin/orders/${id}/edit`, body)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+  });
+}
+
 export function useZortSyncOrder() {
   const qc = useQueryClient();
   return useMutation({

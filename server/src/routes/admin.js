@@ -10,6 +10,13 @@ import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking, is
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
 import { expireStaleOrders } from "../lib/orderExpiry.js";
+import { effectivePrice } from "../lib/pricing.js";
+
+function httpError(status, message) {
+  const e = new Error(message);
+  e.status = status;
+  return e;
+}
 
 const router = Router();
 router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
@@ -679,6 +686,115 @@ router.patch("/orders/:id", async (req, res, next) => {
     }
 
     res.json({ ...order, zortSync: zort });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /admin/orders/:id/edit — แก้ไขสินค้า/ขนส่ง/ส่วนลด แล้วคิดยอดใหม่ + ปรับสต็อก
+router.patch("/orders/:id/edit", async (req, res, next) => {
+  try {
+    const { items, shippingMethodId, discountType, discountValue } = req.body || {};
+    const updated = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: req.params.id }, include: { items: true } });
+      if (!order) throw httpError(404, "ไม่พบคำสั่งซื้อ");
+      if (order.status === "CANCELLED") throw httpError(400, "ออเดอร์ถูกยกเลิกแล้ว แก้ไขไม่ได้");
+
+      // เริ่มจากรายการเดิม
+      let newItems = order.items.map((it) => ({
+        bookId: it.bookId, variantId: it.variantId, variantName: it.variantName,
+        quantity: it.quantity, price: Number(it.price),
+      }));
+
+      if (Array.isArray(items)) {
+        const clean = items.filter((i) => i.bookId && parseInt(i.quantity) > 0);
+        if (clean.length === 0) throw httpError(400, "ต้องมีสินค้าอย่างน้อย 1 รายการ");
+        const ids = [...new Set(clean.map((i) => i.bookId))];
+        const books = await tx.book.findMany({ where: { id: { in: ids } }, include: { variants: true } });
+        const bookMap = new Map(books.map((b) => [b.id, b]));
+        const oldMap = new Map(order.items.map((it) => [`${it.bookId}|${it.variantId || ""}`, it]));
+
+        const built = [];
+        for (const it of clean) {
+          const qty = parseInt(it.quantity);
+          const book = bookMap.get(it.bookId);
+          if (!book) throw httpError(400, "มีสินค้าที่ไม่พบในระบบ");
+          const variantId = it.variantId || null;
+          const old = oldMap.get(`${it.bookId}|${variantId || ""}`);
+          let price, variantName = null;
+          if (variantId) {
+            const v = book.variants.find((x) => x.id === variantId);
+            if (!v) throw httpError(400, `ตัวเลือกของ "${book.title}" ไม่มีแล้ว`);
+            variantName = v.name;
+            price = old ? Number(old.price) : Math.ceil(v.discountPrice != null ? Number(v.discountPrice) : Number(v.price));
+          } else {
+            if (book.variants.length > 0) throw httpError(400, `"${book.title}" ต้องเลือกตัวเลือกก่อน`);
+            price = old ? Number(old.price) : Math.ceil(effectivePrice(book));
+          }
+          built.push({ bookId: it.bookId, variantId, variantName, quantity: qty, price });
+        }
+
+        // ปรับสต็อกตามส่วนต่าง (ของใหม่ − ของเดิม)
+        const sumBy = (arr) => {
+          const m = new Map();
+          for (const x of arr) { const k = `${x.bookId}|${x.variantId || ""}`; m.set(k, (m.get(k) || 0) + x.quantity); }
+          return m;
+        };
+        const oldQ = sumBy(order.items);
+        const newQ = sumBy(built);
+        for (const key of new Set([...oldQ.keys(), ...newQ.keys()])) {
+          const delta = (newQ.get(key) || 0) - (oldQ.get(key) || 0);
+          if (!delta) continue;
+          const [bookId, variantId] = key.split("|");
+          if (variantId) {
+            const v = await tx.variant.findUnique({ where: { id: variantId } });
+            if (delta > 0 && v.stock < delta) throw httpError(409, `สต็อกไม่พอ (${v.name})`);
+            await tx.variant.update({ where: { id: variantId }, data: { stock: { decrement: delta } } });
+          } else {
+            const b = await tx.book.findUnique({ where: { id: bookId } });
+            if (delta > 0 && b.stock < delta) throw httpError(409, `สต็อกไม่พอ (${b.title})`);
+            await tx.book.update({ where: { id: bookId }, data: { stock: { decrement: delta } } });
+          }
+        }
+
+        await tx.orderItem.deleteMany({ where: { orderId: order.id } });
+        await tx.orderItem.createMany({ data: built.map((b) => ({ orderId: order.id, ...b })) });
+        newItems = built;
+      }
+
+      const subtotal = Math.round(newItems.reduce((s, it) => s + Number(it.price) * it.quantity, 0));
+
+      // ค่าจัดส่ง
+      let shippingFee = Number(order.shippingFee);
+      let shippingMethod = order.shippingMethod;
+      if (shippingMethodId !== undefined) {
+        if (shippingMethodId) {
+          const m = await tx.shippingMethod.findUnique({ where: { id: shippingMethodId } });
+          if (!m) throw httpError(400, "ช่องทางจัดส่งไม่ถูกต้อง");
+          shippingFee = Math.max(0, Math.round(Number(m.fee)));
+          shippingMethod = m.name;
+        } else {
+          shippingFee = 0;
+          shippingMethod = null;
+        }
+      }
+
+      // ส่วนลด (แก้มือ %/บาท) — เขียนทับ discount เดิม
+      const data = { shippingFee, shippingMethod };
+      if (discountType !== undefined || discountValue !== undefined) {
+        const dv = Math.max(0, Number(discountValue) || 0);
+        data.discount = discountType === "PERCENT" ? Math.min(subtotal, Math.floor((subtotal * dv) / 100)) : Math.min(subtotal, Math.floor(dv));
+        data.discountCode = null; // ส่วนลดแก้มือ — ล้างโค้ดเดิม
+      }
+      const discount = data.discount !== undefined ? data.discount : Number(order.discount);
+
+      const ruleDiscount = Number(order.ruleDiscount);
+      const pointsDiscount = Number(order.pointsDiscount);
+      data.total = Math.max(0, subtotal - discount - ruleDiscount - pointsDiscount) + shippingFee;
+
+      return tx.order.update({ where: { id: order.id }, data });
+    });
+    res.json(updated);
   } catch (err) {
     next(err);
   }
