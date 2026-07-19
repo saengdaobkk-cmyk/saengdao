@@ -160,7 +160,9 @@ function LoyaltySettings({ settings, save }) {
 function BrandSettings({ settings, save }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [qrBusy, setQrBusy] = useState(false);
   const logo = settings.logoUrl || "";
+  const qr = settings.lineQrUrl || "";
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -174,6 +176,20 @@ function BrandSettings({ settings, save }) {
       /* ไม่สำเร็จ */
     } finally {
       setBusy(false);
+    }
+  };
+
+  const onQrFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setQrBusy(true);
+    try {
+      const url = await uploadImage(file);
+      save.mutate({ lineQrUrl: url });
+    } catch {
+      /* ไม่สำเร็จ */
+    } finally {
+      setQrBusy(false);
     }
   };
 
@@ -210,6 +226,28 @@ function BrandSettings({ settings, save }) {
             </div>
           </div>
           {logo && <LogoSizeSlider settings={settings} save={save} type="image" settingKey="logoSize" label="ขนาดบนหน้าติดต่อ" def={56} min={28} max={140} />}
+        </div>
+
+        {/* QR LINE (บนใบปะหน้าพัสดุ) */}
+        <div className="space-y-3 border-t border-line pt-5">
+          <p className="text-[13px] font-semibold text-ink">QR LINE (บนใบปะหน้าพัสดุ)</p>
+          <p className="-mt-1 text-[12px] text-sub">อัปโหลดรูป QR เพิ่มเพื่อน LINE ของร้าน · จะแสดงมุมล่างของใบปะหน้าพัสดุ</p>
+          <div className="flex flex-wrap items-center gap-5">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+              {qr ? <img src={qr} alt="QR LINE" className="h-full w-full object-contain p-1.5" /> : <span className="text-[12px] text-sub">ยังไม่มี</span>}
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+                {qrBusy ? "กำลังอัปโหลด..." : qr ? "เปลี่ยน QR" : "อัปโหลด QR"}
+                <input type="file" accept="image/*" onChange={onQrFile} className="hidden" />
+              </label>
+              {qr && (
+                <button type="button" onClick={() => save.mutate({ lineQrUrl: "" })} className="text-[13px] text-sub hover:text-red-600">
+                  ลบ QR
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>

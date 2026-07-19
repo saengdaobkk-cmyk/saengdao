@@ -11,6 +11,7 @@ const FALLBACK = {
   transparentHeader: true,
   showCollectionCount: true,
   logoUrl: "",
+  lineQrUrl: "",
   logoSize: "56",
   logoSizeHeader: "16",
   logoSizeFooter: "15",

@@ -8,6 +8,7 @@ const router = Router();
 const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
+  "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
   "logoSize", // ความสูงโลโก้ (px) หน้าติดต่อ
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
   "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
