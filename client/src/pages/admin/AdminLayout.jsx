@@ -152,7 +152,7 @@ export default function AdminLayout() {
           <h1 className="text-[18px] font-semibold tracking-tight text-ink">{title}</h1>
         </header>
 
-        <main className="mx-auto w-full max-w-[1400px] px-5 py-8 sm:px-8">
+        <main className="w-full px-5 py-8 sm:px-8">
           <Outlet />
         </main>
       </div>

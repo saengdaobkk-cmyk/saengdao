@@ -100,9 +100,10 @@ export default function AdminOrders() {
       </div>
 
       {/* หัวตาราง (เดสก์ท็อป) */}
-      <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[12px] text-sub lg:grid">
+      <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[12px] text-sub lg:grid">
         <span>คำสั่งซื้อ</span>
-        <span>วันที่ · ช่องทาง</span>
+        <span>วันที่</span>
+        <span>ช่องทาง</span>
         <span>การชำระเงิน</span>
         <span>สถานะ</span>
         <span className="text-right">ยอด</span>
@@ -185,7 +186,7 @@ function OrderRow({ order, open, onToggle }) {
       {/* แถวหลัก */}
       <button
         onClick={onToggle}
-        className="grid w-full grid-cols-[1fr_auto] items-center gap-3 px-4 py-3.5 text-left lg:grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px]"
+        className="grid w-full grid-cols-[1fr_auto] items-center gap-3 px-4 py-3.5 text-left lg:grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.9fr_0.7fr_28px]"
       >
         <div className="min-w-0">
           <p className="truncate text-[14px] font-medium text-ink">
@@ -198,9 +199,8 @@ function OrderRow({ order, open, onToggle }) {
         </div>
         <p className="hidden text-[12px] text-sub lg:block">
           {new Date(order.createdAt).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}
-          <br />
-          {PAYMENT_LABEL[order.paymentMethod]}
         </p>
+        <span className="hidden text-[13px] text-ink lg:block">{PAYMENT_LABEL[order.paymentMethod]}</span>
         <span className="hidden lg:block">
           <Badge cls={PAY_BADGE[order.paymentStatus]}>{PAY_TH[order.paymentStatus]}</Badge>
         </span>
