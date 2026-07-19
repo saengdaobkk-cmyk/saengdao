@@ -347,15 +347,23 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// GET /api/orders — ประวัติคำสั่งซื้อของฉัน
+// GET /api/orders — ประวัติคำสั่งซื้อของฉัน (แบ่งหน้า)
 router.get("/", async (req, res, next) => {
   try {
-    const orders = await prisma.order.findMany({
-      where: { userId: req.user.id },
-      orderBy: { createdAt: "desc" },
-      include: { items: { include: { book: { select: { title: true } } } } },
-    });
-    res.json(orders);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 8));
+    const where = { userId: req.user.id };
+    const [total, orders] = await Promise.all([
+      prisma.order.count({ where }),
+      prisma.order.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: { items: { include: { book: { select: { title: true } } } } },
+      }),
+    ]);
+    res.json({ orders, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
   } catch (err) {
     next(err);
   }
