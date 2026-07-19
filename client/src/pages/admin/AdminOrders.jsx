@@ -45,6 +45,7 @@ const FILTERS = [
   { key: "processing", label: "กำลังดำเนินการ", match: (o) => o.paymentStatus === "PAID" && o.status === "PAID" },
   { key: "shipped", label: "จัดส่งแล้ว", match: (o) => o.status === "SHIPPED" },
   { key: "completed", label: "สำเร็จ", match: (o) => o.status === "COMPLETED" },
+  { key: "cancelled", label: "ยกเลิก", match: (o) => o.status === "CANCELLED" },
 ];
 
 const PAGE_SIZES = [20, 50, 100];
