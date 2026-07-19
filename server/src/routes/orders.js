@@ -106,6 +106,7 @@ function publicOrder(o) {
       id: it.id,
       quantity: it.quantity,
       price: it.price,
+      discountPercent: it.discountPercent || 0,
       title: it.book?.title,
       author: it.book?.author,
       variantName: it.variantName,

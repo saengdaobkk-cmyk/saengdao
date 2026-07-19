@@ -159,7 +159,7 @@ function OrderEditor({ order, onClose }) {
       key: keyOf(it.bookId, it.variantId),
       bookId: it.bookId, variantId: it.variantId || null,
       title: it.book.title, variantName: it.variantName || null,
-      price: Number(it.price), quantity: it.quantity,
+      price: Number(it.price), quantity: it.quantity, discountPercent: it.discountPercent || 0,
     }))
   );
   const matchedShip = shipping.find((m) => m.name === order.shippingMethod);
@@ -169,7 +169,9 @@ function OrderEditor({ order, onClose }) {
   const [error, setError] = useState("");
 
   const setQty = (key, q) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, quantity: Math.max(1, q) } : r)));
+  const setDisc = (key, d) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, discountPercent: Math.min(100, Math.max(0, d || 0)) } : r)));
   const remove = (key) => setRows((rs) => rs.filter((r) => r.key !== key));
+  const lineNet = (r) => Math.round(r.price * r.quantity * (1 - (r.discountPercent || 0) / 100));
   const addLine = (line) =>
     setRows((rs) => {
       const ex = rs.find((r) => r.key === line.key);
@@ -177,7 +179,7 @@ function OrderEditor({ order, onClose }) {
       return [...rs, line];
     });
 
-  const subtotal = rows.reduce((s, r) => s + r.price * r.quantity, 0);
+  const subtotal = rows.reduce((s, r) => s + lineNet(r), 0);
   const discount = Math.min(subtotal, discType === "PERCENT" ? Math.floor((subtotal * (Number(discVal) || 0)) / 100) : Math.floor(Number(discVal) || 0));
   const shipFee = shippingId ? Math.round(Number(shipping.find((m) => m.id === shippingId)?.fee || 0)) : Number(order.shippingFee);
   const ruleDiscount = Number(order.ruleDiscount);
@@ -190,7 +192,7 @@ function OrderEditor({ order, onClose }) {
     edit.mutate(
       {
         id: order.id,
-        items: rows.map((r) => ({ bookId: r.bookId, variantId: r.variantId, quantity: r.quantity })),
+        items: rows.map((r) => ({ bookId: r.bookId, variantId: r.variantId, quantity: r.quantity, discountPercent: r.discountPercent || 0 })),
         ...(shippingId ? { shippingMethodId: shippingId } : {}),
         discountType: discType,
         discountValue: Number(discVal) || 0,
@@ -204,21 +206,31 @@ function OrderEditor({ order, onClose }) {
       {/* รายการสินค้า */}
       <div className="space-y-2">
         {rows.map((r) => (
-          <div key={r.key} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2">
+          <div key={r.key} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line px-3 py-2">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] text-ink">{r.title}{r.variantName && <span className="text-sub"> ({r.variantName})</span>}</p>
-              <p className="text-[12px] text-sub">{formatPrice(r.price)} / ชิ้น</p>
+              <p className="text-[12px] text-sub">ราคาต่อหน่วย {formatPrice(r.price)}</p>
             </div>
+            {/* จำนวน */}
             <div className="flex items-center gap-1">
               <button onClick={() => setQty(r.key, r.quantity - 1)} className="h-7 w-7 rounded-lg border border-line text-ink hover:bg-mist">−</button>
-              <input
-                type="number" min="1" value={r.quantity}
-                onChange={(e) => setQty(r.key, parseInt(e.target.value) || 1)}
-                className="h-7 w-12 rounded-lg border border-line text-center text-[13px] outline-none focus:border-ink/30"
-              />
+              <input type="number" min="1" value={r.quantity} onChange={(e) => setQty(r.key, parseInt(e.target.value) || 1)}
+                className="h-7 w-12 rounded-lg border border-line text-center text-[13px] outline-none focus:border-ink/30" />
               <button onClick={() => setQty(r.key, r.quantity + 1)} className="h-7 w-7 rounded-lg border border-line text-ink hover:bg-mist">+</button>
             </div>
-            <span className="w-20 text-right text-[13px] font-medium text-ink">{formatPrice(r.price * r.quantity)}</span>
+            {/* ส่วนลด % */}
+            <label className="flex items-center gap-1 text-[12px] text-sub">
+              ลด
+              <input type="number" min="0" max="100" value={r.discountPercent || ""} placeholder="0"
+                onChange={(e) => setDisc(r.key, parseInt(e.target.value) || 0)}
+                className="h-7 w-12 rounded-lg border border-line text-center text-[13px] outline-none focus:border-ink/30" />
+              %
+            </label>
+            {/* จำนวนเงิน */}
+            <span className="w-20 text-right text-[13px] font-medium text-ink">
+              {formatPrice(lineNet(r))}
+              {r.discountPercent > 0 && <span className="block text-[11px] font-normal text-sub line-through">{formatPrice(r.price * r.quantity)}</span>}
+            </span>
             <button onClick={() => remove(r.key)} className="text-sub hover:text-red-600" aria-label="ลบ">✕</button>
           </div>
         ))}
@@ -237,7 +249,7 @@ function OrderEditor({ order, onClose }) {
           </select>
         </label>
         <div>
-          <span className="mb-1 block text-[12px] text-sub">ส่วนลด</span>
+          <span className="mb-1 block text-[12px] text-sub">ส่วนลดท้ายบิล</span>
           <div className="flex gap-2">
             <select value={discType} onChange={(e) => setDiscType(e.target.value)} className={`${INP} w-28`}>
               <option value="FIXED">บาท</option>
@@ -251,9 +263,9 @@ function OrderEditor({ order, onClose }) {
       {/* สรุปยอด */}
       <div className="ml-auto w-64 space-y-1 text-[13px]">
         <Sum label="ยอดรวมสินค้า" value={formatPrice(subtotal)} />
-        {discount > 0 && <Sum label="ส่วนลด" value={"−" + formatPrice(discount)} green />}
-        {ruleDiscount > 0 && <Sum label="ส่วนลดอัตโนมัติ" value={"−" + formatPrice(ruleDiscount)} green />}
-        {pointsDiscount > 0 && <Sum label={`ใช้ ${order.pointsUsed} แต้ม`} value={"−" + formatPrice(pointsDiscount)} green />}
+        {ruleDiscount > 0 && <Sum label="ส่วนลดโปรโมชั่น" value={"−" + formatPrice(ruleDiscount)} green />}
+        {pointsDiscount > 0 && <Sum label="ใช้แต้มเป็นส่วนลด" value={"−" + formatPrice(pointsDiscount)} green />}
+        {discount > 0 && <Sum label="ส่วนลดท้ายบิล (คูปอง/แก้มือ)" value={"−" + formatPrice(discount)} green />}
         <Sum label="ค่าจัดส่ง" value={formatPrice(shipFee)} />
         <div className="flex justify-between border-t border-line pt-1.5 text-[15px] font-semibold text-ink"><span>ยอดรวม</span><span>{formatPrice(total)}</span></div>
       </div>

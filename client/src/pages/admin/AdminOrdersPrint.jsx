@@ -198,8 +198,9 @@ function Barcode({ value }) {
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
 function Invoice({ o, shopName, settings }) {
-  const subtotal = o.items.reduce((s, it) => s + Number(it.price) * it.quantity, 0);
   const code = (it) => it.book.isbn || it.book.sku || "-";
+  const net = (it) => Math.round(Number(it.price) * it.quantity * (1 - (it.discountPercent || 0) / 100));
+  const subtotal = o.items.reduce((s, it) => s + net(it), 0);
   return (
     <div className="inv">
       {/* หัวกระดาษ */}
@@ -260,12 +261,13 @@ function Invoice({ o, shopName, settings }) {
       <table className="inv-tbl">
         <thead>
           <tr>
-            <th style={{ width: 32 }}>#</th>
-            <th style={{ width: 110 }}>รหัสสินค้า</th>
+            <th style={{ width: 30 }}>#</th>
+            <th style={{ width: 100 }}>รหัสสินค้า</th>
             <th>รายการ</th>
-            <th className="c" style={{ width: 54 }}>จำนวน</th>
-            <th className="r" style={{ width: 92 }}>ราคา/หน่วย</th>
-            <th className="r" style={{ width: 100 }}>รวม</th>
+            <th className="c" style={{ width: 46 }}>จำนวน</th>
+            <th className="r" style={{ width: 82 }}>ราคา/หน่วย</th>
+            <th className="c" style={{ width: 48 }}>ส่วนลด</th>
+            <th className="r" style={{ width: 92 }}>จำนวนเงิน</th>
           </tr>
         </thead>
         <tbody>
@@ -276,7 +278,8 @@ function Invoice({ o, shopName, settings }) {
               <td>{it.book.title}{it.variantName && <span className="muted"> ({it.variantName})</span>}</td>
               <td className="c">{it.quantity}</td>
               <td className="r">{formatPrice(it.price)}</td>
-              <td className="r">{formatPrice(Number(it.price) * it.quantity)}</td>
+              <td className="c">{it.discountPercent > 0 ? `${it.discountPercent}%` : "-"}</td>
+              <td className="r">{formatPrice(net(it))}</td>
             </tr>
           ))}
         </tbody>
@@ -290,9 +293,9 @@ function Invoice({ o, shopName, settings }) {
         </div>
         <div className="inv-sum">
           <div className="inv-sumline"><span>ยอดรวมสินค้า</span><span>{formatPrice(subtotal)}</span></div>
-          {Number(o.ruleDiscount) > 0 && <div className="inv-sumline"><span>{o.ruleName || "ส่วนลดอัตโนมัติ"}</span><span>−{formatPrice(o.ruleDiscount)}</span></div>}
-          {Number(o.discount) > 0 && <div className="inv-sumline"><span>ส่วนลด{o.discountCode ? ` (${o.discountCode})` : ""}</span><span>−{formatPrice(o.discount)}</span></div>}
-          {Number(o.pointsDiscount) > 0 && <div className="inv-sumline"><span>ใช้ {o.pointsUsed} แต้ม</span><span>−{formatPrice(o.pointsDiscount)}</span></div>}
+          {Number(o.ruleDiscount) > 0 && <div className="inv-sumline"><span>ส่วนลดโปรโมชั่น{o.ruleName ? ` · ${o.ruleName}` : ""}</span><span>−{formatPrice(o.ruleDiscount)}</span></div>}
+          {Number(o.pointsDiscount) > 0 && <div className="inv-sumline"><span>ใช้แต้มเป็นส่วนลด ({o.pointsUsed} แต้ม)</span><span>−{formatPrice(o.pointsDiscount)}</span></div>}
+          {Number(o.discount) > 0 && <div className="inv-sumline"><span>คูปอง{o.discountCode ? ` (${o.discountCode})` : ""}</span><span>−{formatPrice(o.discount)}</span></div>}
           {Number(o.shippingFee) > 0 && <div className="inv-sumline"><span>ค่าจัดส่ง</span><span>{formatPrice(o.shippingFee)}</span></div>}
           <div className="inv-sum-total"><span>ยอดชำระทั้งสิ้น</span><span>{formatPrice(o.total)}</span></div>
         </div>

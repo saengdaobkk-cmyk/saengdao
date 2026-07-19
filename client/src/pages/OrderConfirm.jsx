@@ -160,8 +160,9 @@ export default function OrderConfirm() {
             <li key={it.id} className="flex justify-between gap-3 text-[14px]">
               <span className="text-ink">
                 {it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span>
+                {it.discountPercent > 0 && <span className="text-emerald-600"> (ลด {it.discountPercent}%)</span>}
               </span>
-              <span className="shrink-0 text-ink">{formatPrice(Number(it.price) * it.quantity)}</span>
+              <span className="shrink-0 text-ink">{formatPrice(Math.round(Number(it.price) * it.quantity * (1 - (it.discountPercent || 0) / 100)))}</span>
             </li>
           ))}
         </ul>

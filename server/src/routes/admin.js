@@ -703,7 +703,7 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
       // เริ่มจากรายการเดิม
       let newItems = order.items.map((it) => ({
         bookId: it.bookId, variantId: it.variantId, variantName: it.variantName,
-        quantity: it.quantity, price: Number(it.price),
+        quantity: it.quantity, price: Number(it.price), discountPercent: it.discountPercent || 0,
       }));
 
       if (Array.isArray(items)) {
@@ -731,7 +731,8 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
             if (book.variants.length > 0) throw httpError(400, `"${book.title}" ต้องเลือกตัวเลือกก่อน`);
             price = old ? Number(old.price) : Math.ceil(effectivePrice(book));
           }
-          built.push({ bookId: it.bookId, variantId, variantName, quantity: qty, price });
+          const dp = Math.min(100, Math.max(0, Math.round(Number(it.discountPercent) || 0)));
+          built.push({ bookId: it.bookId, variantId, variantName, quantity: qty, price, discountPercent: dp });
         }
 
         // ปรับสต็อกตามส่วนต่าง (ของใหม่ − ของเดิม)
@@ -762,7 +763,10 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
         newItems = built;
       }
 
-      const subtotal = Math.round(newItems.reduce((s, it) => s + Number(it.price) * it.quantity, 0));
+      // ยอดรวมสินค้า = ผลรวมมูลค่าสุทธิรายชิ้น (หักส่วนลด % รายชิ้นแล้ว)
+      const subtotal = Math.round(
+        newItems.reduce((s, it) => s + Number(it.price) * it.quantity * (1 - (it.discountPercent || 0) / 100), 0)
+      );
 
       // ค่าจัดส่ง
       let shippingFee = Number(order.shippingFee);

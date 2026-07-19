@@ -307,7 +307,8 @@ model OrderItem {
   variantId   String? // ตัวเลือกที่เลือก (ถ้ามี)
   variantName String? // ชื่อ variant ณ ตอนซื้อ (เก็บไว้เผื่อ variant ถูกลบ)
   quantity    Int
-  price       Decimal @db.Decimal(10, 2) // ราคา ณ ตอนซื้อ
+  price       Decimal @db.Decimal(10, 2) // ราคาต่อหน่วย ณ ตอนซื้อ (ก่อนหักส่วนลดรายชิ้น)
+  discountPercent Int  @default(0) // ส่วนลดรายชิ้น (%) — แอดมินปรับได้ตอนแก้ไข
 
   @@index([orderId])
 }

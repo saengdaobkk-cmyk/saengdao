@@ -73,20 +73,27 @@ function EditField({ label, value, onChange, className = "" }) {
 export function ItemsSummary({ order }) {
   return (
     <ul className="space-y-1.5 text-[13px]">
-      {order.items.map((it) => (
-        <li key={it.id} className="flex justify-between gap-3">
-          <span className="text-ink">{it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span></span>
-          <span className="text-ink">{formatPrice(Number(it.price) * it.quantity)}</span>
-        </li>
-      ))}
+      {order.items.map((it) => {
+        const gross = Number(it.price) * it.quantity;
+        const net = Math.round(gross * (1 - (it.discountPercent || 0) / 100));
+        return (
+          <li key={it.id} className="flex justify-between gap-3">
+            <span className="text-ink">
+              {it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span>
+              {it.discountPercent > 0 && <span className="text-emerald-600"> (ลด {it.discountPercent}%)</span>}
+            </span>
+            <span className="text-ink">{formatPrice(net)}</span>
+          </li>
+        );
+      })}
       {Number(order.ruleDiscount) > 0 && (
-        <li className="flex justify-between text-emerald-600"><span>{order.ruleName || "ส่วนลดอัตโนมัติ"}</span><span>−{formatPrice(order.ruleDiscount)}</span></li>
-      )}
-      {Number(order.discount) > 0 && (
-        <li className="flex justify-between text-emerald-600"><span>ส่วนลด {order.discountCode && `(${order.discountCode})`}</span><span>−{formatPrice(order.discount)}</span></li>
+        <li className="flex justify-between text-emerald-600"><span>ส่วนลดโปรโมชั่น{order.ruleName ? ` · ${order.ruleName}` : ""}</span><span>−{formatPrice(order.ruleDiscount)}</span></li>
       )}
       {Number(order.pointsDiscount) > 0 && (
-        <li className="flex justify-between text-emerald-600"><span>ใช้ {order.pointsUsed} แต้ม</span><span>−{formatPrice(order.pointsDiscount)}</span></li>
+        <li className="flex justify-between text-emerald-600"><span>ใช้แต้มเป็นส่วนลด ({order.pointsUsed} แต้ม)</span><span>−{formatPrice(order.pointsDiscount)}</span></li>
+      )}
+      {Number(order.discount) > 0 && (
+        <li className="flex justify-between text-emerald-600"><span>คูปอง {order.discountCode && `(${order.discountCode})`}</span><span>−{formatPrice(order.discount)}</span></li>
       )}
       {Number(order.shippingFee) > 0 && (
         <li className="flex justify-between"><span className="text-sub">ค่าจัดส่ง{order.shippingMethod && ` · ${order.shippingMethod}`}</span><span className="text-ink">{formatPrice(order.shippingFee)}</span></li>
