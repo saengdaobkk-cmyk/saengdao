@@ -17,14 +17,30 @@ const FILTERS = [
 
 const PAGE_SIZES = [20, 50, 100];
 
-// คอลัมน์: # / วันที่ / คำสั่งซื้อ / ลูกค้า / ช่องทาง / มูลค่า / การชำระเงิน / สถานะ / เมนู
-const COLS = "grid grid-cols-[40px_130px_120px_minmax(140px,1fr)_90px_100px_110px_120px_40px] items-center gap-3";
+// เอกสารที่พิมพ์ได้
+export const PRINT_DOCS = [
+  ["picking", "ใบจัดเตรียมสินค้า"],
+  ["label", "ใบปะหน้าพัสดุ (label)"],
+  ["invoice", "ใบแจ้งหนี้ / ใบเสร็จ"],
+];
+export const openPrint = (doc, ids) =>
+  window.open(`/admin/print/orders?doc=${doc}&ids=${ids.join(",")}`, "_blank", "noopener");
+
+// คอลัมน์: ☐ / # / วันที่ / คำสั่งซื้อ / ลูกค้า / ช่องทาง / มูลค่า / การชำระเงิน / สถานะ / เมนู
+const COLS = "grid grid-cols-[32px_36px_130px_120px_minmax(140px,1fr)_90px_100px_110px_120px_40px] items-center gap-3";
 
 export default function AdminOrders() {
   const { data: orders, isLoading } = useAdminOrders();
   const [filter, setFilter] = useState("all");
   const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState(() => new Set());
+
+  const toggle = (id) => setSelected((s) => {
+    const n = new Set(s);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
 
   const counts = useMemo(() => {
     const c = {};
@@ -41,6 +57,14 @@ export default function AdminOrders() {
   const pageItems = list.slice((safePage - 1) * pageSize, safePage * pageSize);
   const from = list.length ? (safePage - 1) * pageSize + 1 : 0;
   const to = Math.min(safePage * pageSize, list.length);
+
+  const allChecked = pageItems.length > 0 && pageItems.every((o) => selected.has(o.id));
+  const toggleAll = () => setSelected((s) => {
+    const n = new Set(s);
+    if (allChecked) pageItems.forEach((o) => n.delete(o.id));
+    else pageItems.forEach((o) => n.add(o.id));
+    return n;
+  });
 
   return (
     <div>
@@ -62,14 +86,26 @@ export default function AdminOrders() {
         ))}
       </div>
 
+      {/* แถบเลือกหลายรายการ + พิมพ์ */}
+      {selected.size > 0 && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ink/15 bg-ink/[0.03] px-4 py-2.5">
+          <span className="text-[13px] font-medium text-ink">เลือก {selected.size} รายการ</span>
+          <div className="flex items-center gap-2">
+            <PrintMenu ids={[...selected]} />
+            <button onClick={() => setSelected(new Set())} className="text-[13px] text-sub hover:text-ink">ล้างการเลือก</button>
+          </div>
+        </div>
+      )}
+
       {list.length === 0 ? (
         <p className="py-12 text-center text-sub">ไม่มีคำสั่งซื้อในหมวดนี้</p>
       ) : (
         <>
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-            <div className="min-w-[900px]">
+            <div className="min-w-[940px]">
               {/* หัวตาราง */}
               <div className={`${COLS} border-b border-line px-4 py-3 text-[12px] font-medium text-sub`}>
+                <input type="checkbox" checked={allChecked} onChange={toggleAll} className="h-4 w-4 accent-ink" aria-label="เลือกทั้งหมด" />
                 <span>#</span>
                 <span>วันที่</span>
                 <span>คำสั่งซื้อ</span>
@@ -82,7 +118,8 @@ export default function AdminOrders() {
               </div>
               {/* แถวข้อมูล */}
               {pageItems.map((o, i) => (
-                <div key={o.id} className={`${COLS} border-b border-line px-4 py-3 text-[13px] transition last:border-0 hover:bg-mist/40`}>
+                <div key={o.id} className={`${COLS} border-b border-line px-4 py-3 text-[13px] transition last:border-0 hover:bg-mist/40 ${selected.has(o.id) ? "bg-accent/[0.04]" : ""}`}>
+                  <input type="checkbox" checked={selected.has(o.id)} onChange={() => toggle(o.id)} className="h-4 w-4 accent-ink" aria-label="เลือก" />
                   <span className="text-sub">{from + i}</span>
                   <span className="text-[12px] text-sub">{fmtDate(o.createdAt)}</span>
                   <Link to={`/admin/orders/${o.id}`} className="truncate font-medium text-accent hover:underline">
@@ -135,6 +172,32 @@ function RowMenu({ id }) {
           <div className="absolute right-0 top-9 z-20 w-36 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
             <Link to={`/admin/orders/${id}`} className="block px-4 py-2 text-[13px] text-ink transition hover:bg-mist">ดูรายละเอียด</Link>
             <Link to={`/admin/orders/${id}?edit=1`} className="block px-4 py-2 text-[13px] text-ink transition hover:bg-mist">แก้ไข</Link>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ปุ่มพิมพ์ + เลือกชนิดเอกสาร (ใช้ทั้งลิสต์และหน้ารายละเอียด)
+export function PrintMenu({ ids, label = "พิมพ์" }) {
+  const [open, setOpen] = useState(false);
+  if (!ids.length) return null;
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 rounded-full bg-ink px-4 py-1.5 text-[13px] font-medium text-white transition hover:bg-ink/90">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 9V3h12v6M6 18H4v-6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6h-2M6 14h12v6H6z" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {label} ▾
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-9 z-20 w-52 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
+            {PRINT_DOCS.map(([doc, name]) => (
+              <button key={doc} onClick={() => { openPrint(doc, ids); setOpen(false); }} className="block w-full px-4 py-2 text-left text-[13px] text-ink transition hover:bg-mist">
+                {name}
+              </button>
+            ))}
           </div>
         </>
       )}

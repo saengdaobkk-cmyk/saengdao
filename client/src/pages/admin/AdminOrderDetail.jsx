@@ -1,6 +1,7 @@
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useAdminOrders, useUpdateOrder } from "../../api/admin";
 import { formatPrice } from "../../lib/format";
+import { PrintMenu } from "./AdminOrders";
 import {
   fmtDate, PAYMENT_LABEL, PAY_BADGE, PAY_TH, ORDER_BADGE, STATUS, ORDER_TH, CANCELLED_BY_TH,
   Badge, ItemsSummary, PaymentBlock, TrackingBlock, ZortBlock, OrderInfo,
@@ -33,7 +34,10 @@ export default function AdminOrderDetail() {
           <h1 className="mt-1 text-[22px] font-semibold tracking-tight text-ink">คำสั่งซื้อ #{order.id.slice(0, 8).toUpperCase()}</h1>
           <p className="text-[13px] text-sub">{fmtDate(order.createdAt)} · {PAYMENT_LABEL[order.paymentMethod]} · {order.user?.name || order.user?.email}</p>
         </div>
-        <Badge cls={ORDER_BADGE[order.status]}>{ORDER_TH[order.status]}</Badge>
+        <div className="flex items-center gap-3">
+          <Badge cls={ORDER_BADGE[order.status]}>{ORDER_TH[order.status]}</Badge>
+          <PrintMenu ids={[order.id]} />
+        </div>
       </div>
 
       {/* การ์ดสถานะ */}

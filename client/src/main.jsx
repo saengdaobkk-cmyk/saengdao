@@ -33,6 +33,7 @@ import AdminContent from "./pages/admin/AdminContent.jsx";
 import AdminIntegrations from "./pages/admin/AdminIntegrations.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail.jsx";
+import AdminOrdersPrint from "./pages/admin/AdminOrdersPrint.jsx";
 import AdminCoupons from "./pages/admin/AdminCoupons.jsx";
 import AdminDiscountRules from "./pages/admin/AdminDiscountRules.jsx";
 import AdminShipping from "./pages/admin/AdminShipping.jsx";
@@ -84,6 +85,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
               {/* หลังร้าน — login แยกจากลูกค้า + layout แยกเอกเทศ */}
               <Route path="/admin/login" element={<AdminLogin />} />
+              {/* หน้าพิมพ์เอกสาร — standalone ไม่มี sidebar */}
+              <Route path="/admin/print/orders" element={<AdminOrdersPrint />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
