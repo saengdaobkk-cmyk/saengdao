@@ -117,15 +117,17 @@ function LoyaltySection() {
 }
 
 function ProfileSection({ user, updateUser }) {
-  const [form, setForm] = useState({
-    name: user.name || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    address: user.address || "",
-  });
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const startEdit = () => {
+    setForm({ name: user.name || "", email: user.email || "", phone: user.phone || "", address: user.address || "" });
+    setMsg("");
+    setEditing(true);
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -134,6 +136,7 @@ function ProfileSection({ user, updateUser }) {
     try {
       const { data } = await api.patch("/auth/profile", form);
       updateUser(data.user);
+      setEditing(false);
       setMsg("บันทึกแล้ว");
     } catch (err) {
       setMsg(err.response?.data?.error || "บันทึกไม่สำเร็จ");
@@ -144,43 +147,50 @@ function ProfileSection({ user, updateUser }) {
 
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-4 text-[15px] font-semibold text-ink">ข้อมูลบัญชี</h2>
-      <p className="mb-4 -mt-2 text-[12px] text-sub">ข้อมูลนี้จะถูกเติมให้อัตโนมัติตอนสั่งซื้อ</p>
-      <form onSubmit={save} className="space-y-4">
-        <Field label="ชื่อ" value={form.name} onChange={set("name")} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="อีเมล" type="email" value={form.email} onChange={set("email")} />
-          <Field label="เบอร์โทรศัพท์" type="tel" value={form.phone} onChange={set("phone")} />
-        </div>
-        <label className="block">
-          <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่จัดส่ง</span>
-          <textarea
-            value={form.address}
-            onChange={(e) => set("address")(e.target.value)}
-            rows={3}
-            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
-          />
-        </label>
-        <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
-            {busy ? "กำลังบันทึก..." : "บันทึก"}
-          </button>
-          {msg && <span className={`text-[13px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
-        </div>
-      </form>
+      <SectionHead title="ข้อมูลบัญชี" subtitle="ข้อมูลนี้จะถูกเติมให้อัตโนมัติตอนสั่งซื้อ"
+        editing={editing} onEdit={startEdit} msg={msg} />
+      {editing ? (
+        <form onSubmit={save} className="mt-4 space-y-4">
+          <Field label="ชื่อ" value={form.name} onChange={set("name")} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="อีเมล" type="email" value={form.email} onChange={set("email")} />
+            <Field label="เบอร์โทรศัพท์" type="tel" value={form.phone} onChange={set("phone")} />
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่จัดส่ง</span>
+            <textarea
+              value={form.address}
+              onChange={(e) => set("address")(e.target.value)}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
+            />
+          </label>
+          <EditActions busy={busy} onCancel={() => setEditing(false)} />
+        </form>
+      ) : (
+        <dl className="mt-4 space-y-4">
+          <ReadRow label="ชื่อ" value={user.name} />
+          <ReadRow label="อีเมล" value={user.email} />
+          <ReadRow label="เบอร์โทรศัพท์" value={user.phone} />
+          <ReadRow label="ที่อยู่จัดส่ง" value={user.address} />
+        </dl>
+      )}
     </section>
   );
 }
 
 function ReceiptAddressSection({ user, updateUser }) {
-  const [form, setForm] = useState({
-    receiptName: user.receiptName || "",
-    receiptTaxId: user.receiptTaxId || "",
-    receiptAddress: user.receiptAddress || "",
-  });
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ receiptName: "", receiptTaxId: "", receiptAddress: "" });
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const startEdit = () => {
+    setForm({ receiptName: user.receiptName || "", receiptTaxId: user.receiptTaxId || "", receiptAddress: user.receiptAddress || "" });
+    setMsg("");
+    setEditing(true);
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -189,6 +199,7 @@ function ReceiptAddressSection({ user, updateUser }) {
     try {
       const { data } = await api.patch("/auth/profile", form);
       updateUser(data.user);
+      setEditing(false);
       setMsg("บันทึกแล้ว");
     } catch (err) {
       setMsg(err.response?.data?.error || "บันทึกไม่สำเร็จ");
@@ -197,40 +208,51 @@ function ReceiptAddressSection({ user, updateUser }) {
     }
   };
 
+  const empty = !user.receiptName && !user.receiptTaxId && !user.receiptAddress;
+
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-1 text-[15px] font-semibold text-ink">ที่อยู่ออกใบเสร็จ</h2>
-      <p className="mb-4 text-[12px] text-sub">สำหรับใบเสร็จ/ใบกำกับภาษี — เว้นว่างได้ถ้าใช้ที่อยู่จัดส่ง</p>
-      <form onSubmit={save} className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="ชื่อ / บริษัท" value={form.receiptName} onChange={set("receiptName")} />
-          <Field label="เลขประจำตัวผู้เสียภาษี (13 หลัก)" value={form.receiptTaxId} onChange={set("receiptTaxId")} />
-        </div>
-        <label className="block">
-          <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่ออกใบเสร็จ</span>
-          <textarea
-            value={form.receiptAddress}
-            onChange={(e) => set("receiptAddress")(e.target.value)}
-            rows={3}
-            className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
-          />
-        </label>
-        <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
-            {busy ? "กำลังบันทึก..." : "บันทึก"}
-          </button>
-          {msg && <span className={`text-[13px] ${msg === "บันทึกแล้ว" ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
-        </div>
-      </form>
+      <SectionHead title="ที่อยู่ออกใบเสร็จ" subtitle="สำหรับใบเสร็จ/ใบกำกับภาษี — เว้นว่างได้ถ้าใช้ที่อยู่จัดส่ง"
+        editing={editing} onEdit={startEdit} editLabel={empty ? "เพิ่ม" : "แก้ไข"} msg={msg} />
+      {editing ? (
+        <form onSubmit={save} className="mt-4 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="ชื่อ / บริษัท" value={form.receiptName} onChange={set("receiptName")} />
+            <Field label="เลขประจำตัวผู้เสียภาษี (13 หลัก)" value={form.receiptTaxId} onChange={set("receiptTaxId")} />
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">ที่อยู่ออกใบเสร็จ</span>
+            <textarea
+              value={form.receiptAddress}
+              onChange={(e) => set("receiptAddress")(e.target.value)}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30"
+            />
+          </label>
+          <EditActions busy={busy} onCancel={() => setEditing(false)} />
+        </form>
+      ) : empty ? (
+        <p className="mt-4 text-[14px] text-sub">ยังไม่ได้ระบุ</p>
+      ) : (
+        <dl className="mt-4 space-y-4">
+          <ReadRow label="ชื่อ / บริษัท" value={user.receiptName} />
+          <ReadRow label="เลขประจำตัวผู้เสียภาษี" value={user.receiptTaxId} />
+          <ReadRow label="ที่อยู่ออกใบเสร็จ" value={user.receiptAddress} />
+        </dl>
+      )}
     </section>
   );
 }
 
 function PasswordSection() {
+  const [editing, setEditing] = useState(false);
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const close = () => { setEditing(false); setCur(""); setNext(""); };
+  const open = () => { setMsg(""); setEditing(true); };
 
   const save = async (e) => {
     e.preventDefault();
@@ -239,8 +261,7 @@ function PasswordSection() {
     try {
       await api.patch("/auth/profile", { currentPassword: cur, newPassword: next });
       setMsg("เปลี่ยนรหัสผ่านแล้ว");
-      setCur("");
-      setNext("");
+      close();
     } catch (err) {
       setMsg(err.response?.data?.error || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
     } finally {
@@ -250,17 +271,17 @@ function PasswordSection() {
 
   return (
     <section className="rounded-2xl border border-line p-6">
-      <h2 className="mb-4 text-[15px] font-semibold text-ink">เปลี่ยนรหัสผ่าน</h2>
-      <form onSubmit={save} className="space-y-4">
-        <Field label="รหัสผ่านปัจจุบัน" type="password" value={cur} onChange={setCur} />
-        <Field label="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)" type="password" value={next} onChange={setNext} />
-        <div className="flex items-center gap-4">
-          <button type="submit" disabled={busy || !cur || !next} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
-            {busy ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
-          </button>
-          {msg && <span className={`text-[13px] ${msg.includes("แล้ว") ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>}
-        </div>
-      </form>
+      <SectionHead title="รหัสผ่าน" subtitle="ตั้งรหัสผ่านใหม่สำหรับเข้าสู่ระบบ"
+        editing={editing} onEdit={open} editLabel="เปลี่ยนรหัสผ่าน" msg={msg} />
+      {editing ? (
+        <form onSubmit={save} className="mt-4 space-y-4">
+          <Field label="รหัสผ่านปัจจุบัน" type="password" value={cur} onChange={setCur} />
+          <Field label="รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)" type="password" value={next} onChange={setNext} />
+          <EditActions busy={busy} disabled={!cur || !next} saveLabel="เปลี่ยนรหัสผ่าน" busyLabel="กำลังเปลี่ยน..." onCancel={close} />
+        </form>
+      ) : (
+        <p className="mt-4 text-[14px] text-sub">••••••••</p>
+      )}
     </section>
   );
 }
@@ -312,6 +333,49 @@ function OrdersSection() {
         </div>
       )}
     </section>
+  );
+}
+
+function SectionHead({ title, subtitle, editing, onEdit, editLabel = "แก้ไข", msg }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-[12px] text-sub">{subtitle}</p>}
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        {!editing && msg && (
+          <span className={`text-[13px] ${msg.includes("แล้ว") ? "text-emerald-600" : "text-red-600"}`}>{msg}</span>
+        )}
+        {!editing && (
+          <button onClick={onEdit} className="rounded-full border border-line px-4 py-1.5 text-[13px] font-medium text-ink transition hover:bg-mist">
+            {editLabel}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReadRow({ label, value }) {
+  return (
+    <div>
+      <dt className="text-[12px] text-sub">{label}</dt>
+      <dd className={`mt-0.5 whitespace-pre-line text-[15px] ${value ? "text-ink" : "text-sub/70"}`}>{value || "—"}</dd>
+    </div>
+  );
+}
+
+function EditActions({ busy, disabled, onCancel, saveLabel = "บันทึก", busyLabel = "กำลังบันทึก..." }) {
+  return (
+    <div className="flex items-center gap-3">
+      <button type="submit" disabled={busy || disabled} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+        {busy ? busyLabel : saveLabel}
+      </button>
+      <button type="button" onClick={onCancel} className="rounded-full border border-line px-5 py-2.5 text-[14px] text-ink transition hover:bg-mist">
+        ยกเลิก
+      </button>
+    </div>
   );
 }
 
