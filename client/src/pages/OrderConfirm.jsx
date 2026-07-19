@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
 import PaymentPanel from "../components/PaymentPanel";
+
+const CANCELLED_BY_TH = {
+  ADMIN: "ยกเลิกโดยร้าน",
+  CUSTOMER: "คุณยกเลิกคำสั่งซื้อนี้",
+  SYSTEM: "ยกเลิกอัตโนมัติ เนื่องจากไม่ได้ชำระเงินภายในกำหนด",
+};
 
 const PAYMENT_LABEL = {
   PROMPTPAY: "พร้อมเพย์ (PromptPay)",
@@ -51,7 +57,7 @@ const TONES = {
 };
 
 function headerFor(order) {
-  if (order.status === "CANCELLED") return { tone: "red", icon: "x", title: "คำสั่งซื้อถูกยกเลิก", sub: "หากมีข้อสงสัย ติดต่อร้านได้เลย" };
+  if (order.status === "CANCELLED") return { tone: "red", icon: "x", title: "คำสั่งซื้อถูกยกเลิก", sub: CANCELLED_BY_TH[order.cancelledBy] || "หากมีข้อสงสัย ติดต่อร้านได้เลย" };
   if (order.paymentStatus === "UNPAID") return { tone: "amber", icon: "clock", title: "รอชำระเงิน", sub: "ชำระเงินเพื่อยืนยันคำสั่งซื้อของคุณ" };
   if (order.paymentStatus === "PENDING_REVIEW") return { tone: "amber", icon: "clock", title: "รอตรวจสอบสลิป", sub: "ร้านกำลังตรวจสอบการชำระเงิน" };
   if (order.status === "SHIPPED") return { tone: "blue", icon: "truck", title: "จัดส่งแล้ว", sub: "พัสดุกำลังเดินทางไปหาคุณ" };
@@ -228,6 +234,39 @@ export default function OrderConfirm() {
       >
         เลือกซื้อต่อ
       </Link>
+
+      {/* ยกเลิกเอง — เฉพาะออเดอร์ที่ยังไม่ชำระ */}
+      {order.status === "PENDING" && order.paymentStatus === "UNPAID" && <CancelOrderButton order={order} />}
+    </div>
+  );
+}
+
+function CancelOrderButton({ order }) {
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const cancel = async () => {
+    if (!confirm("ยืนยันยกเลิกคำสั่งซื้อนี้? การยกเลิกไม่สามารถย้อนกลับได้")) return;
+    setError("");
+    setBusy(true);
+    try {
+      const { data } = await api.post(`/orders/${order.id}/cancel`);
+      qc.setQueryData(["order", order.id], data);
+      qc.invalidateQueries({ queryKey: ["my-orders"] });
+    } catch (err) {
+      setError(err.response?.data?.error || "ยกเลิกไม่สำเร็จ");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 text-center">
+      <button onClick={cancel} disabled={busy} className="text-[14px] text-sub transition hover:text-red-600 disabled:opacity-50">
+        {busy ? "กำลังยกเลิก..." : "ยกเลิกคำสั่งซื้อ"}
+      </button>
+      {error && <p className="mt-1 text-[13px] text-red-600">{error}</p>}
     </div>
   );
 }

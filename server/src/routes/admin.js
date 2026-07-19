@@ -9,6 +9,7 @@ import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortCon
 import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
+import { expireStaleOrders } from "../lib/orderExpiry.js";
 
 const router = Router();
 router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
@@ -594,6 +595,7 @@ router.delete("/discount-rules/:id", async (req, res, next) => {
 /* ---------- Orders ---------- */
 router.get("/orders", async (req, res, next) => {
   try {
+    await expireStaleOrders().catch(() => {}); // ยกเลิกออเดอร์ค้างชำระอัตโนมัติ (throttled)
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -636,6 +638,13 @@ router.patch("/orders/:id", async (req, res, next) => {
     if (body.status) {
       if (!ORDER_STATUS.includes(body.status)) return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
       data.status = body.status;
+      if (body.status === "CANCELLED") {
+        data.cancelledBy = "ADMIN";
+        data.cancelledAt = new Date();
+      } else {
+        data.cancelledBy = null; // ยกเลิกการยกเลิก → ล้างข้อมูลผู้ยกเลิก
+        data.cancelledAt = null;
+      }
     }
     if (body.paymentStatus) {
       if (!PAYMENT_STATUS.includes(body.paymentStatus))

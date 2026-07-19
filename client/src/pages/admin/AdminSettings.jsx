@@ -60,9 +60,44 @@ export default function AdminSettings() {
       </section>
 
       <LoyaltySettings settings={settings} save={update} />
+      <OrderSettings settings={settings} save={update} />
       <ContactSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
+  );
+}
+
+function OrderSettings({ settings, save }) {
+  const [days, setDays] = useState(settings.orderExpiryDays ?? "7");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { setDays(settings.orderExpiryDays ?? "7"); }, [settings.orderExpiryDays]);
+  const n = parseInt(days);
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">คำสั่งซื้อ</h2>
+      <p className="mb-4 text-[12px] text-sub">ออเดอร์ที่ยังไม่ชำระเงินเกินกำหนดจะถูกยกเลิกอัตโนมัติ (ระบุว่า “ยกเลิกอัตโนมัติ”)</p>
+      <div className="rounded-2xl border border-line bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+          <div>
+            <p className="text-[14px] font-medium text-ink">ยกเลิกออเดอร์ค้างชำระอัตโนมัติ</p>
+            <p className="text-[12px] text-sub">นับจากวันที่สั่งซื้อ · ใส่ 0 เพื่อปิดการยกเลิกอัตโนมัติ</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-sub">เกิน</span>
+            <input type="number" min="0" value={days} onChange={(e) => { setDays(e.target.value); setSaved(false); }}
+              className="w-20 rounded-lg border border-line px-3 py-2 text-center text-[14px] outline-none focus:border-ink/30" />
+            <span className="text-[13px] text-sub">วัน</span>
+            <button
+              onClick={() => save.mutate({ orderExpiryDays: String(Math.max(0, parseInt(days) || 0)) }, { onSuccess: () => setSaved(true) })}
+              className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90">บันทึก</button>
+            {saved && <span className="text-[13px] text-emerald-600">✓</span>}
+          </div>
+        </div>
+        <p className="border-t border-line px-5 py-2.5 text-[12px] text-sub">
+          {n > 0 ? `ปัจจุบัน: ยกเลิกออเดอร์ที่ยังไม่ชำระเกิน ${n} วันโดยอัตโนมัติ` : "ปัจจุบัน: ปิดการยกเลิกอัตโนมัติ"}
+        </p>
+      </div>
+    </section>
   );
 }
 

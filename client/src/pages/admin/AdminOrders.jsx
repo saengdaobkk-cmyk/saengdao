@@ -37,6 +37,12 @@ const STATUS = [
 ];
 const ORDER_TH = Object.fromEntries(STATUS);
 
+const CANCELLED_BY_TH = {
+  ADMIN: "ยกเลิกโดยแอดมิน",
+  CUSTOMER: "ยกเลิกโดยลูกค้า",
+  SYSTEM: "ยกเลิกอัตโนมัติ (เกินกำหนดชำระ)",
+};
+
 // แท็บกรอง — predicate ต่อ order
 const FILTERS = [
   { key: "all", label: "ทั้งหมด", match: () => true },
@@ -266,6 +272,12 @@ function OrderRow({ order, open, onToggle }) {
                   <option key={v} value={v}>{l}</option>
                 ))}
               </select>
+              {order.status === "CANCELLED" && order.cancelledBy && (
+                <p className="mt-2 text-[12px] text-red-600">
+                  {CANCELLED_BY_TH[order.cancelledBy] || "ยกเลิก"}
+                  {order.cancelledAt && ` · ${fmtDate(order.cancelledAt)}`}
+                </p>
+              )}
             </Block>
 
             <TrackingBlock order={order} />

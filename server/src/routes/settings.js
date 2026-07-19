@@ -30,6 +30,7 @@ const STRING_KEYS = [
   "socialLine",
   "loyaltyBahtPerPoint", // ยอดซื้อ (บาท) ต่อ 1 แต้ม เช่น 100 = ทุก 100 บาทได้ 1 แต้ม
   "loyaltyPointValue", // มูลค่า 1 แต้ม (บาท) เวลานำมาแลกส่วนลด เช่น 1 = 1 แต้ม = 1 บาท
+  "orderExpiryDays", // ออเดอร์ที่ยังไม่ชำระเกินกี่วัน = ยกเลิกอัตโนมัติ (0 = ปิด)
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -51,6 +52,7 @@ const DEFAULTS = {
   loyaltyEnabled: false,
   loyaltyBahtPerPoint: "100",
   loyaltyPointValue: "1",
+  orderExpiryDays: "7",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด

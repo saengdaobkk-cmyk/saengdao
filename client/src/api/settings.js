@@ -33,6 +33,7 @@ const FALLBACK = {
   loyaltyEnabled: false,
   loyaltyBahtPerPoint: "100",
   loyaltyPointValue: "1",
+  orderExpiryDays: "7",
 };
 
 export function useSettings() {

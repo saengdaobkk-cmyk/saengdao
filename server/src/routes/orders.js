@@ -9,6 +9,7 @@ import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { computeCartRuleDiscount } from "../lib/discountRules.js";
+import { expireStaleOrders, refundUsedPoints } from "../lib/orderExpiry.js";
 
 // แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
 async function attachTrackingLink(order) {
@@ -85,6 +86,8 @@ function publicOrder(o) {
     ruleName: o.ruleName,
     pointsUsed: o.pointsUsed,
     pointsDiscount: o.pointsDiscount,
+    cancelledBy: o.cancelledBy,
+    cancelledAt: o.cancelledAt,
     shippingMethod: o.shippingMethod,
     shippingFee: o.shippingFee,
     total: o.total,
@@ -350,6 +353,7 @@ router.post("/", async (req, res, next) => {
 // GET /api/orders — ประวัติคำสั่งซื้อของฉัน (แบ่งหน้า)
 router.get("/", async (req, res, next) => {
   try {
+    expireStaleOrders().catch(() => {}); // ยกเลิกออเดอร์ค้างชำระอัตโนมัติ (throttled, ไม่บล็อก)
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 10));
     const where = { userId: req.user.id };
@@ -381,6 +385,26 @@ router.get("/:id", async (req, res, next) => {
     await maybeRefreshTracking(order); // ดึงสถานะพัสดุล่าสุด (throttled)
     await attachTrackingLink(order);
     res.json(order);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/orders/:id/cancel — ลูกค้ายกเลิกออเดอร์ของตัวเอง (เฉพาะที่ยังไม่ชำระ)
+router.post("/:id/cancel", async (req, res, next) => {
+  try {
+    const order = await getOwnedOrder(req.params.id, req.user.id);
+    if (!order) return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
+    if (order.status === "CANCELLED") return res.json(order); // ยกเลิกอยู่แล้ว
+    if (order.status !== "PENDING" || order.paymentStatus !== "UNPAID")
+      return res.status(400).json({ error: "ยกเลิกได้เฉพาะออเดอร์ที่ยังไม่ได้ชำระเงินเท่านั้น" });
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { status: "CANCELLED", cancelledBy: "CUSTOMER", cancelledAt: new Date() },
+    });
+    await refundUsedPoints(order).catch(() => {}); // คืนแต้มที่ใช้ (ถ้ามี)
+    res.json(updated);
   } catch (err) {
     next(err);
   }
