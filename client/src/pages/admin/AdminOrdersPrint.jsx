@@ -43,7 +43,7 @@ export default function AdminOrdersPrint() {
 
   return (
     <div className="prt">
-      <style>{CSS}</style>
+      <style>{BASE_CSS + (doc === "label" ? LABEL_CSS : A4_CSS)}</style>
 
       {/* แถบเครื่องมือ — ไม่พิมพ์ */}
       <div className="prt-bar no-print">
@@ -55,7 +55,7 @@ export default function AdminOrdersPrint() {
       </div>
 
       {list.map((o) => (
-        <div className="sheet" key={o.id}>
+        <div className={doc === "label" ? "sheet label-sheet" : "sheet"} key={o.id}>
           {doc === "picking" && <Picking o={o} shopName={shopName} />}
           {doc === "label" && <Label o={o} shopName={shopName} settings={settings} />}
           {doc === "invoice" && <Invoice o={o} shopName={shopName} settings={settings} />}
@@ -105,26 +105,45 @@ function Picking({ o, shopName }) {
   );
 }
 
-/* ── ใบปะหน้าพัสดุ (Label) ── */
+/* ── ใบปะหน้าพัสดุ (Label) — สติ๊กเกอร์ 100×150mm ── */
 function Label({ o, shopName, settings }) {
   return (
-    <div className="label">
-      <div className="label-from">
-        <span className="muted">ผู้ส่ง / FROM</span>
-        <p className="bold">{shopName}</p>
-        {settings.contactAddress && <p className="sm">{settings.contactAddress}</p>}
-        {settings.contactPhone && <p className="sm">โทร. {settings.contactPhone}</p>}
+    <div className="lbl">
+      {/* แถบขนส่ง */}
+      <div className="lbl-carrier">
+        <span className="lbl-carrier-name">{o.shippingMethod || "พัสดุ"}</span>
+        <span className="lbl-carrier-id">{oid(o.id)}</span>
       </div>
-      <div className="label-to">
-        <span className="muted">ผู้รับ / TO</span>
-        <p className="bold xl">{o.shipName}</p>
-        <p className="lg">โทร. {o.shipPhone}</p>
-        <p className="addr">{o.shipAddress}</p>
+
+      {/* ผู้ส่ง */}
+      <div className="lbl-from">
+        <span className="lbl-tag">ผู้ส่ง · FROM</span>
+        <span className="lbl-from-body">
+          <b>{shopName}</b>
+          {settings.contactAddress ? ` — ${settings.contactAddress}` : ""}
+          {settings.contactPhone ? ` · โทร. ${settings.contactPhone}` : ""}
+        </span>
       </div>
-      <div className="label-foot">
-        <div><span className="muted">คำสั่งซื้อ</span><p className="bold">{oid(o.id)}</p></div>
-        <div><span className="muted">ขนส่ง</span><p className="bold">{o.shippingMethod || "-"}</p></div>
-        {o.trackingNumber && <div><span className="muted">เลขพัสดุ</span><p className="bold">{o.trackingNumber}</p></div>}
+
+      {/* ผู้รับ */}
+      <div className="lbl-to">
+        <span className="lbl-tag">ผู้รับ · TO</span>
+        <div className="lbl-name">{o.shipName}</div>
+        <div className="lbl-phone">โทร. {o.shipPhone}</div>
+        <div className="lbl-addr">{o.shipAddress}</div>
+      </div>
+
+      {/* ล่าง: เลขพัสดุ + วันที่ */}
+      <div className="lbl-foot">
+        {o.trackingNumber ? (
+          <div className="lbl-track">
+            <span className="lbl-tag">เลขพัสดุ · TRACKING</span>
+            <div className="lbl-track-no">{o.trackingNumber}</div>
+          </div>
+        ) : (
+          <div className="lbl-track"><span className="lbl-tag">เลขพัสดุ</span><div className="lbl-track-no dim">— ยังไม่ระบุ —</div></div>
+        )}
+        <div className="lbl-date">{new Date(o.createdAt).toLocaleDateString("th-TH", { day: "2-digit", month: "2-digit", year: "numeric" })}</div>
       </div>
     </div>
   );
@@ -203,15 +222,14 @@ function Line({ label, value, total }) {
   );
 }
 
-const CSS = `
-.prt { font-family: 'IBM Plex Sans Thai', sans-serif; color: #1d1d1f; background: #f5f5f7; }
-.prt-bar { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between;
+// สไตล์ที่ใช้ร่วมทุกเอกสาร (แถบเครื่องมือ + เนื้อหา invoice/picking + ดีไซน์ label)
+const BASE_CSS = `
+.prt { font-family: 'IBM Plex Sans Thai', sans-serif; color: #1d1d1f; background: #e9e9ec; }
+.prt-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between;
   gap: 12px; padding: 12px 20px; background: #1d1d1f; color: #fff; font-size: 14px; }
 .prt-btn { border: 0; border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 600;
   background: #fff; color: #1d1d1f; cursor: pointer; margin-left: 8px; }
 .prt-btn.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.4); }
-.sheet { background: #fff; width: 190mm; min-height: 130mm; margin: 16px auto; padding: 16mm;
-  box-shadow: 0 2px 12px rgba(0,0,0,.08); box-sizing: border-box; }
 .head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1d1d1f; padding-bottom: 12px; }
 .head h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
 .head .right { text-align: right; }
@@ -232,20 +250,52 @@ const CSS = `
 .sumline { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
 .sumline.total { border-top: 2px solid #1d1d1f; margin-top: 6px; padding-top: 8px; font-size: 16px; font-weight: 700; }
 .note { margin-top: 16px; font-size: 12px; color: #555; }
-/* label */
-.label { border: 2px solid #1d1d1f; padding: 10mm; }
-.label-from { border-bottom: 1px dashed #999; padding-bottom: 8px; }
-.label-to { padding: 14px 0; border-bottom: 1px dashed #999; }
-.label-to .xl { font-size: 24px; }
-.label-to .lg { font-size: 16px; }
-.label-to .addr { font-size: 16px; margin-top: 4px; line-height: 1.5; }
-.label-foot { display: flex; gap: 24px; padding-top: 10px; }
-.label-foot span.muted { font-size: 11px; }
+
+/* ── ใบปะหน้าพัสดุ (100×150mm) ── */
+.lbl { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column;
+  border: 0.6mm solid #1d1d1f; overflow: hidden; }
+.lbl-carrier { display: flex; align-items: center; justify-content: space-between; gap: 3mm;
+  background: #1d1d1f; color: #fff; padding: 3mm 4mm; }
+.lbl-carrier-name { font-size: 19pt; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: .3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lbl-carrier-id { font-size: 11pt; font-weight: 700; white-space: nowrap; }
+.lbl-tag { display: block; font-size: 6.5pt; font-weight: 700; letter-spacing: 1px; color: #8a8a8a; text-transform: uppercase; margin-bottom: 1mm; }
+.lbl-from { padding: 2.5mm 4mm; border-bottom: 0.4mm dashed #999; font-size: 8.5pt; line-height: 1.35; }
+.lbl-from-body { color: #333; }
+.lbl-to { flex: 1; padding: 4mm; border-bottom: 0.6mm solid #1d1d1f; display: flex; flex-direction: column; }
+.lbl-name { font-size: 20pt; font-weight: 800; line-height: 1.15; }
+.lbl-phone { font-size: 13pt; font-weight: 700; margin-top: 1.5mm; }
+.lbl-addr { font-size: 12.5pt; line-height: 1.5; margin-top: 2.5mm; }
+.lbl-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 3mm; padding: 3mm 4mm; }
+.lbl-track-no { font-family: 'Courier New', monospace; font-size: 15pt; font-weight: 700; letter-spacing: 1px; margin-top: 0.5mm; }
+.lbl-track-no.dim { color: #b0b0b0; font-size: 11pt; letter-spacing: 0; }
+.lbl-date { font-size: 8.5pt; color: #666; white-space: nowrap; }
+
 @media print {
   .no-print { display: none !important; }
   .prt, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+`;
+
+// A4 — ใบจัดเตรียมสินค้า / ใบแจ้งหนี้
+const A4_CSS = `
+.sheet { background: #fff; width: 190mm; min-height: 130mm; margin: 16px auto; padding: 16mm;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08); box-sizing: border-box; }
+@media print {
   .sheet { box-shadow: none; margin: 0; width: auto; min-height: auto; page-break-after: always; padding: 0; }
   .sheet:last-child { page-break-after: auto; }
 }
 @page { size: A4; margin: 14mm; }
+`;
+
+// สติ๊กเกอร์ 100×150mm — ใบปะหน้าพัสดุ
+const LABEL_CSS = `
+.label-sheet { background: #fff; width: 100mm; height: 150mm; margin: 12px auto; padding: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18); box-sizing: border-box; }
+@media print {
+  .label-sheet { box-shadow: none; margin: 0; page-break-after: always; }
+  .label-sheet:last-child { page-break-after: auto; }
+}
+@page { size: 100mm 150mm; margin: 0; }
 `;
