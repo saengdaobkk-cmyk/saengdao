@@ -8,6 +8,7 @@ import { messageFor } from "../lib/validation";
 import { useContent } from "../api/content";
 import { useShipping } from "../api/shipping";
 import { useAutoDiscount } from "../api/discounts";
+import { useSettings } from "../api/settings";
 
 const PAYMENTS = [
   { value: "PROMPTPAY", label: "พร้อมเพย์ (PromptPay)", desc: "สแกน QR จ่ายเงิน แล้วแนบสลิป" },
@@ -17,9 +18,13 @@ const PAYMENTS = [
 
 export default function Checkout() {
   const { items, subtotal, count, clear } = useCart();
-  const { user, loading } = useAuth();
+  const { user, loading, updateUser } = useAuth();
   const { t } = useContent();
   const navigate = useNavigate();
+
+  // แต้มสะสม
+  const settings = useSettings();
+  const [pointsInput, setPointsInput] = useState(0);
 
   const [form, setForm] = useState({ shipName: "", shipPhone: "", shipAddress: "", email: "" });
   const [paymentMethod, setPaymentMethod] = useState("PROMPTPAY");
@@ -80,7 +85,17 @@ export default function Checkout() {
   const ruleDiscount = auto?.discount || 0;
   const selectedShipping = shippingMethods.find((m) => m.id === shippingMethodId) || null;
   const shippingFee = selectedShipping ? Math.max(0, Math.round(Number(selectedShipping.fee))) : 0;
-  const total = Math.max(0, subtotal - discount - ruleDiscount) + shippingFee;
+
+  // แต้มสะสม — คำนวณส่วนลดจากแต้ม
+  const loyaltyOn = !!settings.loyaltyEnabled;
+  const pointValue = Math.max(1, Number(settings.loyaltyPointValue) || 1);
+  const availablePoints = user?.points || 0;
+  const goodsAfter = Math.max(0, subtotal - discount - ruleDiscount);
+  const maxRedeem = Math.min(availablePoints, Math.floor(goodsAfter / pointValue));
+  const pointsUsed = Math.max(0, Math.min(parseInt(pointsInput) || 0, maxRedeem));
+  const pointsDiscount = pointsUsed * pointValue;
+
+  const total = Math.max(0, subtotal - discount - ruleDiscount - pointsDiscount) + shippingFee;
 
   const applyCoupon = async () => {
     setCouponError("");
@@ -115,11 +130,13 @@ export default function Checkout() {
         shippingMethodId: shippingMethodId || null,
         note,
         discountCode: coupon?.code || null,
+        pointsUsed,
         needReceipt,
         receiptSameAsShipping,
         ...(needReceipt && !receiptSameAsShipping ? receipt : { receiptTaxId: receipt.receiptTaxId }),
       });
       placedRef.current = true; // กัน guard ก่อนล้างตะกร้า
+      if (pointsUsed > 0) api.get("/auth/me").then((r) => updateUser(r.data.user)).catch(() => {}); // อัปเดตแต้มคงเหลือ
       navigate(`/orders/${order.id}`, { replace: true });
       clear();
     } catch (err) {
@@ -322,6 +339,38 @@ export default function Checkout() {
             )}
           </div>
 
+          {/* ใช้แต้มสะสม */}
+          {loyaltyOn && availablePoints > 0 && (
+            <div className="mt-5 border-t border-line pt-5">
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-medium text-ink">ใช้แต้มสะสม</p>
+                <p className="text-[12px] text-sub">มี {availablePoints.toLocaleString()} แต้ม</p>
+              </div>
+              {maxRedeem > 0 ? (
+                <>
+                  <div className="mt-2 flex items-center gap-2.5">
+                    <input
+                      type="number" min="0" max={maxRedeem} value={pointsInput}
+                      onChange={(e) => setPointsInput(e.target.value)}
+                      placeholder="0"
+                      className="min-w-0 flex-1 rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPointsInput(pointsUsed >= maxRedeem ? 0 : maxRedeem)}
+                      className="shrink-0 whitespace-nowrap rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-white transition hover:bg-ink/90"
+                    >
+                      {pointsUsed >= maxRedeem ? "ยกเลิก" : "ใช้สูงสุด"}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-[12px] text-sub">ใช้ได้สูงสุด {maxRedeem.toLocaleString()} แต้ม · 1 แต้ม = {pointValue} บาท</p>
+                </>
+              ) : (
+                <p className="mt-2 text-[12px] text-sub">ยอดสั่งซื้อยังไม่พอสำหรับใช้แต้ม</p>
+              )}
+            </div>
+          )}
+
           {/* ยอดเงิน */}
           <div className="mt-5 space-y-2 border-t border-line pt-5 text-[14px]">
             <div className="flex justify-between text-sub">
@@ -338,6 +387,12 @@ export default function Checkout() {
               <div className="flex justify-between text-emerald-600">
                 <span>{t("checkout.discount", "ส่วนลด")}</span>
                 <span>−{formatPrice(discount)}</span>
+              </div>
+            )}
+            {pointsDiscount > 0 && (
+              <div className="flex justify-between text-emerald-600">
+                <span>ใช้ {pointsUsed.toLocaleString()} แต้ม</span>
+                <span>−{formatPrice(pointsDiscount)}</span>
               </div>
             )}
             <div className="flex justify-between text-sub">

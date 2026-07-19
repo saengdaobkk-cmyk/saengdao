@@ -20,7 +20,7 @@ export async function authenticate(req, res, next) {
       where: { id: payload.id },
       select: {
         id: true, email: true, name: true, phone: true, address: true,
-        receiptName: true, receiptTaxId: true, receiptAddress: true, role: true,
+        receiptName: true, receiptTaxId: true, receiptAddress: true, role: true, points: true,
       },
     });
     if (!user) return res.status(401).json({ error: "ไม่พบบัญชีผู้ใช้" });

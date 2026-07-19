@@ -18,6 +18,7 @@ const publicUser = (u) => ({
   receiptTaxId: u.receiptTaxId ?? null,
   receiptAddress: u.receiptAddress ?? null,
   role: u.role,
+  points: u.points ?? 0,
 });
 
 // POST /api/auth/register
@@ -109,6 +110,27 @@ router.patch("/profile", authenticate, async (req, res, next) => {
 
     const user = await prisma.user.update({ where: { id: req.user.id }, data });
     res.json({ user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/auth/loyalty — แต้มสะสมของฉัน + ประวัติ
+router.get("/loyalty", authenticate, async (req, res, next) => {
+  try {
+    const [user, logs, settings] = await Promise.all([
+      prisma.user.findUnique({ where: { id: req.user.id }, select: { points: true } }),
+      prisma.pointEntry.findMany({ where: { userId: req.user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
+      prisma.setting.findMany({ where: { key: { in: ["loyaltyEnabled", "loyaltyPointValue", "loyaltyBahtPerPoint"] } } }),
+    ]);
+    const map = Object.fromEntries(settings.map((s) => [s.key, s.value]));
+    res.json({
+      points: user?.points || 0,
+      enabled: map.loyaltyEnabled === "true",
+      pointValue: Number(map.loyaltyPointValue) || 1,
+      bahtPerPoint: Number(map.loyaltyBahtPerPoint) || 100,
+      logs,
+    });
   } catch (err) {
     next(err);
   }

@@ -160,7 +160,7 @@ export default function OrderConfirm() {
           ))}
         </ul>
 
-        {(Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.shippingFee) > 0) && (
+        {(Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.pointsDiscount) > 0 || Number(order.shippingFee) > 0) && (
           <div className="mt-5 space-y-2 border-t border-line pt-5 text-[14px]">
             {Number(order.ruleDiscount) > 0 && (
               <div className="flex justify-between">
@@ -174,6 +174,12 @@ export default function OrderConfirm() {
                 <span className="text-emerald-600">−{formatPrice(order.discount)}</span>
               </div>
             )}
+            {Number(order.pointsDiscount) > 0 && (
+              <div className="flex justify-between">
+                <span className="text-sub">ใช้ {order.pointsUsed?.toLocaleString?.() || order.pointsUsed} แต้ม</span>
+                <span className="text-emerald-600">−{formatPrice(order.pointsDiscount)}</span>
+              </div>
+            )}
             {Number(order.shippingFee) > 0 && (
               <div className="flex justify-between">
                 <span className="text-sub">ค่าจัดส่ง{order.shippingMethod && ` · ${order.shippingMethod}`}</span>
@@ -183,7 +189,7 @@ export default function OrderConfirm() {
           </div>
         )}
 
-        <div className={`flex justify-between text-[16px] font-semibold text-ink ${Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.shippingFee) > 0 ? "mt-3" : "mt-5 border-t border-line pt-5"}`}>
+        <div className={`flex justify-between text-[16px] font-semibold text-ink ${Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.pointsDiscount) > 0 || Number(order.shippingFee) > 0 ? "mt-3" : "mt-5 border-t border-line pt-5"}`}>
           <span>ยอดรวม</span>
           <span>{formatPrice(order.total)}</span>
         </div>

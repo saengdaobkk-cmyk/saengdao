@@ -660,6 +660,10 @@ router.patch("/orders/:id", async (req, res, next) => {
     if (data.paymentStatus === "PAID") {
       await awardLoyaltyPoints(order).catch((e) => console.error("loyalty:", e.message));
     }
+    // ยกเลิกออเดอร์ → คืน/ริบแต้ม
+    if (data.status === "CANCELLED") {
+      await reverseLoyaltyOnCancel(order).catch((e) => console.error("loyalty-reverse:", e.message));
+    }
     let zort;
     if (data.paymentStatus === "PAID" && !order.zortOrderId) {
       zort = await pushOrderToZort(order.id).catch((e) => ({ ok: false, error: e.message }));
@@ -1088,6 +1092,33 @@ async function awardLoyaltyPoints(order) {
     prisma.user.update({ where: { id: order.userId }, data: { points: { increment: pts } } }),
     prisma.pointEntry.create({ data: { userId: order.userId, delta: pts, reason: "สะสมจากการซื้อ", orderId: order.id } }),
   ]);
+}
+
+// ยกเลิกออเดอร์ → คืนแต้มที่ใช้ + ริบแต้มที่ได้จากการซื้อ (idempotent)
+async function reverseLoyaltyOnCancel(order) {
+  if (order.pointsUsed > 0) {
+    const refunded = await prisma.pointEntry.findFirst({ where: { orderId: order.id, reason: "คืนแต้ม (ยกเลิกออเดอร์)" } });
+    if (!refunded) {
+      await prisma.$transaction([
+        prisma.user.update({ where: { id: order.userId }, data: { points: { increment: order.pointsUsed } } }),
+        prisma.pointEntry.create({ data: { userId: order.userId, delta: order.pointsUsed, reason: "คืนแต้ม (ยกเลิกออเดอร์)", orderId: order.id } }),
+      ]);
+    }
+  }
+  const earned = await prisma.pointEntry.findFirst({ where: { orderId: order.id, delta: { gt: 0 }, reason: "สะสมจากการซื้อ" } });
+  if (earned) {
+    const reversed = await prisma.pointEntry.findFirst({ where: { orderId: order.id, reason: "ริบแต้ม (ยกเลิกออเดอร์)" } });
+    if (!reversed) {
+      const u = await prisma.user.findUnique({ where: { id: order.userId }, select: { points: true } });
+      const take = Math.min(earned.delta, u?.points || 0); // ไม่ทำให้แต้มติดลบ
+      if (take > 0) {
+        await prisma.$transaction([
+          prisma.user.update({ where: { id: order.userId }, data: { points: { decrement: take } } }),
+          prisma.pointEntry.create({ data: { userId: order.userId, delta: -take, reason: "ริบแต้ม (ยกเลิกออเดอร์)", orderId: order.id } }),
+        ]);
+      }
+    }
+  }
 }
 
 const customerPublic = (u) => ({

@@ -83,6 +83,8 @@ function publicOrder(o) {
     discount: o.discount,
     ruleDiscount: o.ruleDiscount,
     ruleName: o.ruleName,
+    pointsUsed: o.pointsUsed,
+    pointsDiscount: o.pointsDiscount,
     shippingMethod: o.shippingMethod,
     shippingFee: o.shippingFee,
     total: o.total,
@@ -279,9 +281,30 @@ router.post("/", async (req, res, next) => {
       );
       const ruleDiscount = rule.discount || 0;
 
-      const total = Math.max(0, subtotal - discount - ruleDiscount) + shippingFee;
+      // แต้มสะสม — ใช้แลกส่วนลด (คิดฝั่ง server กันปลอม)
+      let pointsUsed = 0;
+      let pointsDiscount = 0;
+      const wantPoints = Math.max(0, Math.trunc(Number(req.body.pointsUsed) || 0));
+      if (wantPoints > 0) {
+        const [enabledS, valueS] = await Promise.all([
+          tx.setting.findUnique({ where: { key: "loyaltyEnabled" } }),
+          tx.setting.findUnique({ where: { key: "loyaltyPointValue" } }),
+        ]);
+        if (enabledS?.value === "true") {
+          const pointValue = Number(valueS?.value) || 1;
+          const dbUser = await tx.user.findUnique({ where: { id: req.user.id }, select: { points: true } });
+          const balance = dbUser?.points || 0;
+          // ส่วนลดจากแต้มไม่เกินยอดสินค้าหลังหักส่วนลดอื่น (ไม่รวมค่าส่ง)
+          const goodsAfter = Math.max(0, subtotal - discount - ruleDiscount);
+          const maxByGoods = Math.floor(goodsAfter / pointValue);
+          pointsUsed = Math.min(wantPoints, balance, maxByGoods);
+          pointsDiscount = pointsUsed * pointValue;
+        }
+      }
 
-      return tx.order.create({
+      const total = Math.max(0, subtotal - discount - ruleDiscount - pointsDiscount) + shippingFee;
+
+      const created = await tx.order.create({
         data: {
           userId: req.user.id,
           total,
@@ -289,6 +312,8 @@ router.post("/", async (req, res, next) => {
           discountCode: coupon?.code || null,
           ruleDiscount,
           ruleName: ruleDiscount > 0 ? rule.name : null,
+          pointsUsed,
+          pointsDiscount,
           shippingMethod: shippingName,
           shippingFee,
           status: "PENDING",
@@ -304,6 +329,16 @@ router.post("/", async (req, res, next) => {
         },
         include: { items: { include: { book: { select: { title: true } } } } },
       });
+
+      // ตัดแต้มที่ใช้ + บันทึก ledger
+      if (pointsUsed > 0) {
+        await tx.user.update({ where: { id: req.user.id }, data: { points: { decrement: pointsUsed } } });
+        await tx.pointEntry.create({
+          data: { userId: req.user.id, delta: -pointsUsed, reason: "ใช้แลกส่วนลด", orderId: created.id },
+        });
+      }
+
+      return created;
     });
 
     res.status(201).json(order);

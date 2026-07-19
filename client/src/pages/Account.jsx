@@ -45,6 +45,7 @@ export default function Account() {
       </div>
 
       <div className="space-y-10">
+        <LoyaltySection />
         <ProfileSection user={user} updateUser={updateUser} />
         <ReceiptAddressSection user={user} updateUser={updateUser} />
         <PasswordSection />
@@ -58,6 +59,60 @@ export default function Account() {
         ออกจากระบบ
       </button>
     </div>
+  );
+}
+
+function LoyaltySection() {
+  const [open, setOpen] = useState(false);
+  const { data } = useQuery({
+    queryKey: ["loyalty"],
+    queryFn: async () => (await api.get("/auth/loyalty")).data,
+  });
+  if (!data) return null;
+  if (!data.enabled && data.points === 0) return null; // ระบบปิด + ยังไม่มีแต้ม → ซ่อน
+
+  const worth = data.points * (data.pointValue || 1);
+  return (
+    <section className="overflow-hidden rounded-2xl border border-line">
+      <div className="flex items-center justify-between gap-4 bg-ink px-6 py-5 text-white">
+        <div>
+          <p className="text-[12px] text-white/60">แต้มสะสม</p>
+          <p className="text-[32px] font-semibold leading-tight">{data.points.toLocaleString()}</p>
+          {data.enabled && worth > 0 && <p className="text-[12px] text-white/60">= ลดได้ {formatPrice(worth)} ตอนสั่งซื้อ</p>}
+        </div>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="text-white/30">
+          <path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17l-6 3.4 1.4-6.8L2.3 9l6.9-.7L12 2Z" strokeLinejoin="round" />
+        </svg>
+      </div>
+      {data.enabled && (
+        <p className="border-t border-line bg-mist/40 px-6 py-2.5 text-[12px] text-sub">
+          ทุกยอดซื้อ {data.bahtPerPoint} บาท = 1 แต้ม · ใช้แต้มเป็นส่วนลดได้ที่หน้าชำระเงิน
+        </p>
+      )}
+      {data.logs.length > 0 && (
+        <div className="border-t border-line">
+          <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between px-6 py-3 text-[13px] text-ink hover:bg-mist/40">
+            <span>ประวัติแต้ม</span>
+            <span className="text-sub">{open ? "ซ่อน" : "ดู"}</span>
+          </button>
+          {open && (
+            <ul className="divide-y divide-line px-6 pb-2">
+              {data.logs.map((l) => (
+                <li key={l.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] text-ink">{l.reason}</p>
+                    <p className="text-[11px] text-sub">{new Date(l.createdAt).toLocaleDateString("th-TH", { dateStyle: "medium" })}</p>
+                  </div>
+                  <span className={`shrink-0 text-[14px] font-semibold ${l.delta > 0 ? "text-emerald-600" : "text-rose-500"}`}>
+                    {l.delta > 0 ? `+${l.delta}` : l.delta}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

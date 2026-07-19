@@ -275,6 +275,8 @@ model Order {
   discount        Decimal       @default(0) @db.Decimal(10, 2)
   ruleDiscount    Decimal       @default(0) @db.Decimal(10, 2) // ส่วนลดอัตโนมัติจาก Discount Rules
   ruleName        String? // ชื่อกฎส่วนลดที่ใช้ ณ ตอนสั่ง
+  pointsUsed      Int           @default(0) // แต้มที่ลูกค้าใช้แลกส่วนลด
+  pointsDiscount  Decimal       @default(0) @db.Decimal(10, 2) // มูลค่าส่วนลดจากแต้ม (บาท)
   zortOrderId     String? // id ออเดอร์ใน ZORT หลัง sync
   // การชำระเงิน
   paymentMethod   PaymentMethod

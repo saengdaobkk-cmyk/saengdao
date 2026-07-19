@@ -68,8 +68,11 @@ export default function AdminSettings() {
 
 function LoyaltySettings({ settings, save }) {
   const [per, setPer] = useState(settings.loyaltyBahtPerPoint || "100");
+  const [val, setVal] = useState(settings.loyaltyPointValue || "1");
   const [saved, setSaved] = useState(false);
+  const [savedVal, setSavedVal] = useState(false);
   useEffect(() => { setPer(settings.loyaltyBahtPerPoint || "100"); }, [settings.loyaltyBahtPerPoint]);
+  useEffect(() => { setVal(settings.loyaltyPointValue || "1"); }, [settings.loyaltyPointValue]);
   return (
     <section>
       <h2 className="mb-1 text-[15px] font-semibold text-ink">แต้มสะสม (Loyalty)</h2>
@@ -96,6 +99,22 @@ function LoyaltySettings({ settings, save }) {
               onClick={() => save.mutate({ loyaltyBahtPerPoint: String(Math.max(1, parseInt(per) || 100)) }, { onSuccess: () => setSaved(true) })}
               className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90">บันทึก</button>
             {saved && <span className="text-[13px] text-emerald-600">✓</span>}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+          <div>
+            <p className="text-[14px] font-medium text-ink">มูลค่าแต้มเวลาแลก</p>
+            <p className="text-[12px] text-sub">ลูกค้าใช้แต้มเป็นส่วนลดตอนชำระเงิน — 1 แต้ม = กี่บาท</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-sub">1 แต้ม =</span>
+            <input type="number" min="1" value={val} onChange={(e) => { setVal(e.target.value); setSavedVal(false); }}
+              className="w-24 rounded-lg border border-line px-3 py-2 text-center text-[14px] outline-none focus:border-ink/30" />
+            <span className="text-[13px] text-sub">บาท</span>
+            <button
+              onClick={() => save.mutate({ loyaltyPointValue: String(Math.max(1, parseInt(val) || 1)) }, { onSuccess: () => setSavedVal(true) })}
+              className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90">บันทึก</button>
+            {savedVal && <span className="text-[13px] text-emerald-600">✓</span>}
           </div>
         </div>
       </div>
