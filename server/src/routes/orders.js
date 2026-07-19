@@ -351,7 +351,7 @@ router.post("/", async (req, res, next) => {
 router.get("/", async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 8));
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 10));
     const where = { userId: req.user.id };
     const [total, orders] = await Promise.all([
       prisma.order.count({ where }),

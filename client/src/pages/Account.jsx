@@ -290,7 +290,7 @@ function OrdersSection() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["my-orders", page],
-    queryFn: async () => (await api.get(`/orders?page=${page}&pageSize=8`)).data,
+    queryFn: async () => (await api.get(`/orders?page=${page}&pageSize=10`)).data,
     placeholderData: keepPreviousData,
   });
   const orders = data?.orders || [];
