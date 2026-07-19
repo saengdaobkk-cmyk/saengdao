@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { useAdminOrders } from "../../api/admin";
+import { useAdminOrders, useUpdateOrder } from "../../api/admin";
 import { formatPrice } from "../../lib/format";
 import { fmtDate, PAYMENT_LABEL, PAY_BADGE, PAY_TH, ORDER_BADGE, ORDER_TH, Badge } from "./orderUi";
 
@@ -130,7 +131,7 @@ export default function AdminOrders() {
                   <span className="text-right font-semibold text-ink">{formatPrice(o.total)}</span>
                   <span><Badge cls={PAY_BADGE[o.paymentStatus]}>{PAY_TH[o.paymentStatus]}</Badge></span>
                   <span><Badge cls={ORDER_BADGE[o.status]}>{ORDER_TH[o.status]}</Badge></span>
-                  <RowMenu id={o.id} />
+                  <RowMenu order={o} />
                 </div>
               ))}
             </div>
@@ -159,21 +160,48 @@ export default function AdminOrders() {
 }
 
 // เมนู 3 จุดท้ายแถว
-function RowMenu({ id }) {
-  const [open, setOpen] = useState(false);
+const MENU_ITEM = "block w-full px-4 py-2 text-left text-[13px] text-ink transition hover:bg-mist";
+function RowMenu({ order }) {
+  const [pos, setPos] = useState(null); // {top,left} หรือ null (ปิด)
+  const btnRef = useRef(null);
+  const update = useUpdateOrder();
+  const id = order.id;
+
+  const open = () => {
+    const r = btnRef.current.getBoundingClientRect();
+    setPos({ top: r.bottom + 4, left: Math.max(8, r.right - 224) });
+  };
+  const close = () => setPos(null);
+  const print = (doc) => { openPrint(doc, [id]); close(); };
+  const cancel = () => {
+    close();
+    if (confirm(`ยกเลิกคำสั่งซื้อ #${id.slice(0, 8).toUpperCase()} ?`)) update.mutate({ id, status: "CANCELLED" });
+  };
+
   return (
-    <div className="relative flex justify-center">
-      <button onClick={() => setOpen((v) => !v)} aria-label="เมนู" className="rounded-lg p-1.5 text-sub transition hover:bg-mist hover:text-ink">
+    <div className="flex justify-center">
+      <button ref={btnRef} onClick={() => (pos ? close() : open())} aria-label="เมนู" className="rounded-lg p-1.5 text-sub transition hover:bg-mist hover:text-ink">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
       </button>
-      {open && (
+      {pos && createPortal(
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-9 z-20 w-36 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-lg">
-            <Link to={`/admin/orders/${id}`} className="block px-4 py-2 text-[13px] text-ink transition hover:bg-mist">ดูรายละเอียด</Link>
-            <Link to={`/admin/orders/${id}?edit=1`} className="block px-4 py-2 text-[13px] text-ink transition hover:bg-mist">แก้ไข</Link>
+          <div className="fixed inset-0 z-40" onClick={close} />
+          <div className="fixed z-50 w-56 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-xl" style={{ top: pos.top, left: pos.left }}>
+            <Link to={`/admin/orders/${id}`} onClick={close} className={MENU_ITEM}>ดูรายละเอียด</Link>
+            <Link to={`/admin/orders/${id}?edit=1`} onClick={close} className={MENU_ITEM}>แก้ไข</Link>
+            <div className="my-1 border-t border-line" />
+            <button onClick={() => print("picking")} className={MENU_ITEM}>พิมพ์ ใบจัดเตรียมสินค้า</button>
+            <button onClick={() => print("label")} className={MENU_ITEM}>พิมพ์ ใบปะหน้าพัสดุ (label)</button>
+            <button onClick={() => print("invoice")} className={MENU_ITEM}>พิมพ์ ใบสั่งซื้อ</button>
+            {order.status !== "CANCELLED" && (
+              <>
+                <div className="my-1 border-t border-line" />
+                <button onClick={cancel} className="block w-full px-4 py-2 text-left text-[13px] text-red-600 transition hover:bg-red-50">ยกเลิกรายการ</button>
+              </>
+            )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </div>
   );
