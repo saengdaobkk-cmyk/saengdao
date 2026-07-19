@@ -27,7 +27,7 @@ function orderBadge(o) {
 }
 
 export default function Account() {
-  const { user, loading, updateUser, logout } = useAuth();
+  const { user, loading, updateUser } = useAuth();
 
   if (loading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (!user) return <Navigate to="/login" state={{ from: "/account" }} replace />;
@@ -51,13 +51,6 @@ export default function Account() {
         <PasswordSection />
         <OrdersSection />
       </div>
-
-      <button
-        onClick={logout}
-        className="mt-12 text-[14px] text-sub transition hover:text-red-600"
-      >
-        ออกจากระบบ
-      </button>
     </div>
   );
 }
