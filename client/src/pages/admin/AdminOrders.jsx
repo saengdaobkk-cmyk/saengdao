@@ -93,23 +93,6 @@ export default function AdminOrders() {
         ))}
       </div>
 
-      {/* แถบควบคุม: จำนวนผลลัพธ์ + เลือกจำนวนต่อหน้า */}
-      {list.length > 0 && (
-        <div className="mb-2 flex items-center justify-between gap-3 px-1 text-[12px] text-sub">
-          <span>แสดง {from}–{to} จาก {list.length}</span>
-          <label className="flex items-center gap-2">
-            <span>ต่อหน้า</span>
-            <select
-              value={pageSize}
-              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-              className="rounded-lg border border-line bg-white px-2 py-1 text-[12px] text-ink outline-none focus:border-ink/30"
-            >
-              {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </label>
-        </div>
-      )}
-
       {/* หัวตาราง (เดสก์ท็อป) */}
       <div className="hidden grid-cols-[1.4fr_1fr_0.8fr_0.9fr_0.7fr_28px] gap-3 border-b border-line px-4 pb-2 text-[12px] text-sub lg:grid">
         <span>คำสั่งซื้อ</span>
@@ -130,6 +113,21 @@ export default function AdminOrders() {
             ))}
           </div>
           {pageCount > 1 && <Pager page={safePage} totalPages={pageCount} onChange={setPage} />}
+
+          {/* แถบควบคุม: จำนวนผลลัพธ์ + เลือกจำนวนต่อหน้า */}
+          <div className="mt-4 flex items-center justify-between gap-3 px-1 text-[12px] text-sub">
+            <span>แสดง {from}–{to} จาก {list.length}</span>
+            <label className="flex items-center gap-2">
+              <span>ต่อหน้า</span>
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                className="rounded-lg border border-line bg-white px-2 py-1 text-[12px] text-ink outline-none focus:border-ink/30"
+              >
+                {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+          </div>
         </>
       )}
     </div>
