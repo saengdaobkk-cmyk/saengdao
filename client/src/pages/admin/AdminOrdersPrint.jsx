@@ -15,6 +15,8 @@ const DOC_TITLE = {
 const PAYMENT_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนเงิน", CARD: "บัตรเครดิต" };
 const fmtDateFull = (d) => new Date(d).toLocaleString("th-TH", { dateStyle: "long", timeStyle: "short" });
 const oid = (id) => "#" + id.slice(0, 8).toUpperCase();
+// ไปรษณีย์ไทยทุกบริการ → แสดง "ไปรษณีย์ไทย" · อื่นๆ คงชื่อเดิม
+const carrierName = (m) => (/ไปรษณีย์|thailand\s*post/i.test(m || "") ? "ไปรษณีย์ไทย" : m || "พัสดุ");
 
 export default function AdminOrdersPrint() {
   const { user, loading, isStaff } = useAuth();
@@ -114,8 +116,7 @@ function Label({ o, shopName, settings }) {
     <div className="lbl">
       {/* แถบขนส่ง */}
       <div className="lbl-carrier">
-        <span className="lbl-carrier-name">{o.shippingMethod || "พัสดุ"}</span>
-        <span className="lbl-carrier-id">{oid(o.id)}</span>
+        <span className="lbl-carrier-name">{carrierName(o.shippingMethod)}</span>
       </div>
 
       {/* บาร์โค้ดเลขออเดอร์ */}
