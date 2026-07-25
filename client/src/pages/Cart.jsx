@@ -19,7 +19,12 @@ export default function Cart() {
   if (items.length === 0)
     return (
       <div className="mx-auto max-w-page px-5 py-24 text-center">
-        <p className="text-5xl opacity-20">🛍️</p>
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-mist">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-sub/70">
+            <path d="M6 8h12l-1 10.5a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.8L6 8Z" />
+            <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+          </svg>
+        </div>
         <h1 className="mt-6 text-2xl font-semibold tracking-tightest text-ink">{t("cart.empty_title", "ตะกร้าว่างเปล่า")}</h1>
         <p className="mt-2 text-[14px] text-sub">{t("cart.empty_desc", "เลือกหนังสือที่คุณชอบกันก่อนนะ")}</p>
         <Link

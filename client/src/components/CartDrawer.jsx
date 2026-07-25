@@ -75,7 +75,12 @@ export default function CartDrawer() {
         {/* รายการ */}
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <span className="text-4xl opacity-20">🛍️</span>
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-mist">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-sub/70">
+                <path d="M6 8h12l-1 10.5a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.8L6 8Z" />
+                <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+              </svg>
+            </div>
             <p className="mt-4 text-[14px] text-sub">ตะกร้ายังว่างอยู่</p>
             <button
               onClick={closeDrawer}
