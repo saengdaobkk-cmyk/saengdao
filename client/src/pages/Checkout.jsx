@@ -34,6 +34,9 @@ export default function Checkout() {
   const { data: shippingMethods = [] } = useShipping();
   const [shippingMethodId, setShippingMethodId] = useState("");
 
+  // ส่วนลดอัตโนมัติ — ต้องเรียก hook ก่อน early return (กัน Rules of Hooks พัง ตอน refresh)
+  const { data: auto } = useAutoDiscount(items);
+
   // ใบเสร็จ
   const [needReceipt, setNeedReceipt] = useState(false);
   const [receiptSameAsShipping, setReceiptSame] = useState(true);
@@ -81,7 +84,6 @@ export default function Checkout() {
   const setR = (k) => (e) => setReceipt((r) => ({ ...r, [k]: e.target.value }));
 
   const discount = coupon?.discount || 0;
-  const { data: auto } = useAutoDiscount(items);
   const ruleDiscount = auto?.discount || 0;
   const selectedShipping = shippingMethods.find((m) => m.id === shippingMethodId) || null;
   const shippingFee = selectedShipping ? Math.max(0, Math.round(Number(selectedShipping.fee))) : 0;
