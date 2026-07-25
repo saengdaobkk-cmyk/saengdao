@@ -287,6 +287,7 @@ model Order {
   paymentMethod   PaymentMethod
   paymentStatus   PaymentStatus @default(UNPAID)
   slipImage       String? // URL รูปสลิป (PromptPay/โอนเงิน)
+  paidAt          DateTime? // วัน-เวลาที่ชำระเงินจริง (ตามสลิป) — แอดมินกรอกตอนอนุมัติ
   omiseChargeId   String? // สำหรับบัตรเครดิต
   // ติดตามพัสดุ (ไปรษณีย์ไทย Track & Trace)
   trackingNumber    String? // barcode ไปรษณีย์ เช่น EF667142218TH

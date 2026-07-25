@@ -22,11 +22,21 @@ async function fetchT(url, options = {}, ms = 15000) {
   }
 }
 
-const PAYMENT_LABEL = {
-  PROMPTPAY: "พร้อมเพย์",
-  TRANSFER: "เงินโอน",
+// การชำระเงินที่ระบุใน ZORT — พร้อมเพย์/โอนธนาคาร เงินเข้าบัญชีเดียวกัน
+const ZORT_PAY_METHOD = {
+  PROMPTPAY: "ธ.กรุงเทพ กระแสรายวัน",
+  TRANSFER: "ธ.กรุงเทพ กระแสรายวัน",
   CARD: "บัตรเครดิต",
 };
+
+// วัน-เวลาโซนไทยจาก Date
+const toBkk = (d) => new Date(d.getTime() + 7 * 3600 * 1000);
+const zortDateStr = (d) => toBkk(d).toISOString().slice(0, 16).replace("T", " "); // YYYY-MM-DD HH:mm
+function thaiDateTime(d) {
+  const b = toBkk(d);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(b.getUTCDate())}/${p(b.getUTCMonth() + 1)}/${b.getUTCFullYear()} ${p(b.getUTCHours())}:${p(b.getUTCMinutes())}`;
+}
 
 export async function getZortConfig() {
   const rows = await prisma.setting.findMany({ where: { key: { in: Object.values(ZK) } } });
@@ -77,10 +87,6 @@ export async function testZortConnection() {
 }
 
 // วันที่-เวลาแบบ ZORT (โซนไทย): "YYYY-MM-DD HH:mm"
-function zortNow() {
-  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 16).replace("T", " ");
-}
-
 // ส่งออเดอร์ไป ZORT (Order/AddOrder) — โครงเดียวกับโปรแกรม All Chat, best-effort ไม่ throw
 export async function pushOrderToZort(orderId) {
   const cfg = await getZortConfig();
@@ -98,7 +104,8 @@ export async function pushOrderToZort(orderId) {
   const total = Number(order.total);
   const shipping = Math.max(0, Number(order.shippingFee) || 0);
   const discount = Math.max(0, Number(order.discount) || 0);
-  const paymentMethod = PAYMENT_LABEL[order.paymentMethod] || "อื่นๆ";
+  const paymentMethod = ZORT_PAY_METHOD[order.paymentMethod] || "อื่นๆ";
+  const paidDate = order.paidAt ? new Date(order.paidAt) : new Date(); // เวลาชำระตามสลิป (ถ้าไม่มีใช้เวลาปัจจุบัน)
   const websiteNo = order.id.slice(0, 8).toUpperCase(); // เลขออเดอร์ของเว็บ (ที่โชว์เป็น #XXXXXXXX)
 
   // AddOrder: ฟิลด์ระดับ root (ไม่มี wrapper) — ตามแนวทาง All Chat
@@ -124,8 +131,12 @@ export async function pushOrderToZort(orderId) {
     // การชำระเงิน (ยิงตอนยืนยันชำระแล้ว → mark ว่าจ่ายแล้วใน ZORT)
     paymentmethod: paymentMethod,
     paymentamount: total,
-    paymentdate: zortNow(),
-    description: [order.note?.trim(), `ช่องทางชำระเงิน: ${paymentMethod}`].filter(Boolean).join("\n"),
+    paymentdate: zortDateStr(paidDate),
+    description: [
+      order.note?.trim(),
+      `วันที่ชำระเงิน: ${thaiDateTime(paidDate)}`,
+      `ช่องทางชำระเงิน: ${paymentMethod}`,
+    ].filter(Boolean).join("\n"),
     list: order.items.map((it) => {
       const listUnit = Number(it.listPrice) > 0 ? Number(it.listPrice) : Number(it.price);
       const dp = it.discountPercent || 0;

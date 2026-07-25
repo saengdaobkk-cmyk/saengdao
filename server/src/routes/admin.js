@@ -660,6 +660,9 @@ router.patch("/orders/:id", async (req, res, next) => {
       data.paymentStatus = body.paymentStatus;
       if (body.paymentStatus === "PAID" && !body.status) data.status = "PAID";
     }
+    // วัน-เวลาชำระเงิน (ตามสลิป) — แอดมินกรอกตอนอนุมัติ
+    if (body.paidAt !== undefined) data.paidAt = body.paidAt ? new Date(body.paidAt) : null;
+    else if (body.paymentStatus === "PAID") data.paidAt = new Date();
 
     // แก้ไขข้อมูลออเดอร์
     for (const f of ORDER_TEXT_FIELDS) {
