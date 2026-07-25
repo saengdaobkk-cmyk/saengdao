@@ -76,7 +76,25 @@ export async function testZortConnection() {
   }
 }
 
-// ส่งออเดอร์ไป ZORT (Order/AddOrder) — best-effort, ไม่ throw
+// วันที่-เวลาแบบ ZORT (โซนไทย): "YYYY-MM-DD HH:mm"
+function zortNow() {
+  return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 16).replace("T", " ");
+}
+
+// ZORT AddOrder ไม่คืนเลขที่ออเดอร์ (SO-xxxx) มา — ต้องดึงจาก GetOrders ตาม detail.id
+async function lookupZortOrderNumber(cfg, id) {
+  try {
+    const resp = await fetchT(`${cfg.baseUrl}/Order/GetOrders?offset=0&limit=20`, { headers: zortHeaders(cfg) });
+    if (!resp.ok) return null;
+    const data = await resp.json().catch(() => null);
+    const found = (data?.list ?? []).find((o) => String(o.id) === String(id));
+    return found?.number ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ส่งออเดอร์ไป ZORT (Order/AddOrder) — โครงเดียวกับโปรแกรม All Chat, best-effort ไม่ throw
 export async function pushOrderToZort(orderId) {
   const cfg = await getZortConfig();
   if (!cfg.enabled) return { skipped: true, reason: "ZORT ปิดใช้งาน" };
@@ -91,58 +109,64 @@ export async function pushOrderToZort(orderId) {
   if (order.zortOrderId) return { ok: true, zortOrderId: order.zortOrderId, already: true };
 
   const total = Number(order.total);
-  const discount = Number(order.discount);
+  const shipping = Math.max(0, Number(order.shippingFee) || 0);
+  const discount = Math.max(0, Number(order.discount) || 0);
+  const paymentMethod = PAYMENT_LABEL[order.paymentMethod] || "อื่นๆ";
 
-  const payload = {
-    number: "SD-" + order.id.slice(0, 8).toUpperCase(),
-    orderdate: order.createdAt.toISOString().slice(0, 10),
-    amount: total,
-    status: "Success", // ยืนยันชำระเงินแล้ว
-    customername: order.shipName,
+  // AddOrder: ฟิลด์ระดับ root (ไม่มี wrapper) — ตามแนวทาง All Chat
+  const body = {
+    // ผู้ซื้อ (ถ้าออกใบกำกับภาษี ใช้ชื่อ/ที่อยู่/เลขภาษีของใบกำกับ)
+    customername: order.needReceipt ? order.receiptName || order.shipName : order.shipName,
     customerphone: order.shipPhone,
     customeremail: order.email || "",
-    customeraddress: order.shipAddress,
+    customeraddress: order.needReceipt ? order.receiptAddress || order.shipAddress : order.shipAddress,
+    ...(order.needReceipt && order.receiptTaxId ? { customeridnumber: order.receiptTaxId } : {}),
+    // จัดส่ง
     shippingname: order.shipName,
-    shippingaddress: order.shipAddress,
     shippingphone: order.shipPhone,
-    paymentmethod: PAYMENT_LABEL[order.paymentMethod] || "อื่นๆ",
-    paymentamount: total,
-    paymentdate: new Date().toISOString().slice(0, 16).replace("T", " "),
+    shippingaddress: order.shipAddress,
+    shippingamount: shipping,
+    shippingchannel: order.shippingMethod || "",
+    // ZORT buyerAmount (มูลค่ารวมสุทธิ) = amount เป๊ะ (ไม่บวกค่าส่ง/ไม่หักส่วนลดซ้ำ)
+    // → ส่งยอดสุทธิสุดท้าย · shippingamount/discount เป็นแค่ตัวแสดง
+    amount: total,
+    discount: discount > 0 ? String(discount) : "",
     saleschannel: "SAENGDAO Web",
-    description: order.note || "",
-    ...(discount > 0 ? { discount: String(discount) } : {}),
-    // ใบกำกับภาษี (ถ้าลูกค้าขอ)
-    ...(order.needReceipt
-      ? {
-          customername: order.receiptName || order.shipName,
-          customeridnumber: order.receiptTaxId || "",
-          customeraddress: order.receiptAddress || order.shipAddress,
-        }
-      : {}),
-    list: order.items.map((it) => ({
-      sku: (it.book.isbn || "SD-" + it.book.id.slice(0, 8)) + (it.variantId ? "-" + it.variantId.slice(0, 6) : ""),
-      name: it.book.title + (it.variantName ? ` (${it.variantName})` : ""),
-      number: it.quantity,
-      pricepernumber: Number(it.price),
-      totalprice: Number(it.price) * it.quantity,
-    })),
+    // การชำระเงิน (ยิงตอนยืนยันชำระแล้ว → mark ว่าจ่ายแล้วใน ZORT)
+    paymentmethod: paymentMethod,
+    paymentamount: total,
+    paymentdate: zortNow(),
+    description: [order.note?.trim(), `ช่องทางชำระเงิน: ${paymentMethod}`].filter(Boolean).join("\n"),
+    list: order.items.map((it) => {
+      const listUnit = Number(it.listPrice) > 0 ? Number(it.listPrice) : Number(it.price);
+      const dp = it.discountPercent || 0;
+      return {
+        sku: (it.book.isbn || "SD-" + it.book.id.slice(0, 8)) + (it.variantId ? "-" + it.variantId.slice(0, 6) : ""),
+        name: it.book.title + (it.variantName ? ` (${it.variantName})` : ""),
+        number: it.quantity,
+        pricepernumber: listUnit, // ราคาต่อหน่วย (เต็ม)
+        discount: dp > 0 ? `${dp}%` : 0, // ส่วนลดรายชิ้นเป็น % (ตามที่กรอก)
+        totalprice: Number(it.price) * it.quantity, // ยอดสุทธิรายบรรทัด
+      };
+    }),
   };
 
   try {
     const resp = await fetch(`${cfg.baseUrl}/Order/AddOrder`, {
       method: "POST",
       headers: zortHeaders(cfg),
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
     const data = await resp.json().catch(() => null);
-    // AddOrder ใช้ resCode, บาง endpoint ใช้ res
     const code = Number(data?.resCode ?? data?.res);
     if (!resp.ok || code !== 200)
       return { ok: false, error: data?.resDesc || `ZORT ตอบกลับ ${resp.status}` };
 
-    const zortOrderId = String(data?.detail?.id ?? "");
-    await prisma.order.update({ where: { id: orderId }, data: { zortOrderId } });
-    return { ok: true, zortOrderId };
+    const id = String(data?.detail?.id ?? "");
+    // ดึงเลขที่ออเดอร์ (SO-xxxx) กลับมาเก็บ (ถ้าไม่ได้ ใช้ id แทน)
+    const number = (await lookupZortOrderNumber(cfg, id)) || id;
+    await prisma.order.update({ where: { id: orderId }, data: { zortOrderId: number } });
+    return { ok: true, zortOrderId: number };
   } catch (err) {
     return { ok: false, error: "ส่งไป ZORT ไม่สำเร็จ: " + err.message };
   }
