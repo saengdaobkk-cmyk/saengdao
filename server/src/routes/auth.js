@@ -1,7 +1,10 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
-import { signToken, authenticate } from "../middleware/auth.js";
+import { signToken, signPendingToken, authenticate } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -19,6 +22,7 @@ const publicUser = (u) => ({
   receiptAddress: u.receiptAddress ?? null,
   role: u.role,
   points: u.points ?? 0,
+  twoFactorEnabled: u.totpEnabled ?? false,
 });
 
 // POST /api/auth/register
@@ -59,6 +63,9 @@ router.post("/login", async (req, res, next) => {
     // ข้อความเดียวกันทั้งกรณีไม่มี user / รหัสผิด — กันการเดาบัญชี
     const ok = user && (await bcrypt.compare(password, user.password));
     if (!ok) return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+
+    // เปิด 2FA อยู่ → ยังไม่ออก token เต็ม ให้ไปกรอกรหัส 6 หลักก่อน
+    if (user.totpEnabled) return res.json({ twoFactorRequired: true, pendingToken: signPendingToken(user.id) });
 
     res.json({ token: signToken(user), user: publicUser(user) });
   } catch (err) {
@@ -131,6 +138,72 @@ router.get("/loyalty", authenticate, async (req, res, next) => {
       bahtPerPoint: Number(map.loyaltyBahtPerPoint) || 100,
       logs,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- ยืนยันตัวตน 2 ชั้น (TOTP) ---------- */
+authenticator.options = { window: 1 }; // เผื่อคลาดเวลา ±1 ช่วง (30 วิ)
+const TOTP_ISSUER = "SAENGDAO Admin";
+
+// ยืนยันรหัส 6 หลักตอนล็อกอิน (ใช้ pendingToken จาก /login)
+router.post("/2fa/verify", async (req, res, next) => {
+  try {
+    const { pendingToken, code } = req.body || {};
+    let payload;
+    try {
+      payload = jwt.verify(pendingToken || "", process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: "หมดเวลา กรุณาเข้าสู่ระบบใหม่" });
+    }
+    if (!payload.twofa) return res.status(400).json({ error: "โทเคนไม่ถูกต้อง" });
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user || !user.totpEnabled || !user.totpSecret) return res.status(400).json({ error: "บัญชีนี้ไม่ได้เปิด 2FA" });
+    if (!authenticator.verify({ token: String(code || "").trim(), secret: user.totpSecret }))
+      return res.status(401).json({ error: "รหัสไม่ถูกต้อง" });
+    res.json({ token: signToken(user), user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// เริ่มตั้งค่า 2FA — สร้าง secret + QR (ยังไม่เปิดใช้จนกว่าจะยืนยันรหัส)
+router.post("/2fa/setup", authenticate, async (req, res, next) => {
+  try {
+    const secret = authenticator.generateSecret();
+    await prisma.user.update({ where: { id: req.user.id }, data: { totpSecret: secret, totpEnabled: false } });
+    const otpauth = authenticator.keyuri(req.user.email, TOTP_ISSUER, secret);
+    const qr = await QRCode.toDataURL(otpauth, { margin: 1, width: 240 });
+    res.json({ secret, otpauth, qr });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ยืนยันรหัสเพื่อเปิดใช้งาน 2FA
+router.post("/2fa/enable", authenticate, async (req, res, next) => {
+  try {
+    const u = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!u?.totpSecret) return res.status(400).json({ error: "ยังไม่ได้เริ่มตั้งค่า" });
+    if (!authenticator.verify({ token: String(req.body?.code || "").trim(), secret: u.totpSecret }))
+      return res.status(401).json({ error: "รหัสไม่ถูกต้อง ลองใหม่" });
+    await prisma.user.update({ where: { id: u.id }, data: { totpEnabled: true } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ปิด 2FA — ต้องกรอกรหัสปัจจุบันยืนยัน
+router.post("/2fa/disable", authenticate, async (req, res, next) => {
+  try {
+    const u = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!u?.totpEnabled) return res.json({ ok: true });
+    if (!authenticator.verify({ token: String(req.body?.code || "").trim(), secret: u.totpSecret || "" }))
+      return res.status(401).json({ error: "รหัสไม่ถูกต้อง" });
+    await prisma.user.update({ where: { id: u.id }, data: { totpEnabled: false, totpSecret: null } });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

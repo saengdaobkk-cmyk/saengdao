@@ -119,6 +119,9 @@ model User {
   receiptTaxId   String?
   receiptAddress String?
   role      Role     @default(USER)
+  // ยืนยันตัวตน 2 ชั้น (TOTP) — สำหรับเจ้าหน้าที่/แอดมิน
+  totpSecret  String? // 🔒 secret สำหรับสร้างรหัส 6 หลัก (base32)
+  totpEnabled Boolean @default(false)
   // CRM
   tags      String[]       @default([]) // แท็ก/กลุ่มลูกค้า เช่น VIP, ขายส่ง
   points    Int            @default(0)  // ยอดแต้มสะสมคงเหลือ (สรุปจาก PointEntry)

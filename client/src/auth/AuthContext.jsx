@@ -28,6 +28,14 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
+    if (res.data.twoFactorRequired) return { twoFactorRequired: true, pendingToken: res.data.pendingToken };
+    saveSession(res.data);
+    return { user: res.data.user };
+  };
+
+  // ยืนยันรหัส 2FA แล้วเข้าสู่ระบบให้สมบูรณ์
+  const verify2fa = async (pendingToken, code) => {
+    const res = await api.post("/auth/2fa/verify", { pendingToken, code });
     saveSession(res.data);
     return res.data.user;
   };
@@ -47,7 +55,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, updateUser: setUser, isAdmin, isStaff }}
+      value={{ user, loading, login, verify2fa, register, logout, updateUser: setUser, isAdmin, isStaff }}
     >
       {children}
     </AuthContext.Provider>

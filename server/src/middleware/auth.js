@@ -8,6 +8,11 @@ export function signToken(user) {
   });
 }
 
+// token ชั่วคราวระหว่างรอกรอกรหัส 2FA (ใช้ได้เฉพาะ /auth/2fa/verify)
+export function signPendingToken(userId) {
+  return jwt.sign({ id: userId, twofa: true }, process.env.JWT_SECRET, { expiresIn: "5m" });
+}
+
 // ตรวจ token แล้วแนบ req.user — ใช้กับ route ที่ต้องล็อกอิน
 export async function authenticate(req, res, next) {
   try {
@@ -16,11 +21,12 @@ export async function authenticate(req, res, next) {
     if (!token) return res.status(401).json({ error: "กรุณาเข้าสู่ระบบ" });
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.twofa) return res.status(401).json({ error: "ต้องยืนยันตัวตน 2 ชั้นก่อน" }); // token ชั่วคราว ใช้เข้าระบบไม่ได้
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
       select: {
         id: true, email: true, name: true, phone: true, address: true,
-        receiptName: true, receiptTaxId: true, receiptAddress: true, role: true, points: true,
+        receiptName: true, receiptTaxId: true, receiptAddress: true, role: true, points: true, totpEnabled: true,
       },
     });
     if (!user) return res.status(401).json({ error: "ไม่พบบัญชีผู้ใช้" });

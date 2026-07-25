@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function AdminLogin() {
-  const { user, login, logout, isStaff } = useAuth();
+  const { user, login, verify2fa, logout, isStaff } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/admin";
@@ -12,23 +12,40 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState(null); // pendingToken เมื่อรอกรอกรหัส 2FA
+  const [code, setCode] = useState("");
 
   // ล็อกอินเป็นเจ้าหน้าที่อยู่แล้ว → เข้าหลังบ้านเลย
   if (user && isStaff) return <Navigate to={from} replace />;
+
+  const afterLogin = (u) => {
+    if (u.role === "USER") setError("บัญชีนี้เป็นลูกค้า ไม่มีสิทธิ์เข้าหลังบ้าน");
+    else navigate(from, { replace: true });
+  };
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
     setBusy(true);
     try {
-      const u = await login(email, password);
-      if (u.role === "USER") {
-        setError("บัญชีนี้เป็นลูกค้า ไม่มีสิทธิ์เข้าหลังบ้าน");
-      } else {
-        navigate(from, { replace: true });
-      }
+      const r = await login(email, password);
+      if (r.twoFactorRequired) setPending(r.pendingToken);
+      else afterLogin(r.user);
     } catch (err) {
       setError(err.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitCode = async (e) => {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      afterLogin(await verify2fa(pending, code));
+    } catch (err) {
+      setError(err.response?.data?.error || "รหัสไม่ถูกต้อง");
     } finally {
       setBusy(false);
     }
@@ -59,6 +76,24 @@ export default function AdminLogin() {
               <Link to="/" className="text-[13px] text-white/50 hover:text-white/80">← กลับหน้าร้าน</Link>
             </div>
           </div>
+        ) : pending ? (
+          <form onSubmit={submitCode} className="rounded-2xl bg-white/5 p-6">
+            <p className="mb-1 text-[14px] font-medium text-white">ยืนยันตัวตน 2 ชั้น</p>
+            <p className="mb-4 text-[13px] text-white/50">กรอกรหัส 6 หลักจากแอป Authenticator</p>
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              inputMode="numeric" autoFocus placeholder="000000"
+              className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-center text-[22px] tracking-[0.5em] text-white placeholder-white/20 outline-none focus:border-white/30"
+            />
+            {error && <p className="mt-3 text-[13px] text-red-400">{error}</p>}
+            <button type="submit" disabled={busy || code.length < 6}
+              className="mt-5 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50">
+              {busy ? "กำลังตรวจสอบ..." : "ยืนยัน"}
+            </button>
+            <button type="button" onClick={() => { setPending(null); setCode(""); setError(""); }}
+              className="mt-4 block w-full text-center text-[13px] text-white/50 hover:text-white/80">← ย้อนกลับ</button>
+          </form>
         ) : (
           <form onSubmit={submit} className="rounded-2xl bg-white/5 p-6">
             <label className="block">

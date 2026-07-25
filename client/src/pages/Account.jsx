@@ -27,7 +27,7 @@ function orderBadge(o) {
 }
 
 export default function Account() {
-  const { user, loading, updateUser } = useAuth();
+  const { user, loading, updateUser, isStaff } = useAuth();
 
   if (loading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (!user) return <Navigate to="/login" state={{ from: "/account" }} replace />;
@@ -49,6 +49,7 @@ export default function Account() {
         <ProfileSection user={user} updateUser={updateUser} />
         <ReceiptAddressSection user={user} updateUser={updateUser} />
         <PasswordSection />
+        {isStaff && <TwoFactorSection user={user} updateUser={updateUser} />}
         <OrdersSection />
       </div>
     </div>
@@ -233,6 +234,95 @@ function ReceiptAddressSection({ user, updateUser }) {
           <ReadRow label="ที่อยู่ออกใบเสร็จ" value={user.receiptAddress} />
         </dl>
       )}
+    </section>
+  );
+}
+
+function TwoFactorSection({ user, updateUser }) {
+  const [setup, setSetup] = useState(null); // { qr, secret } ระหว่างตั้งค่า
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const enabled = user.twoFactorEnabled;
+
+  const refresh = async () => {
+    const { data } = await api.get("/auth/me");
+    updateUser(data.user);
+  };
+
+  const startSetup = async () => {
+    setMsg(""); setBusy(true);
+    try {
+      const { data } = await api.post("/auth/2fa/setup");
+      setSetup(data);
+      setCode("");
+    } catch (err) {
+      setMsg(err.response?.data?.error || "เริ่มตั้งค่าไม่สำเร็จ");
+    } finally { setBusy(false); }
+  };
+
+  const enable = async (e) => {
+    e.preventDefault(); setMsg(""); setBusy(true);
+    try {
+      await api.post("/auth/2fa/enable", { code });
+      await refresh();
+      setSetup(null); setCode(""); setMsg("เปิดใช้งาน 2FA แล้ว");
+    } catch (err) {
+      setMsg(err.response?.data?.error || "รหัสไม่ถูกต้อง");
+    } finally { setBusy(false); }
+  };
+
+  const disable = async () => {
+    const c = prompt("กรอกรหัส 6 หลักจากแอป Authenticator เพื่อปิด 2FA");
+    if (!c) return;
+    setMsg(""); setBusy(true);
+    try {
+      await api.post("/auth/2fa/disable", { code: c });
+      await refresh();
+      setMsg("ปิด 2FA แล้ว");
+    } catch (err) {
+      setMsg(err.response?.data?.error || "รหัสไม่ถูกต้อง");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <section className="rounded-2xl border border-line p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-[15px] font-semibold text-ink">ยืนยันตัวตน 2 ชั้น (2FA)</h2>
+          <p className="mt-0.5 text-[12px] text-sub">เพิ่มความปลอดภัยตอนเข้าหลังบ้าน ด้วยรหัส 6 หลักจากแอป Authenticator</p>
+        </div>
+        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${enabled ? "bg-emerald-100 text-emerald-700" : "bg-mist text-sub"}`}>
+          {enabled ? "เปิดใช้งาน" : "ปิดอยู่"}
+        </span>
+      </div>
+
+      {enabled ? (
+        <button onClick={disable} disabled={busy} className="mt-4 rounded-full border border-line px-5 py-2 text-[13px] text-ink transition hover:bg-mist disabled:opacity-50">
+          ปิด 2FA
+        </button>
+      ) : setup ? (
+        <form onSubmit={enable} className="mt-4 space-y-3">
+          <p className="text-[13px] text-ink">1. สแกน QR ด้วยแอป Google/Microsoft Authenticator</p>
+          <img src={setup.qr} alt="QR" className="rounded-xl border border-line" width={180} height={180} />
+          <p className="text-[12px] text-sub">หรือกรอกคีย์เอง: <span className="select-all font-mono text-ink">{setup.secret}</span></p>
+          <p className="text-[13px] text-ink">2. กรอกรหัส 6 หลักที่แอปแสดง</p>
+          <input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            inputMode="numeric" placeholder="000000"
+            className="w-40 rounded-xl border border-line bg-white px-4 py-2.5 text-center text-[18px] tracking-[0.4em] text-ink outline-none focus:border-ink/30" />
+          <div className="flex items-center gap-3">
+            <button type="submit" disabled={busy || code.length < 6} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+              {busy ? "กำลังเปิด..." : "เปิดใช้งาน"}
+            </button>
+            <button type="button" onClick={() => { setSetup(null); setMsg(""); }} className="text-[13px] text-sub hover:text-ink">ยกเลิก</button>
+          </div>
+        </form>
+      ) : (
+        <button onClick={startSetup} disabled={busy} className="mt-4 rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+          {busy ? "กำลังเตรียม..." : "ตั้งค่า 2FA"}
+        </button>
+      )}
+      {msg && <p className={`mt-3 text-[13px] ${msg.includes("แล้ว") ? "text-emerald-600" : "text-red-600"}`}>{msg}</p>}
     </section>
   );
 }

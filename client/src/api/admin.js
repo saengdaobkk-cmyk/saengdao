@@ -225,6 +225,8 @@ export function useSaveUser() {
   });
 }
 
+export const resetUser2fa = async (id) => (await api.post(`/admin/users/${id}/reset-2fa`)).data;
+
 export function useDeleteUser() {
   const qc = useQueryClient();
   return useMutation({

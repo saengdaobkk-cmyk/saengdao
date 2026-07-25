@@ -1148,7 +1148,7 @@ router.get("/users", async (req, res, next) => {
     const users = await prisma.user.findMany({
       where: { role: { in: ["STAFF", "ADMIN"] } }, // เฉพาะเจ้าหน้าที่ (ลูกค้าอยู่เมนู "ลูกค้า")
       orderBy: [{ role: "desc" }, { createdAt: "asc" }],
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, createdAt: true, totpEnabled: true },
     });
     res.json(users.map(userPublic));
   } catch (err) {
@@ -1221,6 +1221,16 @@ router.delete("/users/:id", async (req, res, next) => {
       if (admins <= 1) return res.status(400).json({ error: "ต้องมีแอดมินอย่างน้อย 1 คน" });
     }
     await prisma.user.delete({ where: { id: target.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// รีเซ็ต 2FA ให้ผู้ใช้ (กันล็อกเอง เช่น ทำมือถือหาย) — เฉพาะแอดมิน
+router.post("/users/:id/reset-2fa", requireAdmin, async (req, res, next) => {
+  try {
+    await prisma.user.update({ where: { id: req.params.id }, data: { totpEnabled: false, totpSecret: null } });
     res.json({ ok: true });
   } catch (err) {
     next(err);

@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { messageFor } from "../lib/validation";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, verify2fa } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
@@ -13,20 +13,58 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState(null);
+  const [code, setCode] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
     setBusy(true);
     try {
-      await login(email, password);
-      navigate(from, { replace: true });
+      const r = await login(email, password);
+      if (r.twoFactorRequired) setPending(r.pendingToken);
+      else navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ");
     } finally {
       setBusy(false);
     }
   };
+
+  const submitCode = async (e) => {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await verify2fa(pending, code);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || "รหัสไม่ถูกต้อง");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (pending)
+    return (
+      <AuthShell title="ยืนยันตัวตน 2 ชั้น" subtitle="กรอกรหัส 6 หลักจากแอป Authenticator">
+        <form onSubmit={submitCode} className="space-y-4">
+          <input
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            inputMode="numeric" autoFocus placeholder="000000"
+            className="w-full rounded-xl border border-line bg-mist px-4 py-3 text-center text-[22px] tracking-[0.5em] text-ink outline-none focus:border-ink/30 focus:bg-white"
+          />
+          {error && <p className="text-[13px] text-red-600">{error}</p>}
+          <button type="submit" disabled={busy || code.length < 6}
+            className="w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+            {busy ? "กำลังตรวจสอบ..." : "ยืนยัน"}
+          </button>
+          <button type="button" onClick={() => { setPending(null); setCode(""); setError(""); }}
+            className="block w-full text-center text-[13px] text-sub hover:text-ink">← ย้อนกลับ</button>
+        </form>
+      </AuthShell>
+    );
 
   return (
     <AuthShell title="เข้าสู่ระบบ" subtitle="ยินดีต้อนรับกลับสู่ SAENGDAO">

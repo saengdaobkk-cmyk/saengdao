@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../auth/AuthContext";
-import { useAdminUsers, useSaveUser, useDeleteUser } from "../../api/admin";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAdminUsers, useSaveUser, useDeleteUser, resetUser2fa } from "../../api/admin";
 
 const ROLE_META = {
   ADMIN: { label: "แอดมินเต็ม", cls: "bg-ink text-white", desc: "เข้าถึงทุกเมนู + จัดการผู้ใช้" },
@@ -11,9 +12,20 @@ const EMPTY = { email: "", name: "", password: "", role: "STAFF" };
 
 export default function AdminUsers() {
   const { user: me } = useAuth();
+  const qc = useQueryClient();
   const { data: users, isLoading } = useAdminUsers();
   const save = useSaveUser();
   const del = useDeleteUser();
+
+  const reset2fa = async (u) => {
+    if (!confirm(`รีเซ็ต 2FA ของ "${u.email}"? (ผู้ใช้จะต้องตั้งค่าใหม่)`)) return;
+    try {
+      await resetUser2fa(u.id);
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    } catch (e) {
+      alert(e.response?.data?.error || "รีเซ็ตไม่สำเร็จ");
+    }
+  };
 
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState(null); // user object หรือ null
@@ -65,6 +77,9 @@ export default function AdminUsers() {
                   <td className="whitespace-nowrap px-5 py-3">
                     <div className="flex justify-end gap-4">
                       <button onClick={() => startEdit(u)} className="text-[13px] text-accent">แก้ไข</button>
+                      {u.totpEnabled && (
+                        <button onClick={() => reset2fa(u)} className="text-[13px] text-sub hover:text-ink">รีเซ็ต 2FA</button>
+                      )}
                       <button
                         disabled={self}
                         onClick={() => confirm(`ลบผู้ใช้ "${u.email}"?`) && del.mutate(u.id, { onError: (e) => alert(e.response?.data?.error || "ลบไม่สำเร็จ") })}
