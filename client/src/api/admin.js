@@ -99,9 +99,9 @@ export const useAdminOrders = () =>
   useQuery({
     queryKey: ["admin", "orders"],
     queryFn: async () => (await api.get("/admin/orders")).data,
-    refetchInterval: 15000, // ดึงออเดอร์ใหม่/สถานะที่เปลี่ยนอัตโนมัติทุก 15 วิ
+    refetchInterval: 30000, // ดึงออเดอร์ใหม่/สถานะที่เปลี่ยนอัตโนมัติทุก 30 วิ
     refetchOnWindowFocus: true, // กลับมาที่แท็บ → รีเฟรชทันที
-    staleTime: 5000,
+    staleTime: 10000,
   });
 
 export function useUpdateOrder() {
