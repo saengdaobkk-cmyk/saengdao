@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { messageFor } from "../lib/validation";
 
 export default function Login() {
-  const { login, verify2fa } = useAuth();
+  const { login, verify2fa, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
@@ -44,6 +44,9 @@ export default function Login() {
       setBusy(false);
     }
   };
+
+  // ล็อกอินอยู่แล้ว → ไม่ต้องโชว์ฟอร์ม
+  if (user) return <Navigate to={from} replace />;
 
   if (pending)
     return (

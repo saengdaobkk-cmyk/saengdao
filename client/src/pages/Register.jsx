@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { AuthShell, Field } from "./Login";
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
@@ -32,6 +32,8 @@ export default function Register() {
       setBusy(false);
     }
   };
+
+  if (user) return <Navigate to={from} replace />;
 
   return (
     <AuthShell title="สมัครสมาชิก" subtitle="สร้างบัญชีเพื่อเริ่มช้อปกับ SAENGDAO">
