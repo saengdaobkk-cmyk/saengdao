@@ -3,7 +3,13 @@ import { api } from "../lib/api";
 
 /* ---------- Stats ---------- */
 export const useAdminStats = () =>
-  useQuery({ queryKey: ["admin", "stats"], queryFn: async () => (await api.get("/admin/stats")).data });
+  useQuery({
+    queryKey: ["admin", "stats"],
+    queryFn: async () => (await api.get("/admin/stats")).data,
+    refetchInterval: 30000, // อัปเดตแบดจ์อัตโนมัติ
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
+  });
 
 /* ---------- Books ---------- */
 export const useAdminBooks = () =>
@@ -90,7 +96,13 @@ export function useDeleteTerm(type) {
 
 /* ---------- Orders ---------- */
 export const useAdminOrders = () =>
-  useQuery({ queryKey: ["admin", "orders"], queryFn: async () => (await api.get("/admin/orders")).data });
+  useQuery({
+    queryKey: ["admin", "orders"],
+    queryFn: async () => (await api.get("/admin/orders")).data,
+    refetchInterval: 15000, // ดึงออเดอร์ใหม่/สถานะที่เปลี่ยนอัตโนมัติทุก 15 วิ
+    refetchOnWindowFocus: true, // กลับมาที่แท็บ → รีเฟรชทันที
+    staleTime: 5000,
+  });
 
 export function useUpdateOrder() {
   const qc = useQueryClient();
