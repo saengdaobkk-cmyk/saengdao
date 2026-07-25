@@ -81,19 +81,6 @@ function zortNow() {
   return new Date(Date.now() + 7 * 3600 * 1000).toISOString().slice(0, 16).replace("T", " ");
 }
 
-// ZORT AddOrder ไม่คืนเลขที่ออเดอร์ (SO-xxxx) มา — ต้องดึงจาก GetOrders ตาม detail.id
-async function lookupZortOrderNumber(cfg, id) {
-  try {
-    const resp = await fetchT(`${cfg.baseUrl}/Order/GetOrders?offset=0&limit=20`, { headers: zortHeaders(cfg) });
-    if (!resp.ok) return null;
-    const data = await resp.json().catch(() => null);
-    const found = (data?.list ?? []).find((o) => String(o.id) === String(id));
-    return found?.number ?? null;
-  } catch {
-    return null;
-  }
-}
-
 // ส่งออเดอร์ไป ZORT (Order/AddOrder) — โครงเดียวกับโปรแกรม All Chat, best-effort ไม่ throw
 export async function pushOrderToZort(orderId) {
   const cfg = await getZortConfig();
@@ -112,9 +99,11 @@ export async function pushOrderToZort(orderId) {
   const shipping = Math.max(0, Number(order.shippingFee) || 0);
   const discount = Math.max(0, Number(order.discount) || 0);
   const paymentMethod = PAYMENT_LABEL[order.paymentMethod] || "อื่นๆ";
+  const websiteNo = order.id.slice(0, 8).toUpperCase(); // เลขออเดอร์ของเว็บ (ที่โชว์เป็น #XXXXXXXX)
 
   // AddOrder: ฟิลด์ระดับ root (ไม่มี wrapper) — ตามแนวทาง All Chat
   const body = {
+    number: websiteNo, // ใช้เลขออเดอร์ของเว็บไซต์เป็นเลขที่ออเดอร์ใน ZORT
     // ผู้ซื้อ (ถ้าออกใบกำกับภาษี ใช้ชื่อ/ที่อยู่/เลขภาษีของใบกำกับ)
     customername: order.needReceipt ? order.receiptName || order.shipName : order.shipName,
     customerphone: order.shipPhone,
@@ -162,11 +151,9 @@ export async function pushOrderToZort(orderId) {
     if (!resp.ok || code !== 200)
       return { ok: false, error: data?.resDesc || `ZORT ตอบกลับ ${resp.status}` };
 
-    const id = String(data?.detail?.id ?? "");
-    // ดึงเลขที่ออเดอร์ (SO-xxxx) กลับมาเก็บ (ถ้าไม่ได้ ใช้ id แทน)
-    const number = (await lookupZortOrderNumber(cfg, id)) || id;
-    await prisma.order.update({ where: { id: orderId }, data: { zortOrderId: number } });
-    return { ok: true, zortOrderId: number };
+    // ใช้เลขออเดอร์ของเว็บที่ส่งไป (ZORT gen เลขเองไม่ได้เพราะเราระบุ number แล้ว)
+    await prisma.order.update({ where: { id: orderId }, data: { zortOrderId: websiteNo } });
+    return { ok: true, zortOrderId: websiteNo };
   } catch (err) {
     return { ok: false, error: "ส่งไป ZORT ไม่สำเร็จ: " + err.message };
   }
