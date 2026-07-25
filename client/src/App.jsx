@@ -258,7 +258,7 @@ function CartButton({ overHero }) {
 }
 
 function AccountMenu({ overHero }) {
-  const { user, loading, logout, isStaff } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -307,11 +307,6 @@ function AccountMenu({ overHero }) {
             <Link to="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
               บัญชีของฉัน
             </Link>
-            {isStaff && (
-              <Link to="/admin" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
-                จัดการร้าน
-              </Link>
-            )}
             <button
               onClick={() => { setOpen(false); logout(); }}
               className="block w-full px-4 py-2 text-left text-ink hover:bg-mist"
