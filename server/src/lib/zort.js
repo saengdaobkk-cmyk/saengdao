@@ -159,6 +159,73 @@ export async function pushOrderToZort(orderId) {
   }
 }
 
+/* ---------- Sync สถานะ + เลขพัสดุ จาก ZORT → เว็บ (ZORT = ตัวตั้ง) ---------- */
+
+// map สถานะ ZORT → สถานะออเดอร์ในเว็บ
+const ZORT_TO_WEB_STATUS = {
+  pending: "PAID", approved: "PAID", packing: "PAID", packed: "PAID",
+  shipping: "SHIPPED", shipped: "SHIPPED",
+  delivered: "COMPLETED", completed: "COMPLETED", success: "COMPLETED",
+  // void / cancelled → ไม่แตะอัตโนมัติ (กันผลข้างเคียง คืน/ริบแต้ม + สต็อก)
+};
+// ลำดับสถานะ — อัปเดตเฉพาะเดินหน้า (ไม่ดึงถอยหลัง)
+const STATUS_RANK = { PENDING: 0, PAID: 1, SHIPPED: 2, COMPLETED: 3 };
+
+let lastOrdersPull = 0;
+
+// ดึงสถานะ/เลขพัสดุจาก ZORT มาอัปเดตออเดอร์ในเว็บ — throttled, เรียกจาก endpoint ที่มีคนเข้า
+export async function syncOrdersFromZort({ throttleMs = 2 * 60 * 1000, force = false } = {}) {
+  const now = Date.now();
+  if (!force && now - lastOrdersPull < throttleMs) return { skipped: true };
+  lastOrdersPull = now;
+
+  const cfg = await getZortConfig();
+  if (!cfg.enabled || !cfg.storename || !cfg.apikey || !cfg.apisecret) return { ok: false, reason: "ZORT ปิด/ตั้งค่าไม่ครบ" };
+
+  // ออเดอร์ในเว็บที่ส่งไป ZORT แล้ว และยังไม่จบ
+  const webOrders = await prisma.order.findMany({
+    where: { zortOrderId: { not: null }, status: { notIn: ["COMPLETED", "CANCELLED"] } },
+    select: { id: true, zortOrderId: true, status: true, trackingNumber: true, shippingMethod: true },
+  });
+  if (webOrders.length === 0) return { ok: true, updated: 0 };
+
+  try {
+    const resp = await fetchT(`${cfg.baseUrl}/Order/GetOrders?offset=0&limit=500`, { headers: zortHeaders(cfg) });
+    if (!resp.ok) return { ok: false, error: `ZORT ตอบกลับ ${resp.status}` };
+    const data = await resp.json().catch(() => null);
+    const list = Array.isArray(data?.list) ? data.list : [];
+    const byNumber = new Map();
+    for (const o of list) if (o?.number) byNumber.set(String(o.number).toUpperCase(), o);
+
+    let updated = 0;
+    for (const w of webOrders) {
+      const z = byNumber.get(String(w.zortOrderId).toUpperCase());
+      if (!z) continue;
+      const patch = {};
+
+      // สถานะ — อัปเดตเฉพาะเดินหน้า
+      const mapped = ZORT_TO_WEB_STATUS[String(z.status || "").toLowerCase()];
+      if (mapped && mapped !== w.status && (STATUS_RANK[mapped] ?? 0) > (STATUS_RANK[w.status] ?? 0)) {
+        patch.status = mapped;
+      }
+      // เลขพัสดุ (จาก trackingno หรือ trackingList)
+      const track = z.trackingno || z.trackingList?.find((t) => t?.trackingno)?.trackingno;
+      if (track && track !== w.trackingNumber) patch.trackingNumber = String(track).trim();
+      // ช่องทางขนส่ง (ถ้าเว็บยังว่าง)
+      const channel = z.shippingchannel || z.trackingList?.find((t) => t?.shippingchannel)?.shippingchannel;
+      if (channel && !w.shippingMethod) patch.shippingMethod = channel;
+
+      if (Object.keys(patch).length) {
+        await prisma.order.update({ where: { id: w.id }, data: patch });
+        updated++;
+      }
+    }
+    return { ok: true, updated, zortOrders: list.length };
+  } catch (err) {
+    return { ok: false, error: "ดึงสถานะจาก ZORT ไม่สำเร็จ: " + err.message };
+  }
+}
+
 /* ---------- Sync สต็อกจาก ZORT (ZORT = ตัวตั้ง, จับคู่ตาม SKU=ISBN) ---------- */
 
 // ดึงสินค้าทั้งหมดจาก ZORT (แบ่งหน้า)

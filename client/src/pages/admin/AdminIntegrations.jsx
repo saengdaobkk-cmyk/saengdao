@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useIntegrations, useSaveIntegrations, testZort, testThpost, syncZortStock } from "../../api/admin";
+import { useIntegrations, useSaveIntegrations, testZort, testThpost, syncZortStock, syncZortOrders } from "../../api/admin";
 
 function fmtDateTime(d) {
   if (!d) return "";
@@ -37,6 +37,24 @@ function ZortCard({ zort }) {
   const [testing, setTesting] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
+  const [syncingOrders, setSyncingOrders] = useState(false);
+  const [syncOrdersMsg, setSyncOrdersMsg] = useState(null);
+
+  const runSyncOrders = async () => {
+    setSyncingOrders(true);
+    setSyncOrdersMsg(null);
+    try {
+      const r = await syncZortOrders();
+      setSyncOrdersMsg(r.ok
+        ? { ok: true, text: `อัปเดตสถานะ/เลขพัสดุ ${r.updated} ออเดอร์ (จาก ZORT ${r.zortOrders ?? 0} รายการ)` }
+        : { ok: false, text: r.error || r.reason || "ดึงสถานะไม่สำเร็จ" });
+      qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+    } catch (err) {
+      setSyncOrdersMsg({ ok: false, text: err.response?.data?.error || "ดึงสถานะไม่สำเร็จ" });
+    } finally {
+      setSyncingOrders(false);
+    }
+  };
 
   const runSync = async () => {
     setSyncing(true);
@@ -159,6 +177,28 @@ function ZortCard({ zort }) {
           </button>
         </div>
         {syncMsg && <p className={`mt-2 text-[12px] ${syncMsg.ok ? "text-emerald-600" : "text-red-600"}`}>{syncMsg.text}</p>}
+      </div>
+
+      {/* ดึงสถานะ/เลขพัสดุจาก ZORT */}
+      <div className="mt-5 border-t border-line pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[13px] font-medium text-ink">สถานะ & เลขพัสดุจาก ZORT</p>
+            <p className="text-[12px] text-sub">
+              ZORT เป็นตัวตั้งของสถานะ · ดึงสถานะ + เลขพัสดุมาอัปเดตออเดอร์ในเว็บอัตโนมัติ (จับคู่ตามเลขออเดอร์)
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={runSyncOrders}
+            disabled={syncingOrders || !zort.connected}
+            title={!zort.connected ? "เชื่อมต่อ ZORT ให้สำเร็จก่อน" : ""}
+            className="shrink-0 rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+          >
+            {syncingOrders ? "กำลังดึง..." : "ดึงสถานะตอนนี้"}
+          </button>
+        </div>
+        {syncOrdersMsg && <p className={`mt-2 text-[12px] ${syncOrdersMsg.ok ? "text-emerald-600" : "text-red-600"}`}>{syncOrdersMsg.text}</p>}
       </div>
 
       <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">

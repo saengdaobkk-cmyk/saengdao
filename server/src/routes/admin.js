@@ -5,7 +5,7 @@ import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js"
 import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
-import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort } from "../lib/zort.js";
+import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort, syncOrdersFromZort } from "../lib/zort.js";
 import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
 import { ensureNav } from "../lib/navDefaults.js";
@@ -603,6 +603,7 @@ router.delete("/discount-rules/:id", async (req, res, next) => {
 router.get("/orders", async (req, res, next) => {
   try {
     await expireStaleOrders().catch(() => {}); // ยกเลิกออเดอร์ค้างชำระอัตโนมัติ (throttled)
+    syncOrdersFromZort().catch(() => {}); // ดึงสถานะ/เลขพัสดุจาก ZORT (throttled, ไม่บล็อก — เห็นผลรอบถัดไป)
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -1087,6 +1088,14 @@ router.post("/integrations/zort/sync-stock", async (req, res, next) => {
     res.json(await syncStockFromZort());
   } catch (err) {
     res.json({ ok: false, error: "ดึงสต็อกไม่สำเร็จ: " + err.message });
+  }
+});
+
+router.post("/integrations/zort/sync-orders", async (req, res, next) => {
+  try {
+    res.json(await syncOrdersFromZort({ force: true }));
+  } catch (err) {
+    res.json({ ok: false, error: "ดึงสถานะจาก ZORT ไม่สำเร็จ: " + err.message });
   }
 });
 
