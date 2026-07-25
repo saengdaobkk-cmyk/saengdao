@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useAdminOrders, useUpdateOrder, useEditOrder, useAdminBooks } from "../../api/admin";
 import { useAdminShipping } from "../../api/shipping";
@@ -154,12 +154,15 @@ const unitPrice = (o) => Math.ceil(Number(o.discountPrice != null ? o.discountPr
 function OrderEditor({ order, onClose }) {
   const edit = useEditOrder();
   const { data: shipping = [] } = useAdminShipping();
+  const { data: books = [] } = useAdminBooks();
   const [rows, setRows] = useState(() =>
     order.items.map((it) => ({
       key: keyOf(it.bookId, it.variantId),
       bookId: it.bookId, variantId: it.variantId || null,
       title: it.book.title, variantName: it.variantName || null,
-      price: Number(it.price), quantity: it.quantity, discountPercent: it.discountPercent || 0,
+      price: Number(it.price), // ราคาสุทธิที่บันทึก
+      listPrice: Number(it.listPrice) || 0, // 0 = ยังไม่มี (ออเดอร์เก่า)
+      quantity: it.quantity, discountPercent: it.discountPercent || 0,
     }))
   );
   const matchedShip = shipping.find((m) => m.name === order.shippingMethod);
@@ -168,10 +171,29 @@ function OrderEditor({ order, onClose }) {
   const [discVal, setDiscVal] = useState(Number(order.discount) || "");
   const [error, setError] = useState("");
 
+  // เติมราคาเต็ม (listPrice) ให้ออเดอร์เก่าจากราคาปัจจุบันของสินค้า — ครั้งเดียว
+  const backfilled = useRef(false);
+  useEffect(() => {
+    if (backfilled.current || books.length === 0) return;
+    backfilled.current = true;
+    const bookMap = new Map(books.map((b) => [b.id, b]));
+    setRows((rs) => rs.map((r) => {
+      if (r.listPrice > 0) return r;
+      const b = bookMap.get(r.bookId);
+      if (!b) return r;
+      const list = r.variantId ? Number(b.variants?.find((v) => v.id === r.variantId)?.price || 0) : Number(b.price);
+      if (!list || list <= r.price) return r; // ไม่มีราคาเต็มที่สูงกว่า → คงเดิม
+      const dp = Math.round(((list - r.price) / list) * 100);
+      return { ...r, listPrice: list, discountPercent: r.discountPercent || dp };
+    }));
+  }, [books]);
+
   const setQty = (key, q) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, quantity: Math.max(1, q) } : r)));
   const setDisc = (key, d) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, discountPercent: Math.min(100, Math.max(0, d || 0)) } : r)));
   const remove = (key) => setRows((rs) => rs.filter((r) => r.key !== key));
-  const lineNet = (r) => Math.round(r.price * r.quantity * (1 - (r.discountPercent || 0) / 100));
+  const listOf = (r) => (r.listPrice > 0 ? r.listPrice : r.price); // ราคาต่อหน่วย (เต็ม)
+  const netUnit = (r) => ((r.discountPercent || 0) > 0 ? Math.round(listOf(r) * (1 - r.discountPercent / 100)) : listOf(r));
+  const lineNet = (r) => netUnit(r) * r.quantity;
   const addLine = (line) =>
     setRows((rs) => {
       const ex = rs.find((r) => r.key === line.key);
@@ -209,7 +231,7 @@ function OrderEditor({ order, onClose }) {
           <div key={r.key} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line px-3 py-2">
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] text-ink">{r.title}{r.variantName && <span className="text-sub"> ({r.variantName})</span>}</p>
-              <p className="text-[12px] text-sub">ราคาต่อหน่วย {formatPrice(r.price)}</p>
+              <p className="text-[12px] text-sub">ราคาต่อหน่วย {formatPrice(listOf(r))}</p>
             </div>
             {/* จำนวน */}
             <div className="flex items-center gap-1">
@@ -229,7 +251,7 @@ function OrderEditor({ order, onClose }) {
             {/* จำนวนเงิน */}
             <span className="w-20 text-right text-[13px] font-medium text-ink">
               {formatPrice(lineNet(r))}
-              {r.discountPercent > 0 && <span className="block text-[11px] font-normal text-sub line-through">{formatPrice(r.price * r.quantity)}</span>}
+              {r.discountPercent > 0 && <span className="block text-[11px] font-normal text-sub line-through">{formatPrice(listOf(r) * r.quantity)}</span>}
             </span>
             <button onClick={() => remove(r.key)} className="text-sub hover:text-red-600" aria-label="ลบ">✕</button>
           </div>
@@ -291,8 +313,15 @@ function AddProduct({ onAdd }) {
     return books.filter((b) => [b.title, b.isbn, b.author].some((x) => x?.toLowerCase().includes(s))).slice(0, 20);
   }, [books, q]);
 
-  const addBook = (b) => onAdd({ key: keyOf(b.id, null), bookId: b.id, variantId: null, title: b.title, variantName: null, price: unitPrice(b), quantity: 1 });
-  const addVariant = (b, v) => onAdd({ key: keyOf(b.id, v.id), bookId: b.id, variantId: v.id, title: b.title, variantName: v.name, price: unitPrice(v), quantity: 1 });
+  const mkLine = (b, v) => {
+    const src = v || b;
+    const list = Math.ceil(Number(src.price));
+    const net = unitPrice(src);
+    const dp = list > net ? Math.round(((list - net) / list) * 100) : 0;
+    return { key: keyOf(b.id, v?.id || null), bookId: b.id, variantId: v?.id || null, title: b.title, variantName: v?.name || null, price: net, listPrice: list, discountPercent: dp, quantity: 1 };
+  };
+  const addBook = (b) => onAdd(mkLine(b, null));
+  const addVariant = (b, v) => onAdd(mkLine(b, v));
 
   return (
     <div className="rounded-xl border border-dashed border-line p-3">

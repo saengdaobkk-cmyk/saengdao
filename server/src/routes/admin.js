@@ -613,7 +613,7 @@ router.get("/orders", async (req, res, next) => {
             receiptName: true, receiptTaxId: true, receiptAddress: true,
           },
         },
-        items: { include: { book: { select: { title: true, isbn: true, sku: true } } } },
+        items: { include: { book: { select: { title: true, isbn: true, sku: true, price: true } } } },
       },
     });
     // แนบลิงก์ tracking ให้แต่ละออเดอร์ (ไปรษณีย์ไทย = เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
@@ -703,7 +703,8 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
       // เริ่มจากรายการเดิม
       let newItems = order.items.map((it) => ({
         bookId: it.bookId, variantId: it.variantId, variantName: it.variantName,
-        quantity: it.quantity, price: Number(it.price), discountPercent: it.discountPercent || 0,
+        quantity: it.quantity, price: Number(it.price),
+        listPrice: Number(it.listPrice) || Number(it.price), discountPercent: it.discountPercent || 0,
       }));
 
       if (Array.isArray(items)) {
@@ -721,18 +722,32 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
           if (!book) throw httpError(400, "มีสินค้าที่ไม่พบในระบบ");
           const variantId = it.variantId || null;
           const old = oldMap.get(`${it.bookId}|${variantId || ""}`);
-          let price, variantName = null;
+          let variantName = null, list, baseNet;
           if (variantId) {
             const v = book.variants.find((x) => x.id === variantId);
             if (!v) throw httpError(400, `ตัวเลือกของ "${book.title}" ไม่มีแล้ว`);
             variantName = v.name;
-            price = old ? Number(old.price) : Math.ceil(v.discountPrice != null ? Number(v.discountPrice) : Number(v.price));
+            list = Math.ceil(Number(v.price));
+            baseNet = Math.ceil(v.discountPrice != null ? Number(v.discountPrice) : Number(v.price));
           } else {
             if (book.variants.length > 0) throw httpError(400, `"${book.title}" ต้องเลือกตัวเลือกก่อน`);
-            price = old ? Number(old.price) : Math.ceil(effectivePrice(book));
+            list = Math.ceil(Number(book.price));
+            baseNet = Math.ceil(effectivePrice(book));
           }
+          // ราคาเต็ม: ของเดิมใช้ที่บันทึกไว้ (ถ้ามี), ของใหม่ใช้ราคาตั้งปัจจุบัน
+          const listPrice = old && Number(old.listPrice) > 0 ? Number(old.listPrice) : list;
           const dp = Math.min(100, Math.max(0, Math.round(Number(it.discountPercent) || 0)));
-          built.push({ bookId: it.bookId, variantId, variantName, quantity: qty, price, discountPercent: dp });
+          // ราคาสุทธิ + % สุดท้าย
+          let price, finalDp = dp;
+          if (dp > 0) {
+            price = Math.round(listPrice * (1 - dp / 100)); // มีส่วนลด % → คิดจากราคาเต็ม
+          } else if (old) {
+            price = listPrice; // ของเดิม เคลียร์ส่วนลดเป็น 0 → ราคาเต็ม
+          } else {
+            price = baseNet; // ของใหม่ ไม่ได้ตั้ง % → ใช้ราคาลดปกติของสินค้า
+            finalDp = listPrice > baseNet ? Math.round(((listPrice - baseNet) / listPrice) * 100) : 0;
+          }
+          built.push({ bookId: it.bookId, variantId, variantName, quantity: qty, price, listPrice, discountPercent: finalDp });
         }
 
         // ปรับสต็อกตามส่วนต่าง (ของใหม่ − ของเดิม)
@@ -763,10 +778,8 @@ router.patch("/orders/:id/edit", async (req, res, next) => {
         newItems = built;
       }
 
-      // ยอดรวมสินค้า = ผลรวมมูลค่าสุทธิรายชิ้น (หักส่วนลด % รายชิ้นแล้ว)
-      const subtotal = Math.round(
-        newItems.reduce((s, it) => s + Number(it.price) * it.quantity * (1 - (it.discountPercent || 0) / 100), 0)
-      );
+      // ยอดรวมสินค้า = ผลรวมมูลค่าสุทธิรายชิ้น (price คือราคาสุทธิต่อหน่วยแล้ว)
+      const subtotal = Math.round(newItems.reduce((s, it) => s + Number(it.price) * it.quantity, 0));
 
       // ค่าจัดส่ง
       let shippingFee = Number(order.shippingFee);

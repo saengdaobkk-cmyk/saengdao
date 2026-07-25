@@ -28,6 +28,9 @@ async function attachTrackingLink(order) {
 
 const router = Router();
 
+// ส่วนลด % เทียบราคาเต็ม (สำหรับเก็บลงออเดอร์ไว้แสดง)
+const dpOf = (list, net) => (list > net ? Math.round(((list - net) / list) * 100) : 0);
+
 const PAYMENT_METHODS = ["PROMPTPAY", "CARD", "TRANSFER"];
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -106,6 +109,7 @@ function publicOrder(o) {
       id: it.id,
       quantity: it.quantity,
       price: it.price,
+      listPrice: it.listPrice || it.price,
       discountPercent: it.discountPercent || 0,
       title: it.book?.title,
       author: it.book?.author,
@@ -247,8 +251,9 @@ router.post("/", async (req, res, next) => {
             throw httpError(409, `"${book.title} (${variant.name})" มีไม่พอ (เหลือ ${variant.stock})`);
 
           const price = Math.ceil(variant.discountPrice != null ? Number(variant.discountPrice) : Number(variant.price));
+          const listPrice = Math.ceil(Number(variant.price));
           subtotal += price * qty;
-          orderItems.push({ bookId: book.id, variantId: variant.id, variantName: variant.name, quantity: qty, price });
+          orderItems.push({ bookId: book.id, variantId: variant.id, variantName: variant.name, quantity: qty, price, listPrice, discountPercent: dpOf(listPrice, price) });
 
           await tx.variant.update({ where: { id: variant.id }, data: { stock: { decrement: qty } } });
         } else {
@@ -258,8 +263,9 @@ router.post("/", async (req, res, next) => {
           if (book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
 
           const price = Math.ceil(effectivePrice(book)); // Hot Deal (ถ้า active) > ลด > ปกติ
+          const listPrice = Math.ceil(Number(book.price));
           subtotal += price * qty;
-          orderItems.push({ bookId: book.id, quantity: qty, price });
+          orderItems.push({ bookId: book.id, quantity: qty, price, listPrice, discountPercent: dpOf(listPrice, price) });
 
           await tx.book.update({ where: { id: book.id }, data: { stock: { decrement: qty } } });
         }
@@ -379,7 +385,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { items: { include: { book: { select: { title: true, author: true } } } } },
+      include: { items: { include: { book: { select: { title: true, author: true, price: true } } } } },
     });
     if (!order || order.userId !== req.user.id)
       return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });

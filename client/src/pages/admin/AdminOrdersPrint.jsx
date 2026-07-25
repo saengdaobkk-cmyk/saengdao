@@ -199,8 +199,9 @@ function Barcode({ value }) {
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
 function Invoice({ o, shopName, settings }) {
   const code = (it) => it.book.isbn || it.book.sku || "-";
-  const net = (it) => Math.round(Number(it.price) * it.quantity * (1 - (it.discountPercent || 0) / 100));
-  const subtotal = o.items.reduce((s, it) => s + net(it), 0);
+  const listUnit = (it) => (Number(it.listPrice) > 0 ? Number(it.listPrice) : Number(it.book?.price) || Number(it.price));
+  const lineAmt = (it) => Number(it.price) * it.quantity; // price = ราคาสุทธิต่อหน่วย
+  const subtotal = o.items.reduce((s, it) => s + lineAmt(it), 0);
   return (
     <div className="inv">
       {/* หัวกระดาษ */}
@@ -277,9 +278,9 @@ function Invoice({ o, shopName, settings }) {
               <td>{code(it)}</td>
               <td>{it.book.title}{it.variantName && <span className="muted"> ({it.variantName})</span>}</td>
               <td className="c">{it.quantity}</td>
-              <td className="r">{formatPrice(it.price)}</td>
+              <td className="r">{formatPrice(listUnit(it))}</td>
               <td className="c">{it.discountPercent > 0 ? `${it.discountPercent}%` : "-"}</td>
-              <td className="r">{formatPrice(net(it))}</td>
+              <td className="r">{formatPrice(lineAmt(it))}</td>
             </tr>
           ))}
         </tbody>
