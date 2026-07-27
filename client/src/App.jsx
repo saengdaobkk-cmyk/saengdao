@@ -139,52 +139,36 @@ export default function App() {
       <CartDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      <footer className="mt-14 border-t border-line bg-mist">
-        <div className="mx-auto max-w-page px-5 py-14">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            {/* แบรนด์ */}
-            <div className="lg:col-span-1">
-              <p className="font-semibold tracking-[0.22em]" style={{ fontSize: `${Number(s.logoSizeFooter) || 15}px` }}>SAENGDAO</p>
-              <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-sub">
-                {t("common.brand_tagline", "ร้านหนังสือแสงดาว คัดหนังสือดีมาเพื่อคุณ ส่งถึงบ้านทั่วประเทศ")}
-              </p>
-              <div className="mt-4 flex gap-3">
-                {s.socialFacebook && <Social label="Facebook" href={s.socialFacebook}><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
-                {s.socialInstagram && <Social label="Instagram" href={s.socialInstagram}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
-                {s.socialLine && <Social label="LINE" href={s.socialLine}><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
-              </div>
-            </div>
+      <footer className="mt-16 bg-ink text-white">
+        <div className="mx-auto max-w-page px-5">
+          {/* บน: โลโก้ · เมนู · โซเชียล */}
+          <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
+            <Link to="/" className="text-[26px] font-bold tracking-[0.12em] sm:text-[30px]">
+              <span>SAENG</span>
+              <span style={{ WebkitTextStroke: "1px #fff", color: "transparent" }}>DAO</span>
+            </Link>
 
-            {/* หมวดหมู่ */}
-            <FooterCol title="หมวดหมู่" links={[
-              { to: "/?category=fiction", label: "นิยาย" },
-              { to: "/?category=business", label: "ธุรกิจ" },
-              { to: "/?category=children", label: "หนังสือเด็ก" },
-              { to: "/?category=self-development", label: "พัฒนาตัวเอง" },
-            ]} />
+            <nav className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[14px] text-white/70">
+              <Link to="/books" className="transition hover:text-white">หนังสือ</Link>
+              <Link to="/track" className="transition hover:text-white">ติดตามคำสั่งซื้อ</Link>
+              <Link to="/about" className="transition hover:text-white">เกี่ยวกับเรา</Link>
+              <Link to="/contact" className="transition hover:text-white">ติดต่อ</Link>
+            </nav>
 
-            {/* บริการ */}
-            <FooterCol title="ร้านค้า" links={[
-              { to: "/track", label: "ติดตามคำสั่งซื้อ" },
-              { to: "/about", label: "เกี่ยวกับเรา" },
-              { to: "/contact", label: "ติดต่อเรา" },
-              { to: "/account", label: "บัญชีของฉัน" },
-              { to: "/cart", label: "ตะกร้าสินค้า" },
-            ]} />
-
-            {/* ช่องทางชำระเงิน */}
-            <div>
-              <p className="mb-3 text-[13px] font-semibold text-ink">ชำระเงินปลอดภัย</p>
-              <div className="flex flex-wrap gap-2">
-                {["พร้อมเพย์", "โอนเงิน", "บัตรเครดิต"].map((p) => (
-                  <span key={p} className="rounded-lg border border-line bg-white px-2.5 py-1 text-[11px] text-sub">{p}</span>
-                ))}
-              </div>
+            <div className="flex gap-3">
+              {s.socialFacebook && <Social label="Facebook" href={s.socialFacebook}><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
+              {s.socialInstagram && <Social label="Instagram" href={s.socialInstagram}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
+              {s.socialLine && <Social label="LINE" href={s.socialLine}><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
             </div>
           </div>
 
-          <div className="mt-12 border-t border-line pt-6 text-[12px] text-sub">
-            {t("footer.copyright", "© 2026 SAENGDAO — ร้านหนังสือออนไลน์")}
+          {/* ล่าง: ลิขสิทธิ์ · ลิงก์ */}
+          <div className="flex flex-col items-center gap-2.5 border-t border-white/10 py-5 text-[12px] text-white/45 sm:flex-row sm:justify-between">
+            <p>{t("footer.copyright", "© 2026 SAENGDAO สงวนลิขสิทธิ์")}</p>
+            <div className="flex gap-6">
+              <Link to="/about" className="transition hover:text-white/80">เงื่อนไขการใช้งาน</Link>
+              <Link to="/contact" className="transition hover:text-white/80">นโยบายความเป็นส่วนตัว</Link>
+            </div>
           </div>
         </div>
       </footer>
@@ -192,25 +176,10 @@ export default function App() {
   );
 }
 
-function FooterCol({ title, links }) {
-  return (
-    <div>
-      <p className="mb-3 text-[13px] font-semibold text-ink">{title}</p>
-      <ul className="space-y-2">
-        {links.map((l) => (
-          <li key={l.to}>
-            <Link to={l.to} className="text-[13px] text-sub transition hover:text-ink">{l.label}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function Social({ label, href, children }) {
   return (
     <a href={href} target="_blank" rel="noreferrer" aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-sub transition hover:border-ink/30 hover:text-ink">
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/40 hover:text-white">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         {children}
       </svg>
