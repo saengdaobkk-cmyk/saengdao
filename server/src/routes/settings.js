@@ -32,6 +32,8 @@ const STRING_KEYS = [
   "loyaltyBahtPerPoint", // ยอดซื้อ (บาท) ต่อ 1 แต้ม เช่น 100 = ทุก 100 บาทได้ 1 แต้ม
   "loyaltyPointValue", // มูลค่า 1 แต้ม (บาท) เวลานำมาแลกส่วนลด เช่น 1 = 1 แต้ม = 1 บาท
   "orderExpiryDays", // ออเดอร์ที่ยังไม่ชำระเกินกี่วัน = ยกเลิกอัตโนมัติ (0 = ปิด)
+  "footerLogoText", // ข้อความโลโก้ที่ footer
+  "footerNav", // เมนู footer (JSON array ของ { label, url })
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -54,6 +56,13 @@ const DEFAULTS = {
   loyaltyBahtPerPoint: "100",
   loyaltyPointValue: "1",
   orderExpiryDays: "7",
+  footerLogoText: "SAENGDAO",
+  footerNav: JSON.stringify([
+    { label: "หนังสือ", url: "/books" },
+    { label: "ติดตามคำสั่งซื้อ", url: "/track" },
+    { label: "เกี่ยวกับเรา", url: "/about" },
+    { label: "ติดต่อ", url: "/contact" },
+  ]),
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด

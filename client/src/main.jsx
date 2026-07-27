@@ -20,6 +20,7 @@ import OrderConfirm from "./pages/OrderConfirm.jsx";
 import OrderTrack from "./pages/OrderTrack.jsx";
 import Account from "./pages/Account.jsx";
 import About from "./pages/About.jsx";
+import LegalPage from "./pages/LegalPage.jsx";
 import Contact from "./pages/Contact.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
@@ -81,6 +82,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="account" element={<Account />} />
               <Route path="about" element={<About />} />
               <Route path="contact" element={<Contact />} />
+              <Route path="terms" element={<LegalPage titleKey="terms.title" bodyKey="terms.body" />} />
+              <Route path="privacy" element={<LegalPage titleKey="privacy.title" bodyKey="privacy.body" />} />
               </Route>
 
               {/* หลังร้าน — login แยกจากลูกค้า + layout แยกเอกเทศ */}

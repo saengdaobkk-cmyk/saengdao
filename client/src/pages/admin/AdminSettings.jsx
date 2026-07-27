@@ -9,6 +9,7 @@ export default function AdminSettings() {
   return (
     <div className="space-y-12">
       <BrandSettings settings={settings} save={update} />
+      <FooterSettings settings={settings} save={update} />
 
       {/* การแสดงผล */}
       <section>
@@ -151,6 +152,70 @@ function LoyaltySettings({ settings, save }) {
               className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90">บันทึก</button>
             {savedVal && <span className="text-[13px] text-emerald-600">✓</span>}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const FINP = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30";
+function parseFooterNav(raw) {
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(p)) return p.filter((x) => x && (x.label || x.url)).map((x) => ({ label: x.label || "", url: x.url || "" }));
+  } catch { /* ค่าเริ่มต้น */ }
+  return [
+    { label: "หนังสือ", url: "/books" },
+    { label: "ติดตามคำสั่งซื้อ", url: "/track" },
+    { label: "เกี่ยวกับเรา", url: "/about" },
+    { label: "ติดต่อ", url: "/contact" },
+  ];
+}
+
+function FooterSettings({ settings, save }) {
+  const [logo, setLogo] = useState(settings.footerLogoText ?? "SAENGDAO");
+  const [rows, setRows] = useState(() => parseFooterNav(settings.footerNav));
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { setLogo(settings.footerLogoText ?? "SAENGDAO"); }, [settings.footerLogoText]);
+  useEffect(() => { setRows(parseFooterNav(settings.footerNav)); }, [settings.footerNav]);
+
+  const dirty = () => setSaved(false);
+  const setRow = (i, k, v) => { setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [k]: v } : r))); dirty(); };
+  const addRow = () => { setRows((rs) => [...rs, { label: "", url: "" }]); dirty(); };
+  const delRow = (i) => { setRows((rs) => rs.filter((_, j) => j !== i)); dirty(); };
+
+  const saveAll = () => {
+    const nav = rows.filter((r) => r.label.trim() && r.url.trim()).map((r) => ({ label: r.label.trim(), url: r.url.trim() }));
+    save.mutate({ footerLogoText: logo.trim() || "SAENGDAO", footerNav: JSON.stringify(nav) }, { onSuccess: () => setSaved(true) });
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ท้ายเว็บ (Footer)</h2>
+      <p className="mb-4 text-[12px] text-sub">แก้โลโก้และเมนูที่แสดงท้ายเว็บ · ลิงก์เงื่อนไข/นโยบายแก้เนื้อหาได้ที่ “ข้อความในเว็บ → หน้ากฎหมาย”</p>
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+        <label className="block">
+          <span className="mb-1 block text-[13px] font-medium text-ink">ข้อความโลโก้</span>
+          <input value={logo} onChange={(e) => { setLogo(e.target.value); dirty(); }} className={`${FINP} max-w-xs`} />
+        </label>
+
+        <div>
+          <p className="mb-2 text-[13px] font-medium text-ink">เมนู footer</p>
+          <div className="space-y-2">
+            {rows.map((r, i) => (
+              <div key={i} className="flex gap-2">
+                <input placeholder="ชื่อเมนู" value={r.label} onChange={(e) => setRow(i, "label", e.target.value)} className={FINP} />
+                <input placeholder="ลิงก์ เช่น /books หรือ https://…" value={r.url} onChange={(e) => setRow(i, "url", e.target.value)} className={FINP} />
+                <button type="button" onClick={() => delRow(i)} className="shrink-0 rounded-lg border border-line px-3 text-[13px] text-sub hover:text-red-600">ลบ</button>
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={addRow} className="mt-2 text-[13px] text-accent">+ เพิ่มเมนู</button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button onClick={saveAll} disabled={save.isPending} className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">บันทึก Footer</button>
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว — หน้าร้านอัปเดตทันที</span>}
         </div>
       </div>
     </section>

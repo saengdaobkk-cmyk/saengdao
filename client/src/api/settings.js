@@ -35,6 +35,8 @@ const FALLBACK = {
   loyaltyBahtPerPoint: "100",
   loyaltyPointValue: "1",
   orderExpiryDays: "7",
+  footerLogoText: "SAENGDAO",
+  footerNav: "",
 };
 
 export function useSettings() {

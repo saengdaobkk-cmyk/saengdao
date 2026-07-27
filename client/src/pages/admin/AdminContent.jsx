@@ -61,8 +61,8 @@ export default function AdminContent() {
                   <textarea
                     value={v}
                     onChange={(e) => setValue(item.key, e.target.value)}
-                    rows={2}
-                    className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30"
+                    rows={Math.min(16, Math.max(2, Math.ceil(v.length / 60)))}
+                    className="w-full resize-y rounded-xl border border-line px-4 py-2.5 text-[14px] leading-relaxed text-ink outline-none focus:border-ink/30"
                   />
                 ) : (
                   <input

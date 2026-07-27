@@ -144,14 +144,17 @@ export default function App() {
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
             <Link to="/" className="text-[26px] font-bold tracking-[0.12em] sm:text-[30px]">
-              SAENGDAO
+              {s.footerLogoText || "SAENGDAO"}
             </Link>
 
             <nav className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[14px] text-white/70">
-              <Link to="/books" className="transition hover:text-white">หนังสือ</Link>
-              <Link to="/track" className="transition hover:text-white">ติดตามคำสั่งซื้อ</Link>
-              <Link to="/about" className="transition hover:text-white">เกี่ยวกับเรา</Link>
-              <Link to="/contact" className="transition hover:text-white">ติดต่อ</Link>
+              {parseFooterNav(s.footerNav).map((n, i) =>
+                n.url?.startsWith("http") ? (
+                  <a key={i} href={n.url} target="_blank" rel="noreferrer" className="transition hover:text-white">{n.label}</a>
+                ) : (
+                  <Link key={i} to={n.url || "/"} className="transition hover:text-white">{n.label}</Link>
+                )
+              )}
             </nav>
 
             <div className="flex gap-3">
@@ -165,14 +168,32 @@ export default function App() {
           <div className="flex flex-col items-center gap-2.5 border-t border-white/10 py-5 text-[12px] text-white/45 sm:flex-row sm:justify-between">
             <p>{t("footer.copyright", "© 2026 SAENGDAO สงวนลิขสิทธิ์")}</p>
             <div className="flex gap-6">
-              <Link to="/about" className="transition hover:text-white/80">เงื่อนไขการใช้งาน</Link>
-              <Link to="/contact" className="transition hover:text-white/80">นโยบายความเป็นส่วนตัว</Link>
+              <Link to="/terms" className="transition hover:text-white/80">เงื่อนไขการใช้งาน</Link>
+              <Link to="/privacy" className="transition hover:text-white/80">นโยบายความเป็นส่วนตัว</Link>
             </div>
           </div>
         </div>
       </footer>
     </div>
   );
+}
+
+// อ่านเมนู footer จาก setting (JSON) → array { label, url }; ไม่ถูกต้อง = ใช้ค่าเริ่มต้น
+function parseFooterNav(raw) {
+  const DEF = [
+    { label: "หนังสือ", url: "/books" },
+    { label: "ติดตามคำสั่งซื้อ", url: "/track" },
+    { label: "เกี่ยวกับเรา", url: "/about" },
+    { label: "ติดต่อ", url: "/contact" },
+  ];
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(p)) {
+      const clean = p.filter((x) => x && x.label && x.url);
+      if (clean.length) return clean;
+    }
+  } catch { /* ใช้ค่าเริ่มต้น */ }
+  return DEF;
 }
 
 function Social({ label, href, children }) {
