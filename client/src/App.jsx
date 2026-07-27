@@ -144,8 +144,7 @@ export default function App() {
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
             <Link to="/" className="text-[26px] font-bold tracking-[0.12em] sm:text-[30px]">
-              <span>SAENG</span>
-              <span style={{ WebkitTextStroke: "1px #fff", color: "transparent" }}>DAO</span>
+              SAENGDAO
             </Link>
 
             <nav className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[14px] text-white/70">
