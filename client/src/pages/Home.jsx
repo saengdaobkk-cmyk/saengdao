@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import BookRow from "../components/BookRow";
+import NewBooksHero from "../components/NewBooksHero";
 import HeroSlider from "../components/HeroSlider";
 import BrowseSections from "../components/BrowseSections";
 import PublisherMarquee from "../components/PublisherMarquee";
@@ -12,11 +13,7 @@ import { parseOrder } from "../lib/homeSections";
 const SECTIONS = {
   hero: <HeroSlider />,
   hotdeal: <HotDealSection />,
-  new: (
-    <div className="pt-10 sm:pt-14">
-      <BookRow eyebrow="อัปเดตล่าสุด" title="มาใหม่" sort="newest" />
-    </div>
-  ),
+  new: <NewBooksHero />,
   bestseller: (
     <div className="pt-10 sm:pt-14">
       <BookRow eyebrow="ยอดนิยม" title="ขายดี" sort="popular" />
