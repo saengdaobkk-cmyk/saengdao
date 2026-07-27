@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import JsBarcode from "jsbarcode";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import { useAdminOrders } from "../../api/admin";
+import { useAdminOrdersByIds } from "../../api/admin";
 import { useSettings } from "../../api/settings";
 import { formatPrice } from "../../lib/format";
 
@@ -21,13 +21,15 @@ const carrierName = (m) => (/ไปรษณีย์|thailand\s*post/i.test(m |
 export default function AdminOrdersPrint() {
   const { user, loading, isStaff } = useAuth();
   const [params] = useSearchParams();
-  const { data: orders, isLoading } = useAdminOrders();
-  const settings = useSettings();
 
   const doc = params.get("doc") || "invoice";
   const ids = (params.get("ids") || "").split(",").filter(Boolean);
 
+  const { data: orders, isLoading } = useAdminOrdersByIds(ids);
+  const settings = useSettings();
+
   const ready = !isLoading && orders;
+  // เรียงตามลำดับ ids ที่เลือกมา
   const list = ready ? ids.map((id) => orders.find((o) => o.id === id)).filter(Boolean) : [];
 
   useEffect(() => {

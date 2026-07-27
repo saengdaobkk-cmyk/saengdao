@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 /* ---------- Stats ---------- */
@@ -95,13 +95,31 @@ export function useDeleteTerm(type) {
 }
 
 /* ---------- Orders ---------- */
-export const useAdminOrders = () =>
+// รายการแบ่งหน้าฝั่ง server + filter ตามแท็บ + จำนวนแต่ละแท็บ
+export const useAdminOrders = ({ filter = "all", page = 1, pageSize = 20 } = {}) =>
   useQuery({
-    queryKey: ["admin", "orders"],
-    queryFn: async () => (await api.get("/admin/orders")).data,
+    queryKey: ["admin", "orders", "list", { filter, page, pageSize }],
+    queryFn: async () => (await api.get(`/admin/orders?filter=${filter}&page=${page}&pageSize=${pageSize}`)).data,
     refetchInterval: 30000, // ดึงออเดอร์ใหม่/สถานะที่เปลี่ยนอัตโนมัติทุก 30 วิ
     refetchOnWindowFocus: true, // กลับมาที่แท็บ → รีเฟรชทันที
     staleTime: 10000,
+    placeholderData: keepPreviousData, // เปลี่ยนหน้า/แท็บลื่น ไม่กระพริบ
+  });
+
+// ออเดอร์เดียว (หน้ารายละเอียด)
+export const useAdminOrder = (id) =>
+  useQuery({
+    queryKey: ["admin", "orders", "byIds", id],
+    queryFn: async () => (await api.get(`/admin/orders?ids=${id}`)).data?.[0] || null,
+    enabled: !!id,
+  });
+
+// หลายออเดอร์ตาม ids (หน้าพิมพ์)
+export const useAdminOrdersByIds = (ids = []) =>
+  useQuery({
+    queryKey: ["admin", "orders", "byIds", [...ids].sort().join(",")],
+    queryFn: async () => (await api.get(`/admin/orders?ids=${ids.join(",")}`)).data,
+    enabled: ids.length > 0,
   });
 
 export function useUpdateOrder() {

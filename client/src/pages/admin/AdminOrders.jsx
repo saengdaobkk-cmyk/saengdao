@@ -1,19 +1,19 @@
-import { useMemo, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { useAdminOrders, useUpdateOrder } from "../../api/admin";
 import { formatPrice } from "../../lib/format";
 import { fmtDate, PAYMENT_LABEL, PAY_BADGE, PAY_TH, ORDER_BADGE, ORDER_TH, Badge } from "./orderUi";
 
-// แท็บกรอง — predicate ต่อ order
+// แท็บกรอง (เงื่อนไขจริงอยู่ฝั่ง server — ที่นี่แค่ label + key)
 const FILTERS = [
-  { key: "all", label: "ทั้งหมด", match: () => true },
-  { key: "review", label: "รอตรวจสลิป", match: (o) => o.paymentStatus === "PENDING_REVIEW" },
-  { key: "unpaid", label: "ยังไม่ชำระ", match: (o) => o.paymentStatus === "UNPAID" && o.status !== "CANCELLED" },
-  { key: "processing", label: "กำลังดำเนินการ", match: (o) => o.paymentStatus === "PAID" && o.status === "PAID" },
-  { key: "shipped", label: "จัดส่งแล้ว", match: (o) => o.status === "SHIPPED" },
-  { key: "completed", label: "สำเร็จ", match: (o) => o.status === "COMPLETED" },
-  { key: "cancelled", label: "ยกเลิก", match: (o) => o.status === "CANCELLED" },
+  { key: "all", label: "ทั้งหมด" },
+  { key: "review", label: "รอตรวจสลิป" },
+  { key: "unpaid", label: "ยังไม่ชำระ" },
+  { key: "processing", label: "กำลังดำเนินการ" },
+  { key: "shipped", label: "จัดส่งแล้ว" },
+  { key: "completed", label: "สำเร็จ" },
+  { key: "cancelled", label: "ยกเลิก" },
 ];
 
 const PAGE_SIZES = [20, 50, 100];
@@ -31,34 +31,24 @@ export const openPrint = (doc, ids) =>
 const COLS = "grid grid-cols-[32px_36px_130px_120px_minmax(140px,1fr)_90px_100px_110px_120px_40px] items-center gap-3";
 
 export default function AdminOrders() {
-  const { data: orders, isLoading } = useAdminOrders();
   const [filter, setFilter] = useState("all");
   const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(() => new Set());
+
+  const { data, isLoading } = useAdminOrders({ filter, page, pageSize });
+  const pageItems = data?.orders || [];
+  const counts = data?.counts || {};
+  const total = data?.total || 0;
+  const totalPages = data?.totalPages || 1;
+  const from = total ? (page - 1) * pageSize + 1 : 0;
+  const to = from ? from + pageItems.length - 1 : 0;
 
   const toggle = (id) => setSelected((s) => {
     const n = new Set(s);
     n.has(id) ? n.delete(id) : n.add(id);
     return n;
   });
-
-  const counts = useMemo(() => {
-    const c = {};
-    for (const f of FILTERS) c[f.key] = (orders || []).filter(f.match).length;
-    return c;
-  }, [orders]);
-
-  if (isLoading) return <p className="text-sub">กำลังโหลด...</p>;
-  if (!orders?.length) return <p className="py-12 text-center text-sub">ยังไม่มีคำสั่งซื้อ</p>;
-
-  const list = orders.filter(FILTERS.find((f) => f.key === filter).match);
-  const pageCount = Math.max(1, Math.ceil(list.length / pageSize));
-  const safePage = Math.min(page, pageCount);
-  const pageItems = list.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const from = list.length ? (safePage - 1) * pageSize + 1 : 0;
-  const to = Math.min(safePage * pageSize, list.length);
-
   const allChecked = pageItems.length > 0 && pageItems.every((o) => selected.has(o.id));
   const toggleAll = () => setSelected((s) => {
     const n = new Set(s);
@@ -66,6 +56,13 @@ export default function AdminOrders() {
     else pageItems.forEach((o) => n.add(o.id));
     return n;
   });
+
+  // ถ้าข้อมูลหด (เช่นลบออเดอร์) จนหน้าเกิน → ถอยหน้า
+  useEffect(() => {
+    if (data && page > totalPages) setPage(totalPages);
+  }, [data, page, totalPages]);
+
+  if (isLoading && !data) return <p className="text-sub">กำลังโหลด...</p>;
 
   return (
     <div>
@@ -98,8 +95,8 @@ export default function AdminOrders() {
         </div>
       )}
 
-      {list.length === 0 ? (
-        <p className="py-12 text-center text-sub">ไม่มีคำสั่งซื้อในหมวดนี้</p>
+      {pageItems.length === 0 ? (
+        <p className="py-12 text-center text-sub">{filter === "all" ? "ยังไม่มีคำสั่งซื้อ" : "ไม่มีคำสั่งซื้อในหมวดนี้"}</p>
       ) : (
         <>
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
@@ -137,11 +134,11 @@ export default function AdminOrders() {
             </div>
           </div>
 
-          {pageCount > 1 && <Pager page={safePage} totalPages={pageCount} onChange={setPage} />}
+          {totalPages > 1 && <Pager page={page} totalPages={totalPages} onChange={setPage} />}
 
           {/* แถบควบคุม: จำนวนผลลัพธ์ + เลือกจำนวนต่อหน้า */}
           <div className="mt-4 flex items-center justify-between gap-3 px-1 text-[12px] text-sub">
-            <span>แสดง {from}–{to} จาก {list.length}</span>
+            <span>แสดง {from}–{to} จาก {total}</span>
             <label className="flex items-center gap-2">
               <span>ต่อหน้า</span>
               <select

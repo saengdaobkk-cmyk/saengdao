@@ -600,33 +600,62 @@ router.delete("/discount-rules/:id", async (req, res, next) => {
 });
 
 /* ---------- Orders ---------- */
+// เงื่อนไขของแต่ละแท็บ (ตรงกับฝั่ง client)
+const ORDER_FILTERS = {
+  all: {},
+  review: { paymentStatus: "PENDING_REVIEW" },
+  unpaid: { paymentStatus: "UNPAID", status: { not: "CANCELLED" } },
+  processing: { paymentStatus: "PAID", status: "PAID" },
+  shipped: { status: "SHIPPED" },
+  completed: { status: "COMPLETED" },
+  cancelled: { status: "CANCELLED" },
+};
+const ORDER_INCLUDE = {
+  user: {
+    select: { email: true, name: true, phone: true, address: true, receiptName: true, receiptTaxId: true, receiptAddress: true },
+  },
+  items: { include: { book: { select: { title: true, isbn: true, sku: true, price: true } } } },
+};
+
+// แนบลิงก์ tracking (ไปรษณีย์ไทย = เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
+async function attachTrackingLinks(orders) {
+  if (!orders.some((o) => o.trackingNumber)) return;
+  const methods = await prisma.shippingMethod.findMany({ select: { name: true, trackingUrl: true } });
+  const urlByName = new Map(methods.map((m) => [m.name, m.trackingUrl]));
+  for (const o of orders) {
+    if (!o.trackingNumber) continue;
+    o.trackingLink = isThaiPostMethod(o.shippingMethod)
+      ? `https://track.thailandpost.co.th/?trackNumber=${encodeURIComponent(o.trackingNumber)}`
+      : buildTrackingUrl(urlByName.get(o.shippingMethod), o.trackingNumber);
+  }
+}
+
 router.get("/orders", async (req, res, next) => {
   try {
-    await expireStaleOrders().catch(() => {}); // ยกเลิกออเดอร์ค้างชำระอัตโนมัติ (throttled)
-    syncOrdersFromZort().catch(() => {}); // ดึงสถานะ/เลขพัสดุจาก ZORT (throttled, ไม่บล็อก — เห็นผลรอบถัดไป)
-    const orders = await prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        // รวมข้อมูลใบเสร็จที่ลูกค้าบันทึกไว้ในโปรไฟล์ (เผื่อแอดมินดึงมาใช้)
-        user: {
-          select: {
-            email: true, name: true, phone: true, address: true,
-            receiptName: true, receiptTaxId: true, receiptAddress: true,
-          },
-        },
-        items: { include: { book: { select: { title: true, isbn: true, sku: true, price: true } } } },
-      },
-    });
-    // แนบลิงก์ tracking ให้แต่ละออเดอร์ (ไปรษณีย์ไทย = เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
-    const methods = await prisma.shippingMethod.findMany({ select: { name: true, trackingUrl: true } });
-    const urlByName = new Map(methods.map((m) => [m.name, m.trackingUrl]));
-    for (const o of orders) {
-      if (!o.trackingNumber) continue;
-      o.trackingLink = isThaiPostMethod(o.shippingMethod)
-        ? `https://track.thailandpost.co.th/?trackNumber=${encodeURIComponent(o.trackingNumber)}`
-        : buildTrackingUrl(urlByName.get(o.shippingMethod), o.trackingNumber);
+    // โหมด ids — ดึงเฉพาะออเดอร์ที่ระบุ (สำหรับหน้ารายละเอียด/พิมพ์)
+    if (req.query.ids) {
+      const ids = String(req.query.ids).split(",").filter(Boolean).slice(0, 200);
+      const orders = await prisma.order.findMany({ where: { id: { in: ids } }, orderBy: { createdAt: "desc" }, include: ORDER_INCLUDE });
+      await attachTrackingLinks(orders);
+      return res.json(orders);
     }
-    res.json(orders);
+
+    await expireStaleOrders().catch(() => {}); // ยกเลิกออเดอร์ค้างชำระอัตโนมัติ (throttled)
+    syncOrdersFromZort().catch(() => {}); // ดึงสถานะ/เลขพัสดุจาก ZORT (throttled, ไม่บล็อก)
+
+    // โหมด list — แบ่งหน้า + filter + นับจำนวนแต่ละแท็บ
+    const filter = ORDER_FILTERS[req.query.filter] ? req.query.filter : "all";
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize) || 20));
+    const where = ORDER_FILTERS[filter];
+
+    const [total, orders, countEntries] = await Promise.all([
+      prisma.order.count({ where }),
+      prisma.order.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize, include: ORDER_INCLUDE }),
+      Promise.all(Object.entries(ORDER_FILTERS).map(async ([k, w]) => [k, await prisma.order.count({ where: w })])),
+    ]);
+    await attachTrackingLinks(orders);
+    res.json({ orders, total, counts: Object.fromEntries(countEntries), page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
   } catch (err) {
     next(err);
   }

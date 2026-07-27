@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
-import { useAdminOrders, useUpdateOrder, useEditOrder, useAdminBooks } from "../../api/admin";
+import { useAdminOrder, useUpdateOrder, useEditOrder, useAdminBooks } from "../../api/admin";
 import { useAdminShipping } from "../../api/shipping";
 import { formatPrice } from "../../lib/format";
 import { PrintMenu } from "./AdminOrders";
@@ -12,12 +12,11 @@ import {
 export default function AdminOrderDetail() {
   const { id } = useParams();
   const [params] = useSearchParams();
-  const { data: orders, isLoading } = useAdminOrders();
+  const { data: order, isLoading } = useAdminOrder(id);
   const update = useUpdateOrder();
   const [editItems, setEditItems] = useState(false);
 
   if (isLoading) return <p className="text-sub">กำลังโหลด...</p>;
-  const order = orders?.find((o) => o.id === id);
   if (!order)
     return (
       <div className="py-12 text-center">
