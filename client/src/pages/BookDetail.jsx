@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useBook, useRelated } from "../api/books";
+import ProductReviews from "../components/ProductReviews";
 import { useCart } from "../cart/CartContext";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
@@ -299,6 +300,9 @@ export default function BookDetail() {
           )}
         </div>
       </div>
+
+      {/* รีวิวสินค้า */}
+      <ProductReviews bookId={book.id} />
 
       {/* related */}
       {related?.length > 0 && (

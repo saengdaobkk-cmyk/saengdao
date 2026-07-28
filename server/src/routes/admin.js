@@ -1521,4 +1521,38 @@ router.post("/customers/:id/points", async (req, res, next) => {
   }
 });
 
+/* ---------- Reviews (รีวิวสินค้า — เจ้าหน้าที่ดูแล) ---------- */
+router.get("/reviews", async (req, res, next) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { book: { select: { title: true } }, user: { select: { name: true, email: true } } },
+    });
+    res.json(reviews.map((r) => ({
+      id: r.id, rating: r.rating, comment: r.comment, verified: r.verified, hidden: r.hidden, createdAt: r.createdAt,
+      bookTitle: r.book?.title || "—", customer: r.user?.name || r.user?.email || "—",
+    })));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/reviews/:id", async (req, res, next) => {
+  try {
+    const review = await prisma.review.update({ where: { id: req.params.id }, data: { hidden: !!req.body.hidden } });
+    res.json({ ok: true, hidden: review.hidden });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/reviews/:id", async (req, res, next) => {
+  try {
+    await prisma.review.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

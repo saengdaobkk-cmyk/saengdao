@@ -2,8 +2,15 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { splitNames } from "../lib/terms.js";
 import { hotDealWhere } from "../lib/pricing.js";
+import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
+
+// หา bookId จาก id หรือ slug
+async function resolveBookId(key) {
+  const b = await prisma.book.findFirst({ where: { OR: [{ id: key }, { slug: key }] }, select: { id: true } });
+  return b?.id || null;
+}
 
 // GET /api/books?q=&category=&page=1&limit=12&sort=newest
 // รองรับ ค้นหา (title/author) + กรองหมวด (slug) + แบ่งหน้า + เรียง
@@ -154,6 +161,69 @@ router.get("/:id/related", async (req, res, next) => {
       include: { category: { select: { name: true } } },
     });
     res.json(related);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- รีวิวสินค้า ---------- */
+
+// GET /api/books/:id/reviews — รายการรีวิว + คะแนนเฉลี่ย
+router.get("/:id/reviews", async (req, res, next) => {
+  try {
+    const bookId = await resolveBookId(req.params.id);
+    if (!bookId) return res.json({ items: [], avg: 0, count: 0 });
+    const reviews = await prisma.review.findMany({
+      where: { bookId, hidden: false },
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { name: true, email: true } } },
+    });
+    const count = reviews.length;
+    const avg = count ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : 0;
+    res.json({
+      avg, count,
+      items: reviews.map((r) => ({
+        id: r.id, rating: r.rating, comment: r.comment, verified: r.verified, createdAt: r.createdAt,
+        name: r.user?.name || (r.user?.email ? r.user.email.split("@")[0] : "ลูกค้า"),
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/books/:id/reviews/mine — รีวิวของฉัน (prefill ฟอร์ม)
+router.get("/:id/reviews/mine", authenticate, async (req, res, next) => {
+  try {
+    const bookId = await resolveBookId(req.params.id);
+    if (!bookId) return res.json(null);
+    const r = await prisma.review.findUnique({ where: { bookId_userId: { bookId, userId: req.user.id } } });
+    res.json(r ? { rating: r.rating, comment: r.comment } : null);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/books/:id/reviews — เขียน/แก้รีวิว (ล็อกอิน · 1 รีวิว/คน/เล่ม)
+router.post("/:id/reviews", authenticate, async (req, res, next) => {
+  try {
+    const bookId = await resolveBookId(req.params.id);
+    if (!bookId) return res.status(404).json({ error: "ไม่พบสินค้า" });
+    const rating = Math.round(Number(req.body?.rating) || 0);
+    const comment = String(req.body?.comment || "").trim();
+    if (rating < 1 || rating > 5) return res.status(400).json({ error: "ให้คะแนน 1-5 ดาว" });
+    if (!comment) return res.status(400).json({ error: "กรอกความคิดเห็น" });
+    // ซื้อจริงไหม — มีออเดอร์ที่ชำระแล้ว/ไม่ยกเลิก ที่มีสินค้านี้
+    const bought = await prisma.order.findFirst({
+      where: { userId: req.user.id, status: { not: "CANCELLED" }, paymentStatus: "PAID", items: { some: { bookId } } },
+      select: { id: true },
+    });
+    await prisma.review.upsert({
+      where: { bookId_userId: { bookId, userId: req.user.id } },
+      update: { rating, comment, verified: !!bought },
+      create: { bookId, userId: req.user.id, rating, comment, verified: !!bought },
+    });
+    res.status(201).json({ ok: true });
   } catch (err) {
     next(err);
   }

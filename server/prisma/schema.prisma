@@ -128,8 +128,26 @@ model User {
   orders    Order[]
   crmNotes  CustomerNote[]
   pointLogs PointEntry[]
+  reviews   Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// รีวิว/คอมเมนต์สินค้า (1 รีวิว/คน/เล่ม)
+model Review {
+  id        String   @id @default(uuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5 ดาว
+  comment   String
+  verified  Boolean  @default(false) // ซื้อสินค้านี้จริง
+  hidden    Boolean  @default(false) // แอดมินซ่อน
+  createdAt DateTime @default(now())
+
+  @@unique([bookId, userId])
+  @@index([bookId])
 }
 
 // โน้ต / ประวัติการติดตามลูกค้า (CRM timeline)
@@ -208,6 +226,7 @@ model Book {
   importedAt    DateTime? // วันที่นำเข้า (จัดลำดับ collection)
   variants      Variant[]
   orderItems    OrderItem[]
+  reviews       Review[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 

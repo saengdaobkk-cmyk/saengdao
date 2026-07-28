@@ -41,6 +41,7 @@ import AdminShipping from "./pages/admin/AdminShipping.jsx";
 import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
+import AdminReviews from "./pages/admin/AdminReviews.jsx";
 
 // cache ข้อมูล 1 นาที + เก็บไว้ 5 นาที → กลับเข้าหน้าเดิมภายในเวลานี้แสดงทันที ไม่ต้องโหลดใหม่
 const queryClient = new QueryClient({
@@ -110,6 +111,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="discount-rules" element={<AdminDiscountRules />} />
                 <Route path="shipping" element={<AdminShipping />} />
                 <Route path="customers" element={<AdminCustomers />} />
+                <Route path="reviews" element={<AdminReviews />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>

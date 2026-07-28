@@ -15,6 +15,7 @@ const NAV_GROUPS = [
     items: [
       { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
       { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
+      { to: "/admin/reviews", label: "รีวิวสินค้า", icon: StarIcon },
       { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
       { to: "/admin/discount-rules", label: "กฎส่วนลดอัตโนมัติ", icon: DiscountIcon, adminOnly: true },
       { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
@@ -219,6 +220,7 @@ function TextIcon() { return <svg {...base()}><path d="M4 6h16M4 6V4h16v2M9 6v14
 function PlugIcon() { return <svg {...base()}><path d="M9 2v6M15 2v6M7 8h10v3a5 5 0 0 1-10 0V8ZM12 16v6" /></svg>; }
 function UsersIcon() { return <svg {...base()}><circle cx="9" cy="8" r="3" /><path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5" /><path d="M16 5.5a3 3 0 0 1 0 5.5M17.5 20c0-2.3-1-3.8-2.5-4.6" /></svg>; }
 function CustomerIcon() { return <svg {...base()}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>; }
+function StarIcon() { return <svg {...base()}><path d="M12 3l2.6 5.5 6 .8-4.4 4.1 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.3l6-.8L12 3Z" /></svg>; }
 function TruckIcon() { return <svg {...base()}><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17.5" cy="18" r="1.6" /></svg>; }
 function LayoutIcon() { return <svg {...base()}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16M9 9v11" /></svg>; }
 function DiscountIcon() { return <svg {...base()}><path d="M9 15l6-6" /><circle cx="9" cy="9" r="1.2" /><circle cx="15" cy="15" r="1.2" /><path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" /></svg>; }
