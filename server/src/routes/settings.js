@@ -32,7 +32,8 @@ const STRING_KEYS = [
   "loyaltyBahtPerPoint", // ยอดซื้อ (บาท) ต่อ 1 แต้ม เช่น 100 = ทุก 100 บาทได้ 1 แต้ม
   "loyaltyPointValue", // มูลค่า 1 แต้ม (บาท) เวลานำมาแลกส่วนลด เช่น 1 = 1 แต้ม = 1 บาท
   "orderExpiryDays", // ออเดอร์ที่ยังไม่ชำระเกินกี่วัน = ยกเลิกอัตโนมัติ (0 = ปิด)
-  "footerLogoText", // ข้อความโลโก้ที่ footer
+  "footerLogoText", // ข้อความโลโก้ที่ footer (ใช้เมื่อไม่มีรูป)
+  "footerLogoUrl", // โลโก้ที่ footer (รูปภาพ) — มีรูปใช้รูปก่อน
   "footerNav", // เมนู footer (JSON array ของ { label, url })
 ];
 const DEFAULTS = {
@@ -57,6 +58,7 @@ const DEFAULTS = {
   loyaltyPointValue: "1",
   orderExpiryDays: "7",
   footerLogoText: "SAENGDAO",
+  footerLogoUrl: "",
   footerNav: JSON.stringify([
     { label: "หนังสือ", url: "/books" },
     { label: "ติดตามคำสั่งซื้อ", url: "/track" },

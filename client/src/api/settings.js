@@ -36,6 +36,7 @@ const FALLBACK = {
   loyaltyPointValue: "1",
   orderExpiryDays: "7",
   footerLogoText: "SAENGDAO",
+  footerLogoUrl: "",
   footerNav: "",
 };
 

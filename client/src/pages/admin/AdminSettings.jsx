@@ -176,6 +176,18 @@ function FooterSettings({ settings, save }) {
   const [logo, setLogo] = useState(settings.footerLogoText ?? "SAENGDAO");
   const [rows, setRows] = useState(() => parseFooterNav(settings.footerNav));
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const logoUrl = settings.footerLogoUrl || "";
+
+  const onLogoFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      save.mutate({ footerLogoUrl: url });
+    } catch { /* ไม่สำเร็จ */ } finally { setUploading(false); }
+  };
   useEffect(() => { setLogo(settings.footerLogoText ?? "SAENGDAO"); }, [settings.footerLogoText]);
   useEffect(() => { setRows(parseFooterNav(settings.footerNav)); }, [settings.footerNav]);
 
@@ -194,8 +206,26 @@ function FooterSettings({ settings, save }) {
       <h2 className="mb-1 text-[15px] font-semibold text-ink">ท้ายเว็บ (Footer)</h2>
       <p className="mb-4 text-[12px] text-sub">แก้โลโก้และเมนูที่แสดงท้ายเว็บ · ลิงก์เงื่อนไข/นโยบายแก้เนื้อหาได้ที่ “ข้อความในเว็บ → หน้ากฎหมาย”</p>
       <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
-        <label className="block">
-          <span className="mb-1 block text-[13px] font-medium text-ink">ข้อความโลโก้</span>
+        {/* โลโก้รูปภาพ */}
+        <div>
+          <p className="mb-1 text-[13px] font-medium text-ink">โลโก้ (รูปภาพ)</p>
+          <p className="mb-2 text-[12px] text-sub">footer พื้นดำ — แนะนำรูปพื้นโปร่ง/สีขาว · ถ้าไม่มีรูปจะใช้ข้อความด้านล่าง</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex h-16 w-40 items-center justify-center overflow-hidden rounded-xl bg-ink">
+              {logoUrl ? <img src={logoUrl} alt="โลโก้ footer" className="max-h-10 w-auto object-contain" /> : <span className="text-[12px] text-white/50">ยังไม่มีรูป</span>}
+            </div>
+            <label className="cursor-pointer rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
+              {uploading ? "กำลังอัปโหลด..." : logoUrl ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+              <input type="file" accept="image/*" onChange={onLogoFile} className="hidden" />
+            </label>
+            {logoUrl && (
+              <button type="button" onClick={() => save.mutate({ footerLogoUrl: "" })} className="text-[13px] text-sub hover:text-red-600">ลบรูป</button>
+            )}
+          </div>
+        </div>
+
+        <label className="block border-t border-line pt-5">
+          <span className="mb-1 block text-[13px] font-medium text-ink">ข้อความโลโก้ (ใช้เมื่อไม่มีรูป)</span>
           <input value={logo} onChange={(e) => { setLogo(e.target.value); dirty(); }} className={`${FINP} max-w-xs`} />
         </label>
 
