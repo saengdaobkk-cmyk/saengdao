@@ -1,9 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
-// รีวิวของสินค้า (public)
-export const useBookReviews = (id) =>
-  useQuery({ queryKey: ["reviews", id], queryFn: async () => (await api.get(`/books/${id}/reviews`)).data, enabled: !!id });
+// รีวิวของสินค้า (แบ่งหน้า) — avg/count คิดจากทั้งหมด
+export const useBookReviews = (id, page = 1, pageSize = 5) =>
+  useQuery({
+    queryKey: ["reviews", id, page, pageSize],
+    queryFn: async () => (await api.get(`/books/${id}/reviews?page=${page}&pageSize=${pageSize}`)).data,
+    enabled: !!id,
+    placeholderData: keepPreviousData,
+  });
 
 // รีวิวของฉัน (prefill ฟอร์ม) — เฉพาะตอนล็อกอิน
 export const useMyReview = (id, enabled) =>

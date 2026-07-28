@@ -168,20 +168,25 @@ router.get("/:id/related", async (req, res, next) => {
 
 /* ---------- รีวิวสินค้า ---------- */
 
-// GET /api/books/:id/reviews — รายการรีวิว + คะแนนเฉลี่ย
+// GET /api/books/:id/reviews — รายการรีวิว (แบ่งหน้า) + คะแนนเฉลี่ยจากทั้งหมด
 router.get("/:id/reviews", async (req, res, next) => {
   try {
     const bookId = await resolveBookId(req.params.id);
-    if (!bookId) return res.json({ items: [], avg: 0, count: 0 });
-    const reviews = await prisma.review.findMany({
-      where: { bookId, hidden: false },
-      orderBy: { createdAt: "desc" },
-      include: { user: { select: { name: true, email: true } } },
-    });
-    const count = reviews.length;
-    const avg = count ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10 : 0;
+    if (!bookId) return res.json({ items: [], avg: 0, count: 0, page: 1, totalPages: 1 });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 5));
+    const where = { bookId, hidden: false };
+    const [agg, reviews] = await Promise.all([
+      prisma.review.aggregate({ where, _avg: { rating: true }, _count: true }),
+      prisma.review.findMany({
+        where, orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize,
+        include: { user: { select: { name: true, email: true } } },
+      }),
+    ]);
+    const count = agg._count;
+    const avg = count ? Math.round((agg._avg.rating || 0) * 10) / 10 : 0;
     res.json({
-      avg, count,
+      avg, count, page, pageSize, totalPages: Math.max(1, Math.ceil(count / pageSize)),
       items: reviews.map((r) => ({
         id: r.id, rating: r.rating, comment: r.comment, verified: r.verified, createdAt: r.createdAt,
         name: r.user?.name || (r.user?.email ? r.user.email.split("@")[0] : "ลูกค้า"),
