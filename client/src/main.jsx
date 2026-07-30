@@ -21,6 +21,9 @@ import OrderTrack from "./pages/OrderTrack.jsx";
 import Account from "./pages/Account.jsx";
 import About from "./pages/About.jsx";
 import LegalPage from "./pages/LegalPage.jsx";
+import Blog from "./pages/Blog.jsx";
+import BlogPost from "./pages/BlogPost.jsx";
+import AdminBlog from "./pages/admin/AdminBlog.jsx";
 import Contact from "./pages/Contact.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
@@ -85,6 +88,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route path="contact" element={<Contact />} />
               <Route path="terms" element={<LegalPage titleKey="terms.title" bodyKey="terms.body" />} />
               <Route path="privacy" element={<LegalPage titleKey="privacy.title" bodyKey="privacy.body" />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="blog/:slug" element={<BlogPost />} />
               </Route>
 
               {/* หลังร้าน — login แยกจากลูกค้า + layout แยกเอกเทศ */}
@@ -112,6 +117,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="shipping" element={<AdminShipping />} />
                 <Route path="customers" element={<AdminCustomers />} />
                 <Route path="reviews" element={<AdminReviews />} />
+                <Route path="blog" element={<AdminBlog />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>

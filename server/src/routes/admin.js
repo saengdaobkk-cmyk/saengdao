@@ -21,7 +21,7 @@ function httpError(status, message) {
 const router = Router();
 router.use(authenticate, requireStaff); // ต้องเป็นเจ้าหน้าที่ (STAFF/ADMIN)
 // เมนูเฉพาะแอดมินเต็ม — STAFF เข้าไม่ได้ (พนักงานเห็นแค่ สินค้า/คำสั่งซื้อ/collection)
-["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder", "/discount-rules"].forEach((p) =>
+["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder", "/discount-rules", "/blog"].forEach((p) =>
   router.use(p, requireAdmin)
 );
 
@@ -1516,6 +1516,65 @@ router.post("/customers/:id/points", async (req, res, next) => {
       }),
     ]);
     res.status(201).json({ points: user.points, entry });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- Blog (บทความ — เฉพาะแอดมิน) ---------- */
+function blogData(b) {
+  const data = {};
+  if (b.title !== undefined) data.title = String(b.title).trim();
+  if (b.slug !== undefined) {
+    const s = String(b.slug).trim().toLowerCase().replace(/\s+/g, "-").replace(/[^\w฀-๿-]/g, "");
+    data.slug = s || null;
+  }
+  if (b.excerpt !== undefined) data.excerpt = String(b.excerpt).trim() || null;
+  if (b.coverImage !== undefined) data.coverImage = String(b.coverImage).trim() || null;
+  if (b.content !== undefined) data.content = String(b.content);
+  if (b.author !== undefined) data.author = String(b.author).trim() || null;
+  if (b.published !== undefined) data.published = !!b.published;
+  return data;
+}
+
+router.get("/blog", async (req, res, next) => {
+  try {
+    res.json(await prisma.blogPost.findMany({ orderBy: { createdAt: "desc" } }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/blog", async (req, res, next) => {
+  try {
+    const data = blogData(req.body);
+    if (!data.title) return res.status(400).json({ error: "กรอกหัวข้อบทความ" });
+    if (data.content === undefined) data.content = "";
+    if (data.published) data.publishedAt = new Date();
+    res.status(201).json(await prisma.blogPost.create({ data }));
+  } catch (err) {
+    if (err.code === "P2002") return res.status(409).json({ error: "slug นี้ถูกใช้แล้ว" });
+    next(err);
+  }
+});
+
+router.patch("/blog/:id", async (req, res, next) => {
+  try {
+    const existing = await prisma.blogPost.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: "ไม่พบบทความ" });
+    const data = blogData(req.body);
+    if (data.published === true && !existing.publishedAt) data.publishedAt = new Date();
+    res.json(await prisma.blogPost.update({ where: { id: req.params.id }, data }));
+  } catch (err) {
+    if (err.code === "P2002") return res.status(409).json({ error: "slug นี้ถูกใช้แล้ว" });
+    next(err);
+  }
+});
+
+router.delete("/blog/:id", async (req, res, next) => {
+  try {
+    await prisma.blogPost.delete({ where: { id: req.params.id } });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }
