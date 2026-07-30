@@ -91,7 +91,7 @@ export default function ProductReviews({ bookId }) {
                   <span className="ml-auto text-[12px] text-sub">{fmtDate(r.createdAt)}</span>
                 </div>
                 <Stars value={r.rating} size={14} className="mt-1" />
-                <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{r.comment}</p>
+                <ReviewComment text={r.comment} />
               </li>
             ))}
           </ul>
@@ -99,6 +99,22 @@ export default function ProductReviews({ bookId }) {
         </>
       )}
     </section>
+  );
+}
+
+// คอมเมนต์ยาว → ตัดย่อ 4 บรรทัด + ปุ่มอ่านเพิ่ม/ย่อ
+function ReviewComment({ text }) {
+  const [open, setOpen] = useState(false);
+  const long = text.length > 180 || (text.match(/\n/g)?.length || 0) >= 4;
+  return (
+    <div className="mt-2">
+      <p className={`whitespace-pre-line text-[14px] leading-relaxed text-ink/80 ${long && !open ? "line-clamp-4" : ""}`}>{text}</p>
+      {long && (
+        <button onClick={() => setOpen((o) => !o)} className="mt-1 text-[13px] font-medium text-accent">
+          {open ? "ย่อ" : "อ่านเพิ่ม"}
+        </button>
+      )}
+    </div>
   );
 }
 
