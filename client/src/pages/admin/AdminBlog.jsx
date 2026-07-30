@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import { useAdminBlog, useSaveBlogPost, useDeleteBlogPost } from "../../api/blog";
 import { uploadImage } from "../../api/admin";
+import { MD_COMPONENTS } from "../BlogPost";
 
 const inp = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30";
 const EMPTY = { title: "", slug: "", excerpt: "", coverImage: "", content: "", author: "", published: false };
@@ -13,6 +15,38 @@ export default function AdminBlog() {
   const [form, setForm] = useState(null);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [imgBusy, setImgBusy] = useState(false);
+  const contentRef = useRef(null);
+
+  // แก้ไขข้อความในช่องเนื้อหา (คงตำแหน่งเคอร์เซอร์)
+  const applyEdit = (fn) => {
+    const el = contentRef.current;
+    if (!el) return;
+    const { text, selStart, selEnd } = fn(form.content || "", el.selectionStart, el.selectionEnd);
+    setForm((f) => ({ ...f, content: text }));
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(selStart, selEnd); });
+  };
+  const wrap = (before, after = before) => applyEdit((val, s, e) => {
+    const sel = val.slice(s, e) || "ข้อความ";
+    return { text: val.slice(0, s) + before + sel + after + val.slice(e), selStart: s + before.length, selEnd: s + before.length + sel.length };
+  });
+  const linePrefix = (prefix) => applyEdit((val, s, e) => {
+    const ls = val.lastIndexOf("\n", s - 1) + 1;
+    return { text: val.slice(0, ls) + prefix + val.slice(ls), selStart: s + prefix.length, selEnd: e + prefix.length };
+  });
+  const insert = (str) => applyEdit((val, s) => ({ text: val.slice(0, s) + str + val.slice(s), selStart: s + str.length, selEnd: s + str.length }));
+
+  const onInsertImage = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setImgBusy(true);
+    try {
+      const url = await uploadImage(file);
+      insert(`\n\n![](${url})\n\n`);
+    } catch { /* */ } finally { setImgBusy(false); }
+  };
 
   const openNew = () => { setForm({ ...EMPTY }); setError(""); };
   const openEdit = (p) => {
@@ -94,9 +128,47 @@ export default function AdminBlog() {
             </div>
           </Field>
 
-          <Field label="เนื้อหา (ขึ้นย่อหน้าใหม่ = เว้นบรรทัด)">
-            <textarea value={form.content} onChange={set("content")} rows={12} className={`${inp} resize-y leading-relaxed`} />
-          </Field>
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-[12px] text-sub">เนื้อหา (Markdown — หัวข้อย่อย/ตัวหนา/รูป)</span>
+              <button type="button" onClick={() => setPreview((v) => !v)} className="text-[12px] font-medium text-accent">
+                {preview ? "← แก้ไข" : "ดูตัวอย่าง →"}
+              </button>
+            </div>
+            {preview ? (
+              <div className="min-h-[280px] space-y-4 rounded-lg border border-line bg-white px-4 py-3">
+                {form.content?.trim()
+                  ? <ReactMarkdown components={MD_COMPONENTS}>{form.content}</ReactMarkdown>
+                  : <p className="text-[13px] text-sub">ยังไม่มีเนื้อหา</p>}
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-1 rounded-t-lg border border-b-0 border-line bg-mist/50 px-2 py-1.5">
+                  <TB onClick={() => linePrefix("## ")}>หัวข้อย่อย</TB>
+                  <TB onClick={() => linePrefix("### ")}>หัวข้อรอง</TB>
+                  <span className="mx-1 h-4 w-px bg-line" />
+                  <TB onClick={() => wrap("**")} className="font-bold">B</TB>
+                  <TB onClick={() => wrap("*")} className="italic">I</TB>
+                  <TB onClick={() => linePrefix("- ")}>• รายการ</TB>
+                  <TB onClick={() => wrap("[", "](https://)")}>ลิงก์</TB>
+                  <span className="mx-1 h-4 w-px bg-line" />
+                  <label className="cursor-pointer rounded px-2 py-1 text-[12px] text-ink transition hover:bg-white">
+                    {imgBusy ? "อัปโหลด..." : "🖼 แทรกรูป"}
+                    <input type="file" accept="image/*" onChange={onInsertImage} className="hidden" />
+                  </label>
+                </div>
+                <textarea
+                  ref={contentRef}
+                  value={form.content}
+                  onChange={set("content")}
+                  rows={14}
+                  placeholder={"เขียนบทความ...\n\n## หัวข้อย่อย\nเนื้อหา **ตัวหนา** และ *ตัวเอียง*\n\n![](แทรกรูปด้วยปุ่มด้านบน)"}
+                  className={`${inp} resize-y rounded-t-none font-mono text-[13px] leading-relaxed`}
+                />
+                <p className="mt-1 text-[11px] text-sub">รองรับ Markdown · เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่</p>
+              </>
+            )}
+          </div>
 
           <label className="flex items-center gap-2 text-[14px] text-ink">
             <input type="checkbox" checked={form.published} onChange={(e) => setForm((f) => ({ ...f, published: e.target.checked }))} className="h-4 w-4 accent-accent" />
@@ -111,6 +183,14 @@ export default function AdminBlog() {
         </form>
       )}
     </div>
+  );
+}
+
+function TB({ onClick, children, className = "" }) {
+  return (
+    <button type="button" onClick={onClick} className={`rounded px-2 py-1 text-[12px] text-ink transition hover:bg-white ${className}`}>
+      {children}
+    </button>
   );
 }
 
