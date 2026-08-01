@@ -138,15 +138,16 @@ export async function pushOrderToZort(orderId) {
       `ช่องทางชำระเงิน: ${paymentMethod}`,
     ].filter(Boolean).join("\n"),
     list: order.items.map((it) => {
-      const listUnit = Number(it.listPrice) > 0 ? Number(it.listPrice) : Number(it.price);
-      const dp = it.discountPercent || 0;
+      // ส่งราคาต่อหน่วย "หลังหักส่วนลดรายชิ้นแล้ว" (ปัดเศษตามเว็บเรียบร้อย)
+      // — ZORT ไม่ปัดขึ้นแบบเว็บ ถ้าส่งราคาเต็ม+% แล้วให้ ZORT คำนวณเองยอดจะเพี้ยน
+      const netUnit = Number(it.price);
       return {
         sku: (it.book.isbn || "SD-" + it.book.id.slice(0, 8)) + (it.variantId ? "-" + it.variantId.slice(0, 6) : ""),
         name: it.book.title + (it.variantName ? ` (${it.variantName})` : ""),
         number: it.quantity,
-        pricepernumber: listUnit, // ราคาต่อหน่วย (เต็ม)
-        discount: dp > 0 ? `${dp}%` : 0, // ส่วนลดรายชิ้นเป็น % (ตามที่กรอก)
-        totalprice: Number(it.price) * it.quantity, // ยอดสุทธิรายบรรทัด
+        pricepernumber: netUnit, // ราคาต่อหน่วยสุทธิ (หลังหักส่วนลดรายชิ้น)
+        discount: 0, // ไม่ส่ง % รายชิ้น — สะท้อนในราคาต่อหน่วยแล้ว
+        totalprice: netUnit * it.quantity, // ยอดสุทธิรายบรรทัด = ราคาต่อหน่วย × จำนวน
       };
     }),
   };
