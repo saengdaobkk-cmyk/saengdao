@@ -7,6 +7,7 @@ import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import FlipBook from "../components/FlipBook";
+import HotDealCountdown from "../components/HotDealCountdown";
 import { formatPrice } from "../lib/format";
 import { priceInfo } from "../lib/pricing";
 import { img } from "../lib/img";
@@ -205,7 +206,7 @@ export default function BookDetail() {
           <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
             {isHot && (
               <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
-                🔥 Hot Deal{book.hotDealEnd ? ` · ถึง ${new Date(book.hotDealEnd).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}` : ""}
+                🔥 Hot Deal<HotDealCountdown end={book.hotDealEnd} />
               </p>
             )}
             <div className="flex items-end gap-3">
