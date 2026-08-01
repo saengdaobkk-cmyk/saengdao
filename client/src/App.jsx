@@ -145,7 +145,7 @@ export default function App() {
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
             <Link to="/" className="shrink-0">
               {s.footerLogoUrl ? (
-                <img src={s.footerLogoUrl} alt="logo" className="h-8 w-auto object-contain sm:h-9" />
+                <img src={s.footerLogoUrl} alt="logo" style={{ height: `${Number(s.footerLogoSize) || 36}px` }} className="w-auto object-contain" />
               ) : (
                 <span className="text-[26px] font-bold tracking-[0.12em] sm:text-[30px]">{s.footerLogoText || "SAENGDAO"}</span>
               )}

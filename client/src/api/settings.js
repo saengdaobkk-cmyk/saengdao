@@ -37,6 +37,7 @@ const FALLBACK = {
   orderExpiryDays: "7",
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",
+  footerLogoSize: "36",
   footerNav: "",
 };
 

@@ -222,6 +222,11 @@ function FooterSettings({ settings, save }) {
               <button type="button" onClick={() => save.mutate({ footerLogoUrl: "" })} className="text-[13px] text-sub hover:text-red-600">ลบรูป</button>
             )}
           </div>
+          {logoUrl && (
+            <div className="mt-4">
+              <LogoSizeSlider settings={settings} save={save} type="image" settingKey="footerLogoSize" label="ขนาดโลโก้" def={36} min={20} max={80} previewSrc={logoUrl} dark />
+            </div>
+          )}
         </div>
 
         <label className="block border-t border-line pt-5">
@@ -349,8 +354,8 @@ function BrandSettings({ settings, save }) {
   );
 }
 
-function LogoSizeSlider({ settings, save, settingKey, label, def, min, max, type = "image" }) {
-  const logo = settings.logoUrl || "";
+function LogoSizeSlider({ settings, save, settingKey, label, def, min, max, type = "image", previewSrc, dark = false }) {
+  const logo = previewSrc ?? settings.logoUrl ?? "";
   const [size, setSize] = useState(Number(settings[settingKey]) || def);
   useEffect(() => { setSize(Number(settings[settingKey]) || def); }, [settings, settingKey, def]);
   const commit = () => save.mutate({ [settingKey]: String(size) });
@@ -368,7 +373,7 @@ function LogoSizeSlider({ settings, save, settingKey, label, def, min, max, type
           onTouchEnd={commit}
           className="w-full max-w-sm accent-accent"
         />
-        <span className="flex h-10 shrink-0 items-center">
+        <span className={`flex shrink-0 items-center ${dark ? "rounded-lg bg-ink px-3 py-2" : "h-10"}`}>
           {type === "text" ? (
             <span className="font-semibold tracking-[0.22em] text-ink" style={{ fontSize: `${size}px` }}>SAENGDAO</span>
           ) : (

@@ -34,6 +34,7 @@ const STRING_KEYS = [
   "orderExpiryDays", // ออเดอร์ที่ยังไม่ชำระเกินกี่วัน = ยกเลิกอัตโนมัติ (0 = ปิด)
   "footerLogoText", // ข้อความโลโก้ที่ footer (ใช้เมื่อไม่มีรูป)
   "footerLogoUrl", // โลโก้ที่ footer (รูปภาพ) — มีรูปใช้รูปก่อน
+  "footerLogoSize", // ความสูงโลโก้รูปที่ footer (px)
   "footerNav", // เมนู footer (JSON array ของ { label, url })
 ];
 const DEFAULTS = {
@@ -59,6 +60,7 @@ const DEFAULTS = {
   orderExpiryDays: "7",
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",
+  footerLogoSize: "36",
   footerNav: JSON.stringify([
     { label: "หนังสือ", url: "/books" },
     { label: "ติดตามคำสั่งซื้อ", url: "/track" },
