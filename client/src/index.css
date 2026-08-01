@@ -44,13 +44,13 @@
 }
 .cart-bump { animation: cartBump 0.5s ease; }
 
-/* ปุ่มลบในตะกร้า — ฝาถังยกเปิดตอนชี้เมาส์ + ตัวถังสั่นนิดๆ */
+/* ปุ่มลบในตะกร้า — ฝาถังยกลอยขึ้นตรงๆ (เอียงนิดเดียว) ตอนชี้เมาส์ */
 .cart-trash-lid {
   transform-box: fill-box;
-  transform-origin: 85% 60%;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.cart-trash-btn:hover .cart-trash-lid { transform: translateY(-1.5px) rotate(-20deg); }
+.cart-trash-btn:hover .cart-trash-lid { transform: translateY(-6px) rotate(-8deg); }
 .cart-trash-btn:hover .cart-trash-body { animation: trashWiggle 0.4s ease; }
 @keyframes trashWiggle {
   0%, 100% { transform: rotate(0); }
