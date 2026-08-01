@@ -35,17 +35,17 @@ function MiniCard({ book }) {
   const hasCut = pi.price < pi.original;
   return (
     <Link to={`/books/${book.id}`} className="group flex gap-4">
-      <div className="relative aspect-[145/210] w-[84px] shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line">
+      <div className="aspect-[145/210] w-[84px] shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line">
         {book.coverImage ? (
           <img src={img(book.coverImage, 300)} alt={book.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-2xl opacity-25">𝐀</div>
         )}
-        {hasCut && (
-          <span className={`absolute left-1.5 top-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>Sale</span>
-        )}
       </div>
       <div className="min-w-0 flex-1 self-center">
+        {hasCut && (
+          <span className={`mb-1.5 inline-block rounded-md px-2 py-0.5 text-[11px] font-semibold text-white ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>Sale</span>
+        )}
         {book.author && <p className="truncate text-[11px] font-medium uppercase tracking-wide text-sub">{book.author}</p>}
         <h3 className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-ink transition-colors group-hover:text-accent">{book.title}</h3>
         {hasCut ? (
