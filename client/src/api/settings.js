@@ -6,6 +6,7 @@ const FALLBACK = {
   cartDrawerEnabled: true,
   showCardCategory: false,
   showPublisherMarquee: true,
+  showProductTrust: true,
   showPromoRibbon: false,
   showTextMarquee: false,
   transparentHeader: true,

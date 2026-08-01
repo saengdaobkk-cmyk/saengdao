@@ -16,7 +16,7 @@ export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { add, openDrawer } = useCart();
-  const { cartDrawerEnabled } = useSettings();
+  const { cartDrawerEnabled, showProductTrust } = useSettings();
   const { t } = useContent();
   const { data: book, isLoading, isError } = useBook(id);
   const { data: related } = useRelated(id);
@@ -264,10 +264,12 @@ export default function BookDetail() {
             </div>
 
             {/* trust */}
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-[13px] text-sub">
-              <div className="flex items-center gap-2"><TruckIcon />{t("product.trust_shipping", "จัดส่งฟรีทั่วประเทศ")}</div>
-              <div className="flex items-center gap-2"><ShieldCheckIcon />{t("product.trust_authentic", "ของแท้ 100%")}</div>
-            </div>
+            {showProductTrust !== false && (
+              <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-[13px] text-sub">
+                <div className="flex items-center gap-2"><TruckIcon />{t("product.trust_shipping", "จัดส่งฟรีทั่วประเทศ")}</div>
+                <div className="flex items-center gap-2"><ShieldCheckIcon />{t("product.trust_authentic", "ของแท้ 100%")}</div>
+              </div>
+            )}
           </div>
 
           {/* description */}
