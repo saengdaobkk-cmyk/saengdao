@@ -20,6 +20,19 @@ router.get("/", async (req, res, next) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(48, Math.max(1, parseInt(req.query.limit) || 12));
 
+    // โหมดเลือกเอง: ?ids=a,b,c → คืนเฉพาะเล่มที่ระบุ เรียงตามลำดับที่ส่งมา (ไม่แบ่งหน้า)
+    if (req.query.ids != null) {
+      const ids = String(req.query.ids).split(",").map((s) => s.trim()).filter(Boolean).slice(0, 30);
+      if (ids.length === 0) return res.json({ items: [], total: 0, page: 1, pageSize: 0, totalPages: 0 });
+      const found = await prisma.book.findMany({
+        where: { active: true, id: { in: ids } },
+        include: { category: { select: { name: true, slug: true } }, variants: { select: { stock: true } } },
+      });
+      const byId = new Map(found.map((b) => [b.id, b]));
+      const items = ids.map((id) => byId.get(id)).filter(Boolean); // คงลำดับที่แอดมินจัด
+      return res.json({ items, total: items.length, page: 1, pageSize: items.length, totalPages: 1 });
+    }
+
     const where = { active: true };
     if (q) {
       where.OR = [

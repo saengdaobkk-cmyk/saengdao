@@ -4,9 +4,13 @@ import BookCard from "./BookCard";
 import SectionHeading from "./SectionHeading";
 
 // แถวเลื่อนแนวนอน — หัวข้อ + ปุ่มเลื่อนซ้าย/ขวา
-export default function BookRow({ title, subtitle, sort }) {
+// โหมดอัตโนมัติ: เรียงตาม sort · โหมดเลือกเอง: ส่ง bookIds มาแสดงตามลำดับที่จัด
+export default function BookRow({ title, subtitle, sort, mode = "auto", bookIds = [] }) {
   const scroller = useRef(null);
-  const { data, isLoading } = useBooks({ sort, page: 1, limit: 10 });
+  const manual = mode === "manual" && bookIds.length > 0;
+  const { data, isLoading } = useBooks(
+    manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit: 10 }
+  );
 
   const scroll = (dir) => {
     scroller.current?.scrollBy({ left: dir * 520, behavior: "smooth" });
