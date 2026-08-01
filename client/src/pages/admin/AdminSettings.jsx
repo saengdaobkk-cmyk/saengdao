@@ -261,8 +261,22 @@ function BrandSettings({ settings, save }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [qrBusy, setQrBusy] = useState(false);
+  const [hdrBusy, setHdrBusy] = useState("");
   const logo = settings.logoUrl || "";
   const qr = settings.lineQrUrl || "";
+  const hdrLight = settings.headerLogoOnLight || "";
+  const hdrDark = settings.headerLogoOnDark || "";
+
+  // อัปโหลดโลโก้แถบเมนู (แยก key พื้นสว่าง/พื้นเข้ม)
+  const onHeaderLogo = (key) => async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setHdrBusy(key);
+    try {
+      const url = await uploadImage(file);
+      save.mutate({ [key]: url });
+    } catch { /* ไม่สำเร็จ */ } finally { setHdrBusy(""); }
+  };
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -303,6 +317,27 @@ function BrandSettings({ settings, save }) {
           <p className="text-[13px] font-semibold text-ink">ขนาดตัวอักษร SAENGDAO</p>
           <LogoSizeSlider settings={settings} save={save} type="text" settingKey="logoSizeHeader" label="แถบเมนู (บนสุด)" def={16} min={12} max={28} />
           <LogoSizeSlider settings={settings} save={save} type="text" settingKey="logoSizeFooter" label="ท้ายเว็บ (footer)" def={15} min={12} max={28} />
+          <p className="text-[12px] text-sub">* ใช้เมื่อยังไม่ได้อัปโหลดโลโก้รูปด้านล่าง</p>
+        </div>
+
+        {/* โลโก้รูปบนแถบเมนู — แยกพื้นสว่าง/พื้นเข้ม */}
+        <div className="space-y-4 border-t border-line pt-5">
+          <div>
+            <p className="text-[13px] font-semibold text-ink">โลโก้รูปบนแถบเมนู (บนสุด)</p>
+            <p className="mt-1 text-[12px] text-sub">มีรูปแล้วจะใช้แทนตัวอักษร · แถบเมนูหน้าแรกโปร่งใสทับสไลด์ (พื้นเข้ม) เมื่อเลื่อนลง/หน้าอื่นเป็นพื้นขาว — จึงแยกได้ 2 แบบ</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <HeaderLogoBox label="พื้นสว่าง (แถบขาว)" hint="โลโก้สีเข้ม" bg="light" url={hdrLight}
+              busy={hdrBusy === "headerLogoOnLight"} onFile={onHeaderLogo("headerLogoOnLight")}
+              onClear={() => save.mutate({ headerLogoOnLight: "" })} />
+            <HeaderLogoBox label="พื้นเข้ม (ทับสไลด์หน้าแรก)" hint="โลโก้สีอ่อน/ขาว" bg="dark" url={hdrDark}
+              busy={hdrBusy === "headerLogoOnDark"} onFile={onHeaderLogo("headerLogoOnDark")}
+              onClear={() => save.mutate({ headerLogoOnDark: "" })} />
+          </div>
+          {(hdrLight || hdrDark) && (
+            <LogoSizeSlider settings={settings} save={save} type="image" settingKey="headerLogoSize" label="ขนาดโลโก้แถบเมนู" def={28} min={16} max={64}
+              previewSrc={hdrDark || hdrLight} dark={!!hdrDark} />
+          )}
         </div>
 
         {/* รูปโลโก้ (หน้าติดต่อ) */}
@@ -351,6 +386,29 @@ function BrandSettings({ settings, save }) {
         </div>
       </div>
     </section>
+  );
+}
+
+// กล่องอัปโหลดโลโก้แถบเมนู (พรีวิวบนพื้นสว่าง/เข้มตามการใช้งานจริง)
+function HeaderLogoBox({ label, hint, bg, url, busy, onFile, onClear }) {
+  const isDark = bg === "dark";
+  return (
+    <div className="rounded-xl border border-line p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-medium text-ink">{label}</p>
+        <span className="text-[11px] text-sub">{hint}</span>
+      </div>
+      <div className={`mt-2 flex h-16 items-center justify-center overflow-hidden rounded-lg ${isDark ? "bg-ink" : "border border-line bg-white"}`}>
+        {url ? <img src={url} alt="" className="max-h-11 w-auto object-contain" /> : <span className={`text-[12px] ${isDark ? "text-white/50" : "text-sub"}`}>ยังไม่มีรูป</span>}
+      </div>
+      <div className="mt-2 flex items-center gap-3">
+        <label className="cursor-pointer text-[13px] font-medium text-accent">
+          {busy ? "กำลังอัปโหลด..." : url ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+          <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+        </label>
+        {url && <button type="button" onClick={onClear} className="text-[13px] text-sub hover:text-red-600">ลบ</button>}
+      </div>
+    </div>
   );
 }
 

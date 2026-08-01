@@ -27,6 +27,12 @@ export default function App() {
   const isHome = location.pathname === "/";
   const overHero = s.transparentHeader !== false && isHome && !scrolled;
 
+  // โลโก้รูปบนแถบเมนู — แยกพื้นสว่าง/พื้นเข้ม + ปรับขนาดได้ (ไม่มีรูป = ใช้ข้อความ SAENGDAO)
+  const hdrLogoLight = s.headerLogoOnLight || ""; // ใช้บนพื้นสว่าง (แถบขาว)
+  const hdrLogoDark = s.headerLogoOnDark || ""; // ใช้บนพื้นเข้ม (ทับสไลด์)
+  const hdrLogoSize = Number(s.headerLogoSize) || 28;
+  const hdrLogo = overHero ? hdrLogoDark || hdrLogoLight : hdrLogoLight || hdrLogoDark;
+
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
     if (!mobileOpen) return;
@@ -52,13 +58,19 @@ export default function App() {
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
                 </svg>
               </button>
-              <Link
-                to="/"
-                className={`font-semibold tracking-[0.22em] transition-colors ${overHero ? "text-white" : "text-ink"}`}
-                style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}
-              >
-                SAENGDAO
-              </Link>
+              {hdrLogo ? (
+                <Link to="/" className="shrink-0">
+                  <img src={hdrLogo} alt="SAENGDAO" style={{ height: `${hdrLogoSize}px` }} className="w-auto object-contain" />
+                </Link>
+              ) : (
+                <Link
+                  to="/"
+                  className={`font-semibold tracking-[0.22em] transition-colors ${overHero ? "text-white" : "text-ink"}`}
+                  style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}
+                >
+                  SAENGDAO
+                </Link>
+              )}
             </div>
 
             <nav className="hidden items-center gap-8 sm:flex">
@@ -106,7 +118,11 @@ export default function App() {
         />
         <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex h-12 items-center justify-between border-b border-line px-5">
-            <span className="font-semibold tracking-[0.22em] text-ink" style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}>SAENGDAO</span>
+            {hdrLogoLight || hdrLogoDark ? (
+              <img src={hdrLogoLight || hdrLogoDark} alt="SAENGDAO" style={{ height: `${hdrLogoSize}px` }} className="w-auto object-contain" />
+            ) : (
+              <span className="font-semibold tracking-[0.22em] text-ink" style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}>SAENGDAO</span>
+            )}
             <button onClick={() => setMobileOpen(false)} aria-label="ปิด" className="rounded-lg p-1 text-sub hover:bg-mist hover:text-ink">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" /></svg>
             </button>

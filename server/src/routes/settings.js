@@ -10,6 +10,9 @@ const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
   "logoSize", // ความสูงโลโก้ (px) หน้าติดต่อ
+  "headerLogoOnLight", // โลโก้รูปบนแถบเมนู — พื้นสว่าง (แถบขาว)
+  "headerLogoOnDark", // โลโก้รูปบนแถบเมนู — พื้นเข้ม (ทับสไลด์)
+  "headerLogoSize", // ความสูงโลโก้รูปบนแถบเมนู (px)
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
   "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
   "slideInterval", // หน่วงเวลาเปลี่ยนสไลด์ (วินาที)
@@ -58,6 +61,9 @@ const DEFAULTS = {
   loyaltyBahtPerPoint: "100",
   loyaltyPointValue: "1",
   orderExpiryDays: "7",
+  headerLogoOnLight: "",
+  headerLogoOnDark: "",
+  headerLogoSize: "28",
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",
   footerLogoSize: "36",
