@@ -281,10 +281,10 @@ function BookForm({ book, categories, onClose }) {
     try { const url = await uploadPdf(file); setForm((f) => ({ ...f, previewPdf: url })); } catch { setError("อัปโหลด PDF ไม่สำเร็จ"); } finally { setBusyFor("pdf", false); }
   };
 
-  // ราคาลดเป็น %
+  // ราคาลดเป็น % — ปัดขึ้นเป็นจำนวนเต็มบาทให้ตรงกับที่หน้าร้านแสดง (เช่น 467.5 → 468)
   const setDiscountPct = (pct) => {
     const p = Number(form.price);
-    if (p && pct) setForm((f) => ({ ...f, discountPrice: Math.round(p * (1 - Number(pct) / 100) * 100) / 100 }));
+    if (p && pct) setForm((f) => ({ ...f, discountPrice: Math.ceil(p * (1 - Number(pct) / 100)) }));
   };
 
   // variants
