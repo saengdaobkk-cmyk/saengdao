@@ -15,16 +15,19 @@ export default function BookGridSection({ title, subtitle, sort, mode = "auto", 
 
   return (
     <section className="mx-auto max-w-page px-5 py-10">
-      <SectionHeading title={title} subtitle={subtitle} className="mb-8" />
-      <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <SectionHeading
+        title={title}
+        subtitle={subtitle}
+        className="mb-8"
+        right={
+          <Link to="/books" className="border-b border-ink pb-0.5 text-[14px] text-ink transition hover:opacity-60">
+            ดูหนังสือทั้งหมด
+          </Link>
+        }
+      />
+      <div className="grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((book) => <MiniCard key={book.id} book={book} />)}
       </div>
-      <Link
-        to="/books"
-        className="mt-10 inline-block rounded-full border border-ink/20 px-7 py-3 text-[14px] font-medium text-ink transition hover:border-ink hover:bg-ink hover:text-white"
-      >
-        ดูหนังสือทั้งหมด
-      </Link>
     </section>
   );
 }
@@ -35,7 +38,7 @@ function MiniCard({ book }) {
   const hasCut = pi.price < pi.original;
   return (
     <Link to={`/books/${book.id}`} className="group flex gap-4">
-      <div className="aspect-[145/210] w-[84px] shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line">
+      <div className="aspect-[145/210] w-[104px] shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line">
         {book.coverImage ? (
           <img src={img(book.coverImage, 300)} alt={book.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
         ) : (
