@@ -125,7 +125,7 @@ export default function CartDrawer() {
                         onClick={() => remove(item.key)}
                         aria-label="ลบออกจากตะกร้า"
                         title="ลบออกจากตะกร้า"
-                        className="rounded-lg p-1.5 text-sub transition hover:bg-red-50 hover:text-red-600"
+                        className="cart-trash-btn rounded-lg p-1.5 text-sub transition hover:bg-red-50 hover:text-red-600"
                       >
                         <TrashIcon />
                       </button>
@@ -163,14 +163,18 @@ export default function CartDrawer() {
   );
 }
 
-// ไอคอนถังขยะ (ฝา + ตัวถัง + กากบาทข้างใน)
+// ไอคอนถังขยะ (ฝาถังยกเปิดตอน hover + ตัวถังมี X ข้างใน)
 function TrashIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 7h16" />
-      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
-      <path d="M6.5 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12" />
-      <path d="M10 11l4 5M14 11l-4 5" />
+      <g className="cart-trash-lid">
+        <path d="M4 7h16" />
+        <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      </g>
+      <g className="cart-trash-body">
+        <path d="M6.5 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12" />
+        <path d="M10 11l4 5M14 11l-4 5" />
+      </g>
     </svg>
   );
 }
