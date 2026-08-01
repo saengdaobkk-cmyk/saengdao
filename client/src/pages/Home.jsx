@@ -7,36 +7,42 @@ import PromoRibbon from "../components/PromoRibbon";
 import TextMarquee from "../components/TextMarquee";
 import HotDealSection from "../components/HotDealSection";
 import { useSettings } from "../api/settings";
-import { parseOrder, parseRows } from "../lib/homeSections";
+import { parseOrder, parseRows, parseCustomRows, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
+
+// แถวหนังสือ (มาใหม่/ขายดี/แถวที่สร้างเอง) — ครอบด้วยระยะห่างมาตรฐาน
+const Row = (cfg) => (
+  <div className="pt-10 sm:pt-14">
+    <BookRow title={cfg.title} subtitle={cfg.subtitle} sort={cfg.sort} mode={cfg.mode} bookIds={cfg.bookIds} />
+  </div>
+);
 
 export default function Home() {
-  const { homeSectionOrder, homeRows } = useSettings();
-  const order = parseOrder(homeSectionOrder);
+  const { homeSectionOrder, homeRows, homeCustomRows } = useSettings();
   const rows = parseRows(homeRows);
+  const custom = parseCustomRows(homeCustomRows);
+  const customBy = Object.fromEntries(custom.map((r) => [customKey(r.id), r]));
+  const order = parseOrder(homeSectionOrder, custom.map((r) => customKey(r.id)));
 
   const sections = {
     hero: <HeroSlider />,
-    hotdeal: <HotDealSection />,
-    new: (
-      <div className="pt-10 sm:pt-14">
-        <BookRow title={rows.new.title} subtitle={rows.new.subtitle} sort={rows.new.sort} mode={rows.new.mode} bookIds={rows.new.bookIds} />
-      </div>
-    ),
-    bestseller: (
-      <div className="pt-10 sm:pt-14">
-        <BookRow title={rows.bestseller.title} subtitle={rows.bestseller.subtitle} sort={rows.bestseller.sort} mode={rows.bestseller.mode} bookIds={rows.bestseller.bookIds} />
-      </div>
-    ),
+    hotdeal: <HotDealSection title={rows.hotdeal.title} subtitle={rows.hotdeal.subtitle} />,
+    new: Row(rows.new),
+    bestseller: Row(rows.bestseller),
     browse: <BrowseSections />,
     textmarquee: <TextMarquee />,
     ribbon: <PromoRibbon />,
     brands: <PublisherMarquee />,
   };
 
+  const render = (key) => {
+    if (isCustomKey(key)) return customBy[key] ? Row(customBy[key]) : null;
+    return sections[key];
+  };
+
   return (
     <>
       {order.map((key) => (
-        <Fragment key={key}>{sections[key]}</Fragment>
+        <Fragment key={key}>{render(key)}</Fragment>
       ))}
     </>
   );

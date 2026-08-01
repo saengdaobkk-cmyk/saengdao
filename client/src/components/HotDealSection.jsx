@@ -5,7 +5,7 @@ import BookCard from "./BookCard";
 import SectionHeading from "./SectionHeading";
 
 // section Hot Deal หน้าแรก — ซ่อนถ้าไม่มีสินค้าที่ราคาพิเศษกำลัง active
-export default function HotDealSection() {
+export default function HotDealSection({ title = "Hot Deal", subtitle = "ราคาพิเศษ มีเวลาจำกัด" }) {
   const { data: books } = useHotDeals();
   const [, tick] = useState(0); // บังคับ re-render ตอนโปรหมดเวลา
 
@@ -28,8 +28,8 @@ export default function HotDealSection() {
     <section className="bg-gradient-to-b from-rose-50 to-white py-12">
       <div className="mx-auto max-w-page px-5">
         <SectionHeading
-          title="Hot Deal"
-          subtitle="ราคาพิเศษ มีเวลาจำกัด"
+          title={title}
+          subtitle={subtitle}
           subtitleClassName="text-rose-500"
           className="mb-8"
         />

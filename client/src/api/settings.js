@@ -17,6 +17,7 @@ const FALLBACK = {
   logoSizeHeader: "16",
   logoSizeFooter: "15",
   homeRows: "",
+  homeCustomRows: "",
   headerLogoOnLight: "",
   headerLogoOnDark: "",
   headerLogoSize: "28",

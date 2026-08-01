@@ -19,6 +19,7 @@ const STRING_KEYS = [
   "slideAnimation", // เอฟเฟกต์เปลี่ยนสไลด์: fade|slide
   "homeSectionOrder", // ลำดับ section หน้าแรก (JSON array)
   "homeRows", // ตั้งค่าแถวหนังสือหน้าแรก: หัวข้อ/คำโปรย/โหมดอัตโนมัติ-เลือกเอง (JSON)
+  "homeCustomRows", // แถวหนังสือที่แอดมินสร้างเอง (JSON array)
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร

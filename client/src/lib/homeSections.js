@@ -25,8 +25,39 @@ export const ROW_SORTS = [
 export const ROW_DEFAULTS = {
   new: { title: "มาใหม่", subtitle: "หนังสืออัปเดตล่าสุดจากเรา", mode: "auto", sort: "newest", bookIds: [] },
   bestseller: { title: "ขายดี", subtitle: "เล่มที่นักอ่านเลือกมากที่สุด", mode: "auto", sort: "popular", bookIds: [] },
+  hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", bookIds: [] },
 };
 export const ROW_KEYS = Object.keys(ROW_DEFAULTS);
+// แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal ดึงอัตโนมัติจากสินค้าราคาพิเศษ แก้ได้แค่หัวข้อ/คำโปรย)
+export const BOOKS_EDITABLE_KEYS = ["new", "bestseller"];
+
+// แถวที่ผู้ใช้สร้างเอง — เก็บใน setting homeCustomRows (JSON array)
+export function parseCustomRows(raw) {
+  let arr = [];
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(p)) arr = p;
+  } catch { /* ว่าง */ }
+  return arr
+    .filter((r) => r && typeof r.id === "string")
+    .map((r) => ({
+      id: r.id,
+      title: typeof r.title === "string" && r.title.trim() ? r.title : "แถวหนังสือ",
+      subtitle: typeof r.subtitle === "string" ? r.subtitle : "",
+      mode: r.mode === "manual" ? "manual" : "auto",
+      sort: ROW_SORTS.some((s) => s.value === r.sort) ? r.sort : "newest",
+      bookIds: Array.isArray(r.bookIds) ? r.bookIds.filter((x) => typeof x === "string") : [],
+    }));
+}
+
+// สร้างแถวใหม่ (id สุ่ม) + คีย์สำหรับลำดับ section
+export function newCustomRow() {
+  const id = (crypto.randomUUID?.() || String(Date.now())).slice(0, 8);
+  return { id, title: "แถวหนังสือใหม่", subtitle: "", mode: "auto", sort: "newest", bookIds: [] };
+}
+export const customKey = (id) => `custom:${id}`;
+export const isCustomKey = (k) => typeof k === "string" && k.startsWith("custom:");
+export const customIdOf = (k) => (isCustomKey(k) ? k.slice(7) : null);
 
 // อ่านค่าตั้งค่าแถวหนังสือจาก setting (JSON) → merge ทับ default (กันค่าหาย/ผิดชนิด)
 export function parseRows(raw) {
@@ -50,13 +81,16 @@ export function parseRows(raw) {
   return out;
 }
 
-// อ่านลำดับจากค่า setting (JSON) → คืน array ที่ถูกต้อง + เติม section ใหม่ที่ยังไม่มีต่อท้าย
-export function parseOrder(raw) {
+// อ่านลำดับจากค่า setting (JSON) → คืน array ที่ถูกต้อง + เติม section ที่ยังไม่มีต่อท้าย
+// customKeys = คีย์ของแถวที่ผู้ใช้สร้างเอง (custom:<id>) — เก็บเฉพาะที่ยังมีอยู่จริง
+export function parseOrder(raw, customKeys = []) {
+  const validCustom = new Set(customKeys);
   let arr = [];
   try {
     const p = typeof raw === "string" ? JSON.parse(raw) : raw;
-    if (Array.isArray(p)) arr = p.filter((k) => DEFAULT_ORDER.includes(k));
+    if (Array.isArray(p)) arr = p.filter((k) => DEFAULT_ORDER.includes(k) || validCustom.has(k));
   } catch { /* ใช้ค่าเริ่มต้น */ }
   for (const k of DEFAULT_ORDER) if (!arr.includes(k)) arr.push(k);
+  for (const k of customKeys) if (!arr.includes(k)) arr.push(k); // แถวที่เพิ่งสร้าง → ต่อท้าย
   return arr;
 }
