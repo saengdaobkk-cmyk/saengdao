@@ -30,6 +30,8 @@ export const ROW_DEFAULTS = {
   hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", bookIds: [] },
   recommend: { title: "แนะนำสำหรับคุณ", subtitle: "คัดสรรมาเพื่อนักอ่านทุกคน", mode: "auto", sort: "popular", bookIds: [] },
   blog: { title: "บทความ", subtitle: "เรื่องเล่า รีวิว และแรงบันดาลใจจากหนังสือ", mode: "auto", sort: "newest", bookIds: [] },
+  browse: { title: "หมวดหมู่หนังสือ", subtitle: "เลือกอ่านตามหมวดที่คุณสนใจ", mode: "auto", sort: "newest", bookIds: [] },
+  brands: { title: "สำนักพิมพ์ที่คัดสรร", subtitle: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ", mode: "auto", sort: "newest", bookIds: [] },
 };
 export const ROW_KEYS = Object.keys(ROW_DEFAULTS);
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)

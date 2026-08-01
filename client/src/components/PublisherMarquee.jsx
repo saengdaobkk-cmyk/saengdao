@@ -5,11 +5,13 @@ import { useContent } from "../api/content";
 import { img } from "../lib/img";
 
 // section สำนักพิมพ์ — การ์ดโลโก้เรียงกลางจอ
-export default function PublisherMarquee() {
+export default function PublisherMarquee({ title, subtitle }) {
   const { data } = useTermDirectory("PUBLISHER");
   const { showPublisherMarquee } = useSettings();
   const { t } = useContent();
   const items = (data || []).filter((p) => p?.slug);
+  const heading = title ?? t("common.marquee_title", "สำนักพิมพ์ที่คัดสรร");
+  const sub = subtitle ?? t("common.brands_subtitle", "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ");
 
   if (!showPublisherMarquee || items.length < 2) return null;
 
@@ -24,10 +26,8 @@ export default function PublisherMarquee() {
   return (
     <section className="mx-auto max-w-page px-5 py-16 sm:py-20">
       <div className="mx-auto max-w-xl text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-          {t("common.marquee_title", "สำนักพิมพ์ที่คัดสรร")}
-        </h2>
-        <p className="mt-1.5 text-[14px] text-sub">{t("common.brands_subtitle", "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ")}</p>
+        <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{heading}</h2>
+        <p className="mt-1.5 text-[14px] text-sub">{sub}</p>
       </div>
 
       <div className="mt-10 flex flex-wrap justify-center gap-4">

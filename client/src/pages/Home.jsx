@@ -30,7 +30,7 @@ export default function Home() {
     hotdeal: <HotDealSection title={rows.hotdeal.title} subtitle={rows.hotdeal.subtitle} />,
     new: Row(rows.new),
     bestseller: Row(rows.bestseller),
-    browse: <BrowseSections />,
+    browse: <BrowseSections title={rows.browse.title} subtitle={rows.browse.subtitle} />,
     recommend: (
       <div className="pt-10 sm:pt-14">
         <BookGridSection title={rows.recommend.title} subtitle={rows.recommend.subtitle} sort={rows.recommend.sort} mode={rows.recommend.mode} bookIds={rows.recommend.bookIds} />
@@ -38,7 +38,7 @@ export default function Home() {
     ),
     textmarquee: <TextMarquee />,
     ribbon: <PromoRibbon />,
-    brands: <PublisherMarquee />,
+    brands: <PublisherMarquee title={rows.brands.title} subtitle={rows.brands.subtitle} />,
     blog: (
       <div className="pt-10 sm:pt-14">
         <BlogSection title={rows.blog.title} subtitle={rows.blog.subtitle} />

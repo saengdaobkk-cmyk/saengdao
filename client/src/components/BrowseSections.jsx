@@ -14,7 +14,7 @@ const TILES = [
   "from-violet-500 to-violet-700",
 ];
 
-export default function BrowseSections() {
+export default function BrowseSections({ title = "หมวดหมู่หนังสือ", subtitle = "เลือกอ่านตามหมวดที่คุณสนใจ" }) {
   const { data: categories } = useCategories();
   const scroller = useRef(null);
   const scroll = (dir) => scroller.current?.scrollBy({ left: dir * 360, behavior: "smooth" });
@@ -25,8 +25,8 @@ export default function BrowseSections() {
       {categories?.length > 0 && (
         <div>
           <SectionHeading
-            title="หมวดหมู่หนังสือ"
-            subtitle="เลือกอ่านตามหมวดที่คุณสนใจ"
+            title={title}
+            subtitle={subtitle}
             className="mb-8"
             right={
               <Link to="/books" className="border-b border-ink pb-0.5 text-[14px] text-ink transition hover:opacity-60">
