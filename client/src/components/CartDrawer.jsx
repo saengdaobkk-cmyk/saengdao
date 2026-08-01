@@ -93,25 +93,29 @@ export default function CartDrawer() {
           <>
             <ul className="flex-1 divide-y divide-line overflow-y-auto px-5">
               {items.map((item) => (
-                <li key={item.key} className="flex gap-3 py-4">
-                  <div className="flex h-20 w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-mist">
+                <li key={item.key} className="flex gap-4 py-5">
+                  <Link
+                    to={`/books/${item.id}`}
+                    onClick={closeDrawer}
+                    className="flex h-[92px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-mist shadow-[0_6px_16px_-6px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.06] transition-transform duration-300 hover:-translate-y-0.5"
+                  >
                     {item.coverImage ? (
-                      <img src={img(item.coverImage, 160)} alt={item.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      <img src={img(item.coverImage, 200)} alt={item.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-xl opacity-25">𝐀</span>
                     )}
-                  </div>
+                  </Link>
                   <div className="flex flex-1 flex-col">
                     <Link
                       to={`/books/${item.id}`}
                       onClick={closeDrawer}
-                      className="line-clamp-1 text-[14px] font-medium text-ink hover:text-accent"
+                      className="line-clamp-2 text-[14px] font-medium leading-snug text-ink hover:text-accent"
                     >
                       {item.title}
                     </Link>
-                    {item.variantName && <span className="text-[11px] text-ink/60">{item.variantName}</span>}
-                    <p className="text-[12px] text-sub">{formatPrice(item.price)}</p>
-                    <div className="mt-auto flex items-center justify-between pt-2">
+                    {item.variantName && <span className="mt-0.5 text-[11px] text-ink/60">{item.variantName}</span>}
+                    <p className="mt-0.5 text-[13px] font-semibold text-ink">{formatPrice(item.price)}</p>
+                    <div className="mt-auto flex items-center justify-between pt-2.5">
                       <div className="flex items-center rounded-full border border-line">
                         <Qty onClick={() => setQty(item.key, item.quantity - 1)} disabled={item.quantity <= 1}>−</Qty>
                         <span className="w-7 text-center text-[13px] tabular-nums">{item.quantity}</span>
@@ -119,9 +123,11 @@ export default function CartDrawer() {
                       </div>
                       <button
                         onClick={() => remove(item.key)}
-                        className="text-[12px] text-sub transition hover:text-red-600"
+                        aria-label="ลบออกจากตะกร้า"
+                        title="ลบออกจากตะกร้า"
+                        className="rounded-lg p-1.5 text-sub transition hover:bg-red-50 hover:text-red-600"
                       >
-                        ลบ
+                        <TrashIcon />
                       </button>
                     </div>
                   </div>
@@ -154,6 +160,18 @@ export default function CartDrawer() {
         )}
       </aside>
     </>
+  );
+}
+
+// ไอคอนถังขยะ (ฝา + ตัวถัง + กากบาทข้างใน)
+function TrashIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M6.5 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12" />
+      <path d="M10 11l4 5M14 11l-4 5" />
+    </svg>
   );
 }
 
