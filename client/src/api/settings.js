@@ -47,13 +47,23 @@ const FALLBACK = {
   footerNav: "",
 };
 
-export function useSettings() {
-  const { data } = useQuery({
+function settingsQuery() {
+  return {
     queryKey: ["settings"],
     queryFn: async () => (await api.get("/settings")).data,
     staleTime: 1000 * 60, // cache 1 นาที
-  });
+  };
+}
+
+export function useSettings() {
+  const { data } = useQuery(settingsQuery());
   return data || FALLBACK;
+}
+
+// โหลดค่าจริงจาก server เสร็จหรือยัง (ใช้กันโลโก้กระพริบ text ก่อนขึ้นรูป)
+export function useSettingsLoaded() {
+  const { data } = useQuery(settingsQuery());
+  return !!data;
 }
 
 // สำหรับ admin — อัปเดตค่าแล้ว refresh cache

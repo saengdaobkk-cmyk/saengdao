@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
 import { useCart } from "./cart/CartContext";
-import { useSettings } from "./api/settings";
+import { useSettings, useSettingsLoaded } from "./api/settings";
 import { useContent } from "./api/content";
 import { useNav } from "./api/nav";
 import CartDrawer from "./components/CartDrawer";
@@ -11,6 +11,7 @@ import SearchModal from "./components/SearchModal";
 export default function App() {
   const { t } = useContent();
   const s = useSettings();
+  const settingsLoaded = useSettingsLoaded(); // กันโลโก้กระพริบ text ก่อนขึ้นรูป
   const { data: nav = [] } = useNav();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -58,7 +59,9 @@ export default function App() {
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
                 </svg>
               </button>
-              {hdrLogo ? (
+              {!settingsLoaded ? (
+                <span className="block w-28" style={{ height: `${hdrLogoSize}px` }} aria-hidden="true" />
+              ) : hdrLogo ? (
                 <Link to="/" className="shrink-0">
                   <img src={hdrLogo} alt="SAENGDAO" style={{ height: `${hdrLogoSize}px` }} className="w-auto object-contain" />
                 </Link>
@@ -118,7 +121,9 @@ export default function App() {
         />
         <div className={`absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
           <div className="flex h-12 items-center justify-between border-b border-line px-5">
-            {hdrLogoLight || hdrLogoDark ? (
+            {!settingsLoaded ? (
+              <span className="block w-24" style={{ height: `${hdrLogoSize}px` }} aria-hidden="true" />
+            ) : hdrLogoLight || hdrLogoDark ? (
               <img src={hdrLogoLight || hdrLogoDark} alt="SAENGDAO" style={{ height: `${hdrLogoSize}px` }} className="w-auto object-contain" />
             ) : (
               <span className="font-semibold tracking-[0.22em] text-ink" style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}>SAENGDAO</span>
@@ -160,7 +165,9 @@ export default function App() {
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
             <Link to="/" className="shrink-0">
-              {s.footerLogoUrl ? (
+              {!settingsLoaded ? (
+                <span className="block w-36" style={{ height: `${Number(s.footerLogoSize) || 36}px` }} aria-hidden="true" />
+              ) : s.footerLogoUrl ? (
                 <img src={s.footerLogoUrl} alt="logo" style={{ height: `${Number(s.footerLogoSize) || 36}px` }} className="w-auto object-contain" />
               ) : (
                 <span className="text-[26px] font-bold tracking-[0.12em] sm:text-[30px]">{s.footerLogoText || "SAENGDAO"}</span>
