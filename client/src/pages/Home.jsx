@@ -6,6 +6,8 @@ import PublisherMarquee from "../components/PublisherMarquee";
 import PromoRibbon from "../components/PromoRibbon";
 import TextMarquee from "../components/TextMarquee";
 import HotDealSection from "../components/HotDealSection";
+import BookGridSection from "../components/BookGridSection";
+import BlogSection from "../components/BlogSection";
 import { useSettings } from "../api/settings";
 import { parseOrder, parseRows, parseCustomRows, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
 
@@ -29,9 +31,19 @@ export default function Home() {
     new: Row(rows.new),
     bestseller: Row(rows.bestseller),
     browse: <BrowseSections />,
+    recommend: (
+      <div className="pt-10 sm:pt-14">
+        <BookGridSection title={rows.recommend.title} subtitle={rows.recommend.subtitle} sort={rows.recommend.sort} mode={rows.recommend.mode} bookIds={rows.recommend.bookIds} />
+      </div>
+    ),
     textmarquee: <TextMarquee />,
     ribbon: <PromoRibbon />,
     brands: <PublisherMarquee />,
+    blog: (
+      <div className="pt-10 sm:pt-14">
+        <BlogSection title={rows.blog.title} subtitle={rows.blog.subtitle} />
+      </div>
+    ),
   };
 
   const render = (key) => {

@@ -9,6 +9,12 @@ import { img } from "../../lib/img";
 
 const inp = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30";
 
+// คำอธิบายสำหรับแถวที่เลือกหนังสือเองไม่ได้ (ดึงอัตโนมัติ)
+const ROW_NOTE = {
+  hotdeal: "แถวนี้ดึงหนังสือที่ตั้งราคา Hot Deal ไว้โดยอัตโนมัติ — แก้ได้เฉพาะหัวข้อ/คำโปรย",
+  blog: "แถวนี้ดึงบทความล่าสุดจากระบบบล็อกโดยอัตโนมัติ — แก้ได้เฉพาะหัวข้อ/คำโปรย",
+};
+
 export default function AdminHomeLayout() {
   const settings = useSettings();
   const update = useUpdateSettings();
@@ -85,7 +91,7 @@ export default function AdminHomeLayout() {
                     {cust && <span className="ml-2 rounded-full bg-mist px-2 py-0.5 text-[11px] text-sub">แถวที่สร้างเอง</span>}
                     {editable && (
                       <span className="ml-2 text-[12px] text-sub">
-                        · {cfg.title} {!booksEditable ? "(อัตโนมัติจากสินค้าราคาพิเศษ)" : cfg.mode === "manual" ? `(เลือกเอง ${cfg.bookIds.length} เล่ม)` : "(อัตโนมัติ)"}
+                        · {cfg.title} {!booksEditable ? "(อัตโนมัติ)" : cfg.mode === "manual" ? `(เลือกเอง ${cfg.bookIds.length} เล่ม)` : "(อัตโนมัติ)"}
                       </span>
                     )}
                   </div>
@@ -101,6 +107,7 @@ export default function AdminHomeLayout() {
                     cfg={cfg}
                     saving={update.isPending}
                     booksEditable={booksEditable}
+                    note={ROW_NOTE[key]}
                     onSave={(next) => (cust ? saveCustom(cfg.id, next) : saveRow(key, next))}
                     onReset={cust ? undefined : () => saveRow(key, ROW_DEFAULTS[key])}
                     onDelete={cust ? () => deleteCustom(cfg.id) : undefined}
@@ -119,7 +126,7 @@ export default function AdminHomeLayout() {
   );
 }
 
-function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = true }) {
+function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = true, note }) {
   const [title, setTitle] = useState(cfg.title);
   const [subtitle, setSubtitle] = useState(cfg.subtitle);
   const [mode, setMode] = useState(cfg.mode);
@@ -164,7 +171,7 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
       </div>
 
       {!booksEditable ? (
-        <p className="text-[12px] text-sub">แถวนี้ดึงหนังสือที่ตั้งราคา Hot Deal ไว้โดยอัตโนมัติ — แก้ได้เฉพาะหัวข้อ/คำโปรย</p>
+        <p className="text-[12px] text-sub">{note || "แถวนี้ดึงหนังสืออัตโนมัติ — แก้ได้เฉพาะหัวข้อ/คำโปรย"}</p>
       ) : (
         <>
           <div>

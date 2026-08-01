@@ -5,9 +5,11 @@ export const HOME_SECTIONS = [
   { key: "new", label: "หนังสือมาใหม่" },
   { key: "bestseller", label: "หนังสือขายดี" },
   { key: "browse", label: "หมวดหมู่ (Browse)" },
+  { key: "recommend", label: "แนะนำสำหรับคุณ (กริด)" },
   { key: "textmarquee", label: "แถบตัวอักษรเลื่อน" },
   { key: "ribbon", label: "แถบโปรโมชั่นเอียง" },
   { key: "brands", label: "สำนักพิมพ์" },
+  { key: "blog", label: "บทความ / บล็อก" },
 ];
 
 export const DEFAULT_ORDER = HOME_SECTIONS.map((s) => s.key);
@@ -26,10 +28,12 @@ export const ROW_DEFAULTS = {
   new: { title: "มาใหม่", subtitle: "หนังสืออัปเดตล่าสุดจากเรา", mode: "auto", sort: "newest", bookIds: [] },
   bestseller: { title: "ขายดี", subtitle: "เล่มที่นักอ่านเลือกมากที่สุด", mode: "auto", sort: "popular", bookIds: [] },
   hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", bookIds: [] },
+  recommend: { title: "แนะนำสำหรับคุณ", subtitle: "คัดสรรมาเพื่อนักอ่านทุกคน", mode: "auto", sort: "popular", bookIds: [] },
+  blog: { title: "บทความ", subtitle: "เรื่องเล่า รีวิว และแรงบันดาลใจจากหนังสือ", mode: "auto", sort: "newest", bookIds: [] },
 };
 export const ROW_KEYS = Object.keys(ROW_DEFAULTS);
-// แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal ดึงอัตโนมัติจากสินค้าราคาพิเศษ แก้ได้แค่หัวข้อ/คำโปรย)
-export const BOOKS_EDITABLE_KEYS = ["new", "bestseller"];
+// แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)
+export const BOOKS_EDITABLE_KEYS = ["new", "bestseller", "recommend"];
 
 // แถวที่ผู้ใช้สร้างเอง — เก็บใน setting homeCustomRows (JSON array)
 export function parseCustomRows(raw) {
