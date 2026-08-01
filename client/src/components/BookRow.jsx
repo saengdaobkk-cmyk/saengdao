@@ -4,7 +4,7 @@ import BookCard from "./BookCard";
 import SectionHeading from "./SectionHeading";
 
 // แถวเลื่อนแนวนอน — หัวข้อ + ปุ่มเลื่อนซ้าย/ขวา
-export default function BookRow({ title, eyebrow, sort }) {
+export default function BookRow({ title, subtitle, sort }) {
   const scroller = useRef(null);
   const { data, isLoading } = useBooks({ sort, page: 1, limit: 10 });
 
@@ -15,7 +15,7 @@ export default function BookRow({ title, eyebrow, sort }) {
   return (
     <section className="mx-auto max-w-page px-5 py-10">
       <SectionHeading
-        eyebrow={eyebrow}
+        subtitle={subtitle}
         title={title}
         className="mb-8"
         right={

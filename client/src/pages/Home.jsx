@@ -14,12 +14,12 @@ const SECTIONS = {
   hotdeal: <HotDealSection />,
   new: (
     <div className="pt-10 sm:pt-14">
-      <BookRow eyebrow="อัปเดตล่าสุด" title="มาใหม่" sort="newest" />
+      <BookRow title="มาใหม่" subtitle="หนังสืออัปเดตล่าสุดจากเรา" sort="newest" />
     </div>
   ),
   bestseller: (
     <div className="pt-10 sm:pt-14">
-      <BookRow eyebrow="ยอดนิยม" title="ขายดี" sort="popular" />
+      <BookRow title="ขายดี" subtitle="เล่มที่นักอ่านเลือกมากที่สุด" sort="popular" />
     </div>
   ),
   browse: <BrowseSections />,

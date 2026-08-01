@@ -28,9 +28,9 @@ export default function HotDealSection() {
     <section className="bg-gradient-to-b from-rose-50 to-white py-12">
       <div className="mx-auto max-w-page px-5">
         <SectionHeading
-          eyebrow="ราคาพิเศษ · มีเวลาจำกัด"
-          eyebrowClassName="text-rose-500"
           title="Hot Deal"
+          subtitle="ราคาพิเศษ มีเวลาจำกัด"
+          subtitleClassName="text-rose-500"
           className="mb-8"
         />
         <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">

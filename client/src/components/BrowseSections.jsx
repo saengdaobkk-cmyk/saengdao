@@ -25,8 +25,8 @@ export default function BrowseSections() {
       {categories?.length > 0 && (
         <div>
           <SectionHeading
-            eyebrow="เลือกตามความสนใจ"
             title="หมวดหมู่หนังสือ"
+            subtitle="เลือกอ่านตามหมวดที่คุณสนใจ"
             className="mb-8"
             right={
               <Link to="/books" className="border-b border-ink pb-0.5 text-[14px] text-ink transition hover:opacity-60">

@@ -24,11 +24,10 @@ export default function PublisherMarquee() {
   return (
     <section className="mx-auto max-w-page px-5 py-16 sm:py-20">
       <div className="mx-auto max-w-xl text-center">
-        <p className="text-[12px] font-medium tracking-[0.16em] text-accent">{t("common.brands_eyebrow", "สำนักพิมพ์")}</p>
-        <h2 className="mt-2 text-3xl font-extralight tracking-tight text-ink sm:text-[40px]">
+        <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
           {t("common.marquee_title", "สำนักพิมพ์ที่คัดสรร")}
         </h2>
-        <p className="mt-3 text-[15px] text-sub">{t("common.brands_subtitle", "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ")}</p>
+        <p className="mt-1.5 text-[14px] text-sub">{t("common.brands_subtitle", "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ")}</p>
       </div>
 
       <div className="mt-10 flex flex-wrap justify-center gap-4">
