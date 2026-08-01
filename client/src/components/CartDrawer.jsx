@@ -64,9 +64,9 @@ export default function CartDrawer() {
           <button
             onClick={closeDrawer}
             aria-label="ปิด"
-            className="rounded-full p-1.5 text-sub transition hover:bg-mist hover:text-ink"
+            className="group rounded-full p-1.5 text-sub transition hover:bg-mist hover:text-ink"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="transition-transform duration-300 ease-out group-hover:rotate-90">
               <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
             </svg>
           </button>
