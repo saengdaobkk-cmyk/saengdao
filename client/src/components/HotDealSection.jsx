@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useHotDeals } from "../api/books";
 import { hotDealActive } from "../lib/pricing";
 import BookCard from "./BookCard";
+import SectionHeading from "./SectionHeading";
 
 // section Hot Deal หน้าแรก — ซ่อนถ้าไม่มีสินค้าที่ราคาพิเศษกำลัง active
 export default function HotDealSection() {
@@ -26,12 +27,12 @@ export default function HotDealSection() {
   return (
     <section className="bg-gradient-to-b from-rose-50 to-white py-12">
       <div className="mx-auto max-w-page px-5">
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[13px] font-semibold tracking-tight text-rose-500">🔥 ราคาพิเศษ มีเวลาจำกัด</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">Hot Deal</h2>
-          </div>
-        </div>
+        <SectionHeading
+          eyebrow="ราคาพิเศษ · มีเวลาจำกัด"
+          eyebrowClassName="text-rose-500"
+          title="Hot Deal"
+          className="mb-8"
+        />
         <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
           {active.slice(0, 8).map((b) => (
             <BookCard key={b.id} book={b} />

@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCategories } from "../api/books";
 import { img } from "../lib/img";
+import SectionHeading from "./SectionHeading";
 
 // โทนสีพื้นการ์ดหมวดหมู่ (fallback เมื่อยังไม่มีรูป — วนลูป)
 const TILES = [
@@ -23,13 +24,16 @@ export default function BrowseSections() {
       {/* หมวดหมู่ — carousel การ์ดรูป */}
       {categories?.length > 0 && (
         <div>
-          <div className="mb-6 flex items-center gap-4">
-            <h2 className="whitespace-nowrap text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">หมวดหมู่หนังสือ</h2>
-            <div className="hidden h-px flex-1 bg-line sm:block" />
-            <Link to="/books" className="shrink-0 rounded-full bg-ink px-5 py-2 text-[13px] font-medium text-white transition hover:bg-ink/90">
-              ดูทั้งหมด →
-            </Link>
-          </div>
+          <SectionHeading
+            eyebrow="เลือกตามความสนใจ"
+            title="หมวดหมู่หนังสือ"
+            className="mb-8"
+            right={
+              <Link to="/books" className="border-b border-ink pb-0.5 text-[14px] text-ink transition hover:opacity-60">
+                ดูทั้งหมด
+              </Link>
+            }
+          />
 
           <div className="relative">
             <div ref={scroller} className="no-scrollbar flex snap-x gap-4 overflow-x-auto scroll-smooth">

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useBooks } from "../api/books";
 import BookCard from "./BookCard";
+import SectionHeading from "./SectionHeading";
 
 // แถวเลื่อนแนวนอน — หัวข้อ + ปุ่มเลื่อนซ้าย/ขวา
 export default function BookRow({ title, eyebrow, sort }) {
@@ -13,17 +14,17 @@ export default function BookRow({ title, eyebrow, sort }) {
 
   return (
     <section className="mx-auto max-w-page px-5 py-10">
-      <div className="mb-6 flex items-end justify-between">
-        <div>
-          {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
-          <h2 className="mt-1 text-2xl font-semibold tracking-tightest text-ink sm:text-3xl">{title}</h2>
-        </div>
-        {/* ปุ่มเลื่อน (เดสก์ท็อป) */}
-        <div className="hidden gap-2 sm:flex">
-          <ArrowBtn dir="left" onClick={() => scroll(-1)} />
-          <ArrowBtn dir="right" onClick={() => scroll(1)} />
-        </div>
-      </div>
+      <SectionHeading
+        eyebrow={eyebrow}
+        title={title}
+        className="mb-8"
+        right={
+          <div className="hidden gap-2 sm:flex">
+            <ArrowBtn dir="left" onClick={() => scroll(-1)} />
+            <ArrowBtn dir="right" onClick={() => scroll(1)} />
+          </div>
+        }
+      />
 
       {isLoading ? (
         <div className="flex gap-5 overflow-hidden">
