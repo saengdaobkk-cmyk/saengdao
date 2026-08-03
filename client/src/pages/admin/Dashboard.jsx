@@ -27,9 +27,9 @@ export default function Dashboard() {
 
       {/* ต้องดำเนินการ */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <Action to="/admin/orders" tone={data.pendingReview > 0 ? "amber" : "muted"} n={data.pendingReview} label="รอตรวจสลิป" />
-        <Action to="/admin/orders" tone={data.unpaid > 0 ? "blue" : "muted"} n={data.unpaid} label="ยังไม่ชำระเงิน" />
-        <Action to="/admin/orders" tone={data.toShip > 0 ? "indigo" : "muted"} n={data.toShip} label="รอจัดส่ง" />
+        <Action to="/sdpub/orders" tone={data.pendingReview > 0 ? "amber" : "muted"} n={data.pendingReview} label="รอตรวจสลิป" />
+        <Action to="/sdpub/orders" tone={data.unpaid > 0 ? "blue" : "muted"} n={data.unpaid} label="ยังไม่ชำระเงิน" />
+        <Action to="/sdpub/orders" tone={data.toShip > 0 ? "indigo" : "muted"} n={data.toShip} label="รอจัดส่ง" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
@@ -37,12 +37,12 @@ export default function Dashboard() {
         <section className="overflow-hidden rounded-2xl border border-line bg-white">
           <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
             <h2 className="text-[15px] font-semibold text-ink">คำสั่งซื้อล่าสุด</h2>
-            <Link to="/admin/orders" className="text-[13px] text-accent hover:underline">ดูทั้งหมด →</Link>
+            <Link to="/sdpub/orders" className="text-[13px] text-accent hover:underline">ดูทั้งหมด →</Link>
           </div>
           <ul className="divide-y divide-line">
             {data.recentOrders?.map((o) => (
               <li key={o.id}>
-                <Link to="/admin/orders" className="flex items-center gap-3 px-5 py-3 transition hover:bg-mist/40">
+                <Link to="/sdpub/orders" className="flex items-center gap-3 px-5 py-3 transition hover:bg-mist/40">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-medium text-ink">
                       #{o.id.slice(0, 8).toUpperCase()}

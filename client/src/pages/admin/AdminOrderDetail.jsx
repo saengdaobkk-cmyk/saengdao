@@ -21,7 +21,7 @@ export default function AdminOrderDetail() {
     return (
       <div className="py-12 text-center">
         <p className="text-sub">ไม่พบคำสั่งซื้อ</p>
-        <Link to="/admin/orders" className="mt-3 inline-block text-[14px] text-accent">← กลับหน้าคำสั่งซื้อ</Link>
+        <Link to="/sdpub/orders" className="mt-3 inline-block text-[14px] text-accent">← กลับหน้าคำสั่งซื้อ</Link>
       </div>
     );
 
@@ -32,7 +32,7 @@ export default function AdminOrderDetail() {
       {/* หัว */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link to="/admin/orders" className="text-[13px] text-sub transition hover:text-ink">← คำสั่งซื้อทั้งหมด</Link>
+          <Link to="/sdpub/orders" className="text-[13px] text-sub transition hover:text-ink">← คำสั่งซื้อทั้งหมด</Link>
           <h1 className="mt-1 text-[22px] font-semibold tracking-tight text-ink">คำสั่งซื้อ #{order.id.slice(0, 8).toUpperCase()}</h1>
           <p className="text-[13px] text-sub">{fmtDate(order.createdAt)} · {PAYMENT_LABEL[order.paymentMethod]} · {order.user?.name || order.user?.email}</p>
         </div>

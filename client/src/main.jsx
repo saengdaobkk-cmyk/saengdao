@@ -93,10 +93,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               </Route>
 
               {/* หลังร้าน — login แยกจากลูกค้า + layout แยกเอกเทศ */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/sdpub/login" element={<AdminLogin />} />
               {/* หน้าพิมพ์เอกสาร — standalone ไม่มี sidebar */}
-              <Route path="/admin/print/orders" element={<AdminOrdersPrint />} />
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/sdpub/print/orders" element={<AdminOrdersPrint />} />
+              <Route path="/sdpub" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="collections" element={<AdminCollections />}>

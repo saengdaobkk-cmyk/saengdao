@@ -9,10 +9,10 @@ import {
 } from "../../api/admin";
 
 const subtabs = [
-  { to: "/admin/collections", label: "หมวดหมู่", end: true },
-  { to: "/admin/collections/publishers", label: "สำนักพิมพ์" },
-  { to: "/admin/collections/authors", label: "ผู้เขียน" },
-  { to: "/admin/collections/translators", label: "ผู้แปล" },
+  { to: "/sdpub/collections", label: "หมวดหมู่", end: true },
+  { to: "/sdpub/collections/publishers", label: "สำนักพิมพ์" },
+  { to: "/sdpub/collections/authors", label: "ผู้เขียน" },
+  { to: "/sdpub/collections/translators", label: "ผู้แปล" },
 ];
 
 export default function AdminCollections() {

@@ -8,68 +8,68 @@ import { useAdminStats } from "../../api/admin";
 const NAV_GROUPS = [
   {
     title: null,
-    items: [{ to: "/admin", label: "ภาพรวม", end: true, icon: HomeIcon }],
+    items: [{ to: "/sdpub", label: "ภาพรวม", end: true, icon: HomeIcon }],
   },
   {
     title: "การขาย",
     items: [
-      { to: "/admin/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
-      { to: "/admin/customers", label: "ลูกค้า", icon: CustomerIcon },
-      { to: "/admin/reviews", label: "รีวิวสินค้า", icon: StarIcon },
-      { to: "/admin/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
-      { to: "/admin/discount-rules", label: "กฎส่วนลดอัตโนมัติ", icon: DiscountIcon, adminOnly: true },
-      { to: "/admin/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
+      { to: "/sdpub/orders", label: "คำสั่งซื้อ", icon: OrdersIcon, badge: "pendingReview" },
+      { to: "/sdpub/customers", label: "ลูกค้า", icon: CustomerIcon },
+      { to: "/sdpub/reviews", label: "รีวิวสินค้า", icon: StarIcon },
+      { to: "/sdpub/coupons", label: "โค้ดส่วนลด", icon: TagIcon, adminOnly: true },
+      { to: "/sdpub/discount-rules", label: "กฎส่วนลดอัตโนมัติ", icon: DiscountIcon, adminOnly: true },
+      { to: "/sdpub/shipping", label: "ช่องทางจัดส่ง", icon: TruckIcon, adminOnly: true },
     ],
   },
   {
     title: "สินค้า",
     items: [
-      { to: "/admin/products", label: "สินค้า", icon: ProductIcon },
-      { to: "/admin/collections", label: "หมวดหมู่ & สำนักพิมพ์", icon: FolderIcon },
+      { to: "/sdpub/products", label: "สินค้า", icon: ProductIcon },
+      { to: "/sdpub/collections", label: "หมวดหมู่ & สำนักพิมพ์", icon: FolderIcon },
     ],
   },
   {
     title: "หน้าร้าน",
     items: [
-      { to: "/admin/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
-      { to: "/admin/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
-      { to: "/admin/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
-      { to: "/admin/blog", label: "บทความ / บล็อก", icon: BlogIcon, adminOnly: true },
-      { to: "/admin/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
+      { to: "/sdpub/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
+      { to: "/sdpub/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
+      { to: "/sdpub/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
+      { to: "/sdpub/blog", label: "บทความ / บล็อก", icon: BlogIcon, adminOnly: true },
+      { to: "/sdpub/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
     ],
   },
   {
     title: "ระบบ",
     items: [
-      { to: "/admin/users", label: "ผู้ใช้งาน", icon: UsersIcon, adminOnly: true },
-      { to: "/admin/integrations", label: "การเชื่อมต่อ", icon: PlugIcon, adminOnly: true },
-      { to: "/admin/settings", label: "ตั้งค่า", icon: GearIcon, adminOnly: true },
+      { to: "/sdpub/users", label: "ผู้ใช้งาน", icon: UsersIcon, adminOnly: true },
+      { to: "/sdpub/integrations", label: "การเชื่อมต่อ", icon: PlugIcon, adminOnly: true },
+      { to: "/sdpub/settings", label: "ตั้งค่า", icon: GearIcon, adminOnly: true },
     ],
   },
 ];
 
 // path ที่เฉพาะแอดมินเต็ม (กัน STAFF เข้าตรงๆ ผ่าน URL)
-const ADMIN_ONLY_PATHS = ["/admin/pages", "/admin/slides", "/admin/home-layout", "/admin/content", "/admin/blog", "/admin/coupons", "/admin/discount-rules", "/admin/shipping", "/admin/users", "/admin/integrations", "/admin/settings"];
+const ADMIN_ONLY_PATHS = ["/sdpub/pages", "/sdpub/slides", "/sdpub/home-layout", "/sdpub/content", "/sdpub/blog", "/sdpub/coupons", "/sdpub/discount-rules", "/sdpub/shipping", "/sdpub/users", "/sdpub/integrations", "/sdpub/settings"];
 
 const TITLES = {
-  "/admin": "ภาพรวม",
-  "/admin/orders": "คำสั่งซื้อ",
-  "/admin/products": "สินค้า",
-  "/admin/collections": "Collection",
-  "/admin/collections/publishers": "Collection",
-  "/admin/collections/authors": "Collection",
-  "/admin/collections/translators": "Collection",
-  "/admin/customers": "ลูกค้า",
-  "/admin/pages": "เพจ / เมนูนำทาง",
-  "/admin/slides": "สไลด์หน้าแรก",
-  "/admin/home-layout": "จัดวางหน้าแรก",
-  "/admin/content": "ข้อความในเว็บ",
-  "/admin/coupons": "โค้ดส่วนลด",
-  "/admin/discount-rules": "กฎส่วนลดอัตโนมัติ",
-  "/admin/shipping": "ช่องทางจัดส่ง",
-  "/admin/users": "ผู้ใช้งาน (เจ้าหน้าที่)",
-  "/admin/integrations": "การเชื่อมต่อ",
-  "/admin/settings": "ตั้งค่า",
+  "/sdpub": "ภาพรวม",
+  "/sdpub/orders": "คำสั่งซื้อ",
+  "/sdpub/products": "สินค้า",
+  "/sdpub/collections": "Collection",
+  "/sdpub/collections/publishers": "Collection",
+  "/sdpub/collections/authors": "Collection",
+  "/sdpub/collections/translators": "Collection",
+  "/sdpub/customers": "ลูกค้า",
+  "/sdpub/pages": "เพจ / เมนูนำทาง",
+  "/sdpub/slides": "สไลด์หน้าแรก",
+  "/sdpub/home-layout": "จัดวางหน้าแรก",
+  "/sdpub/content": "ข้อความในเว็บ",
+  "/sdpub/coupons": "โค้ดส่วนลด",
+  "/sdpub/discount-rules": "กฎส่วนลดอัตโนมัติ",
+  "/sdpub/shipping": "ช่องทางจัดส่ง",
+  "/sdpub/users": "ผู้ใช้งาน (เจ้าหน้าที่)",
+  "/sdpub/integrations": "การเชื่อมต่อ",
+  "/sdpub/settings": "ตั้งค่า",
 };
 
 export default function AdminLayout() {
@@ -81,10 +81,10 @@ export default function AdminLayout() {
     return <div className="flex min-h-screen items-center justify-center text-sub">กำลังโหลด...</div>;
   // ยังไม่ล็อกอิน หรือเป็นลูกค้า → ไปหน้า login หลังบ้าน (แยกจากลูกค้า)
   if (!user || !isStaff)
-    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/sdpub/login" state={{ from: location.pathname }} replace />;
   // STAFF เข้า path เฉพาะแอดมินตรงๆ → เด้งกลับภาพรวม
   if (!isAdmin && ADMIN_ONLY_PATHS.some((p) => location.pathname.startsWith(p)))
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/sdpub" replace />;
 
   const groups = NAV_GROUPS
     .map((g) => ({ ...g, items: g.items.filter((it) => isAdmin || !it.adminOnly) }))

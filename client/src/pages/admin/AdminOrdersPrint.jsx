@@ -40,7 +40,7 @@ export default function AdminOrdersPrint() {
   }, [ready, list.length]);
 
   if (loading) return null;
-  if (!user || !isStaff) return <Navigate to="/admin/login" replace />;
+  if (!user || !isStaff) return <Navigate to="/sdpub/login" replace />;
   if (!ready) return <p style={{ padding: 24 }}>กำลังโหลด...</p>;
   if (list.length === 0) return <p style={{ padding: 24 }}>ไม่พบคำสั่งซื้อที่เลือก</p>;
 

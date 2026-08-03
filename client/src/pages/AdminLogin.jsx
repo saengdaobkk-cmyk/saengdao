@@ -6,7 +6,7 @@ export default function AdminLogin() {
   const { user, login, verify2fa, logout, isStaff } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || "/admin";
+  const from = location.state?.from || "/sdpub";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

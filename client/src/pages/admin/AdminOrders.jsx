@@ -25,7 +25,7 @@ export const PRINT_DOCS = [
   ["invoice", "ใบแจ้งหนี้ / ใบเสร็จ"],
 ];
 export const openPrint = (doc, ids) =>
-  window.open(`/admin/print/orders?doc=${doc}&ids=${ids.join(",")}`, "_blank", "noopener");
+  window.open(`/sdpub/print/orders?doc=${doc}&ids=${ids.join(",")}`, "_blank", "noopener");
 
 // คอลัมน์: ☐ / # / วันที่ / คำสั่งซื้อ / ลูกค้า / ช่องทาง / มูลค่า / การชำระเงิน / สถานะ / เมนู
 const COLS = "grid grid-cols-[32px_36px_130px_120px_minmax(140px,1fr)_90px_100px_110px_120px_40px] items-center gap-3";
@@ -120,7 +120,7 @@ export default function AdminOrders() {
                   <input type="checkbox" checked={selected.has(o.id)} onChange={() => toggle(o.id)} className="h-4 w-4 accent-ink" aria-label="เลือก" />
                   <span className="text-sub">{from + i}</span>
                   <span className="text-[12px] text-sub">{fmtDate(o.createdAt)}</span>
-                  <Link to={`/admin/orders/${o.id}`} className="truncate font-medium text-accent hover:underline">
+                  <Link to={`/sdpub/orders/${o.id}`} className="truncate font-medium text-accent hover:underline">
                     #{o.id.slice(0, 8).toUpperCase()}
                   </Link>
                   <span className="truncate text-ink">{o.user?.name || o.user?.email}</span>
@@ -184,8 +184,8 @@ function RowMenu({ order }) {
         <>
           <div className="fixed inset-0 z-40" onClick={close} />
           <div className="fixed z-50 w-56 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-xl" style={{ top: pos.top, left: pos.left }}>
-            <Link to={`/admin/orders/${id}`} onClick={close} className={MENU_ITEM}>ดูรายละเอียด</Link>
-            <Link to={`/admin/orders/${id}?edit=1`} onClick={close} className={MENU_ITEM}>แก้ไข</Link>
+            <Link to={`/sdpub/orders/${id}`} onClick={close} className={MENU_ITEM}>ดูรายละเอียด</Link>
+            <Link to={`/sdpub/orders/${id}?edit=1`} onClick={close} className={MENU_ITEM}>แก้ไข</Link>
             <div className="my-1 border-t border-line" />
             <button onClick={() => print("picking")} className={MENU_ITEM}>พิมพ์ ใบจัดเตรียมสินค้า</button>
             <button onClick={() => print("label")} className={MENU_ITEM}>พิมพ์ ใบปะหน้าพัสดุ (label)</button>
