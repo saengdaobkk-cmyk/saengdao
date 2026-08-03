@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
@@ -6,11 +6,10 @@ import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
 
 export default function CartDrawer() {
-  const { items, setQty, remove, subtotal, count, note, setNote, drawerOpen, closeDrawer } = useCart();
+  const { items, setQty, remove, subtotal, count, drawerOpen, closeDrawer } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [noteOpen, setNoteOpen] = useState(false);
 
   // ปิด drawer อัตโนมัติเมื่อเปลี่ยนหน้า (กันค้างทับหน้าอื่น)
   useEffect(() => {
@@ -138,29 +137,8 @@ export default function CartDrawer() {
 
             {/* ท้าย */}
             <div className="border-t border-line">
-              {/* หมายเหตุถึงร้าน */}
-              <button
-                onClick={() => setNoteOpen((v) => !v)}
-                className="flex w-full items-center justify-center gap-2 py-3.5 text-[13px] font-medium text-ink transition hover:bg-mist/50"
-              >
-                <NoteIcon />
-                หมายเหตุถึงร้าน
-                {note.trim() && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
-              </button>
-              {noteOpen && (
-                <div className="px-5 pb-3">
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={2}
-                    placeholder="ข้อความถึงร้าน เช่น เวลาที่สะดวกรับของ (ถ้ามี)"
-                    className="w-full resize-none rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30"
-                  />
-                </div>
-              )}
-
               {/* ยอดรวม */}
-              <div className="flex items-end justify-between gap-3 border-t border-line bg-mist/30 px-5 py-4">
+              <div className="flex items-end justify-between gap-3 bg-mist/30 px-5 py-4">
                 <p className="max-w-[56%] text-[12px] leading-relaxed text-sub">ค่าจัดส่งคำนวณตอนชำระเงิน</p>
                 <div className="text-right">
                   <p className="text-[12px] text-sub">ยอดรวม</p>
@@ -205,16 +183,6 @@ function TrashIcon() {
         <path d="M6.5 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12" />
         <path d="M10 11l4 5M14 11l-4 5" />
       </g>
-    </svg>
-  );
-}
-
-// ไอคอนหมายเหตุ (กระดาษโน้ต)
-function NoteIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L15.5 3Z" />
-      <path d="M15 3v5h5M8 13h8M8 17h5" />
     </svg>
   );
 }
