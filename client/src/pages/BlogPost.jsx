@@ -34,14 +34,23 @@ export default function BlogPost() {
     );
 
   return (
-    <article className="mx-auto max-w-2xl px-5 py-12 sm:py-16">
-      <Link to="/blog" className="text-[13px] text-sub transition hover:text-ink">← บทความทั้งหมด</Link>
-      <p className="mt-6 text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
-      <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[40px]">{post.title}</h1>
+    <article className="py-12 sm:py-16">
+      {/* หัวเรื่อง — คอลัมน์อ่านสบาย */}
+      <div className="mx-auto max-w-3xl px-5">
+        <Link to="/blog" className="text-[13px] text-sub transition hover:text-ink">← บทความทั้งหมด</Link>
+        <p className="mt-6 text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
+        <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[44px]">{post.title}</h1>
+      </div>
+
+      {/* รูปปก — hero กว้างกว่าเนื้อหา */}
       {post.coverImage && (
-        <img src={img(post.coverImage, 1200)} alt={post.title} className="mt-8 w-full rounded-2xl object-cover" />
+        <div className="mx-auto mt-8 max-w-5xl px-5">
+          <img src={img(post.coverImage, 1600)} alt={post.title} className="w-full rounded-2xl object-cover" />
+        </div>
       )}
-      <div className="mt-8 space-y-4">
+
+      {/* เนื้อหา — คอลัมน์อ่านสบาย */}
+      <div className="mx-auto mt-10 max-w-3xl space-y-4 px-5">
         <ReactMarkdown components={MD_COMPONENTS}>{post.content}</ReactMarkdown>
       </div>
     </article>
