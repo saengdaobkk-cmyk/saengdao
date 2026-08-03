@@ -172,7 +172,7 @@ export default function CartDrawer() {
               <div className="grid grid-cols-2 gap-2.5 px-5 pb-5 pt-3">
                 <button
                   onClick={goCheckout}
-                  className="flex items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[14px] font-medium text-white transition hover:bg-ink/90 active:scale-[0.99]"
+                  className="flex items-center justify-center gap-2 rounded-full bg-accent py-3.5 text-[14px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99]"
                 >
                   <LockIcon />
                   ชำระเงิน
