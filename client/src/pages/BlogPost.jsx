@@ -19,11 +19,11 @@ export const MD_COMPONENTS = {
   ul: (p) => <ul className="list-disc space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   ol: (p) => <ol className="list-decimal space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   blockquote: (p) => <blockquote className="border-l-4 border-line pl-4 text-ink/70" {...p} />,
-  // รูปในเนื้อหา → figure + คำบรรยาย (ใช้ข้อความ alt เป็น caption)
+  // รูปในเนื้อหา → figure กว้างทะลุคอลัมน์ข้อความ (breakout) + คำบรรยายจาก alt
   img: ({ node, alt, ...rest }) => (
-    <figure className="my-5">
-      <img className="w-full rounded-xl object-cover" loading="lazy" alt={alt || ""} {...rest} />
-      {alt ? <figcaption className="mt-2 text-[13px] leading-relaxed text-sub">{alt}</figcaption> : null}
+    <figure className="my-8 ml-[50%] w-[min(1120px,92vw)] -translate-x-1/2">
+      <img className="w-full rounded-2xl object-cover" loading="lazy" alt={alt || ""} {...rest} />
+      {alt ? <figcaption className="mt-2.5 text-center text-[13px] leading-relaxed text-sub">{alt}</figcaption> : null}
     </figure>
   ),
   hr: () => <hr className="border-line" />,
@@ -62,9 +62,9 @@ export default function BlogPost() {
         </div>
       </div>
 
-      {/* รูปปก — hero กว้างกว่าเนื้อหา */}
+      {/* รูปปก — กว้างเท่าหน้าเว็บ (max-w-page) */}
       {post.coverImage && (
-        <div className="mx-auto mt-10 max-w-5xl px-5">
+        <div className="mx-auto mt-10 max-w-page px-5">
           <img src={img(post.coverImage, 1600)} alt={post.title} className="w-full rounded-2xl object-cover" />
         </div>
       )}
