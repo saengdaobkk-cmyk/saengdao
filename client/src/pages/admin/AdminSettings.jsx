@@ -37,6 +37,13 @@ export default function AdminSettings() {
             onChange={(v) => update.mutate({ showProductTrust: v })}
           />
           <ToggleRow
+            title="ปุ่มแชร์ในหน้าบทความ"
+            desc="เปิด: โชว์ปุ่มแชร์ Facebook / LINE / X / คัดลอกลิงก์ ใต้หัวข้อบทความ · ปิด: ซ่อน"
+            checked={settings.showBlogShare}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showBlogShare: v })}
+          />
+          <ToggleRow
             title="แถบโลโก้สำนักพิมพ์ (หน้าแรก)"
             desc="เปิด: โชว์แถบโลโก้สำนักพิมพ์เลื่อนวนก่อน footer · ปิด: ซ่อน"
             checked={settings.showPublisherMarquee}

@@ -7,6 +7,7 @@ const FALLBACK = {
   showCardCategory: false,
   showPublisherMarquee: true,
   showProductTrust: true,
+  showBlogShare: true,
   showPromoRibbon: false,
   showTextMarquee: false,
   transparentHeader: true,

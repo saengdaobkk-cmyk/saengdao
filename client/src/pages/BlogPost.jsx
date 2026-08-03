@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useBlogPost } from "../api/blog";
+import { useSettings } from "../api/settings";
 import { img } from "../lib/img";
 import ShareButtons from "../components/ShareButtons";
 
@@ -24,6 +25,7 @@ const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("th-TH", { day: "nume
 export default function BlogPost() {
   const { slug } = useParams();
   const { data: post, isLoading, isError } = useBlogPost(slug);
+  const { showBlogShare } = useSettings();
 
   if (isLoading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (isError || !post)
@@ -42,9 +44,11 @@ export default function BlogPost() {
         <div className="mt-8 text-center">
           <p className="text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
           <h1 className="mx-auto mt-3 max-w-3xl text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[44px]">{post.title}</h1>
-          <div className="mt-7 flex justify-center">
-            <ShareButtons title={post.title} />
-          </div>
+          {showBlogShare !== false && (
+            <div className="mt-7 flex justify-center">
+              <ShareButtons title={post.title} />
+            </div>
+          )}
         </div>
       </div>
 

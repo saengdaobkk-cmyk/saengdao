@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -47,6 +47,7 @@ const DEFAULTS = {
   showCardCategory: false, // แสดงชื่อหมวดหมู่บนการ์ดสินค้า (ปิดไว้ตามที่เลือก)
   showPublisherMarquee: true, // แถบโลโก้สำนักพิมพ์เลื่อนวน (หน้าแรก)
   showProductTrust: true, // แถบจุดเด่น (จัดส่งฟรี/รับประกัน) ในหน้าสินค้า
+  showBlogShare: true, // ปุ่มแชร์ในหน้าบทความ
   promptpayId: "",
   promptpayName: "",
   bankName: "",
