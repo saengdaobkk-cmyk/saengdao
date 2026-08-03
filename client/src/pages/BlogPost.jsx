@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { useBlogPost } from "../api/blog";
 import { img } from "../lib/img";
+import ShareButtons from "../components/ShareButtons";
 
 // สไตล์ element ของ markdown (หัวข้อย่อย/ตัวหนา/รูป/ลิงก์/รายการ)
 export const MD_COMPONENTS = {
@@ -35,16 +36,21 @@ export default function BlogPost() {
 
   return (
     <article className="py-12 sm:py-16">
-      {/* หัวเรื่อง — คอลัมน์อ่านสบาย */}
-      <div className="mx-auto max-w-3xl px-5">
+      {/* หัวเรื่อง — hero กึ่งกลาง */}
+      <div className="mx-auto max-w-4xl px-5">
         <Link to="/blog" className="text-[13px] text-sub transition hover:text-ink">← บทความทั้งหมด</Link>
-        <p className="mt-6 text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
-        <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[44px]">{post.title}</h1>
+        <div className="mt-8 text-center">
+          <p className="text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
+          <h1 className="mx-auto mt-3 max-w-3xl text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[44px]">{post.title}</h1>
+          <div className="mt-7 flex justify-center">
+            <ShareButtons title={post.title} />
+          </div>
+        </div>
       </div>
 
       {/* รูปปก — hero กว้างกว่าเนื้อหา */}
       {post.coverImage && (
-        <div className="mx-auto mt-8 max-w-5xl px-5">
+        <div className="mx-auto mt-10 max-w-5xl px-5">
           <img src={img(post.coverImage, 1600)} alt={post.title} className="w-full rounded-2xl object-cover" />
         </div>
       )}
