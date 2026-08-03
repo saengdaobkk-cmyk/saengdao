@@ -19,9 +19,9 @@ export const MD_COMPONENTS = {
   ul: (p) => <ul className="list-disc space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   ol: (p) => <ol className="list-decimal space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   blockquote: (p) => <blockquote className="border-l-4 border-line pl-4 text-ink/70" {...p} />,
-  // รูปในเนื้อหา → figure กว้างทะลุคอลัมน์ข้อความ (breakout) + คำบรรยายจาก alt
+  // รูปในเนื้อหา → figure เต็มความกว้าง + คำบรรยายจาก alt
   img: ({ node, alt, ...rest }) => (
-    <figure className="my-8 ml-[50%] w-[min(1120px,92vw)] -translate-x-1/2">
+    <figure className="my-8">
       <img className="w-full rounded-2xl object-cover" loading="lazy" alt={alt || ""} {...rest} />
       {alt ? <figcaption className="mt-2.5 text-center text-[13px] leading-relaxed text-sub">{alt}</figcaption> : null}
     </figure>
@@ -76,8 +76,8 @@ export default function BlogPost() {
         </p>
       )}
 
-      {/* เนื้อหา — คอลัมน์อ่านสบาย */}
-      <div className="mx-auto mt-10 max-w-3xl space-y-4 px-5">
+      {/* เนื้อหา — เต็มความกว้างหน้าเว็บ */}
+      <div className="mx-auto mt-10 max-w-page space-y-4 px-5">
         <ReactMarkdown components={MD_COMPONENTS}>{post.content}</ReactMarkdown>
       </div>
     </article>
