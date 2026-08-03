@@ -3,6 +3,7 @@ import { priceInfo } from "../lib/pricing";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "saengdao_cart";
+const NOTE_KEY = "saengdao_cart_note";
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
@@ -20,10 +21,16 @@ export function CartProvider({ children }) {
   const openDrawer = () => setDrawerOpen(true);
   const closeDrawer = () => setDrawerOpen(false);
 
+  // หมายเหตุถึงร้าน — กรอกในตะกร้า แล้วไหลไปหน้า checkout
+  const [note, setNote] = useState(() => localStorage.getItem(NOTE_KEY) || "");
+
   // sync ลง localStorage ทุกครั้งที่เปลี่ยน
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+  useEffect(() => {
+    localStorage.setItem(NOTE_KEY, note);
+  }, [note]);
 
   // เพิ่มลงตะกร้า — รองรับ variant (book.id + variantId เป็น key แยกบรรทัด)
   const add = (book, qty = 1, variant = null) => {
@@ -67,7 +74,7 @@ export function CartProvider({ children }) {
     );
 
   const remove = (key) => setItems((prev) => prev.filter((i) => i.key !== key));
-  const clear = () => setItems([]);
+  const clear = () => { setItems([]); setNote(""); };
 
   const count = useMemo(() => items.reduce((s, i) => s + i.quantity, 0), [items]);
   const subtotal = useMemo(
@@ -77,7 +84,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, add, setQty, remove, clear, count, subtotal, drawerOpen, openDrawer, closeDrawer }}
+      value={{ items, add, setQty, remove, clear, count, subtotal, note, setNote, drawerOpen, openDrawer, closeDrawer }}
     >
       {children}
     </CartContext.Provider>

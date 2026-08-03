@@ -17,7 +17,7 @@ const PAYMENTS = [
 ];
 
 export default function Checkout() {
-  const { items, subtotal, count, clear } = useCart();
+  const { items, subtotal, count, clear, note: cartNote } = useCart();
   const { user, loading, updateUser } = useAuth();
   const { t } = useContent();
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function Checkout() {
 
   const [form, setForm] = useState({ shipName: "", shipPhone: "", shipAddress: "", email: "" });
   const [paymentMethod, setPaymentMethod] = useState("PROMPTPAY");
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(cartNote || ""); // ดึงหมายเหตุที่กรอกในตะกร้ามาเป็นค่าเริ่มต้น
 
   // ช่องทางจัดส่ง
   const { data: shippingMethods = [] } = useShipping();

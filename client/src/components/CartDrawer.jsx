@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
@@ -6,10 +6,11 @@ import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
 
 export default function CartDrawer() {
-  const { items, setQty, remove, subtotal, count, drawerOpen, closeDrawer } = useCart();
+  const { items, setQty, remove, subtotal, count, note, setNote, drawerOpen, closeDrawer } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [noteOpen, setNoteOpen] = useState(false);
 
   // ปิด drawer อัตโนมัติเมื่อเปลี่ยนหน้า (กันค้างทับหน้าอื่น)
   useEffect(() => {
@@ -136,25 +137,54 @@ export default function CartDrawer() {
             </ul>
 
             {/* ท้าย */}
-            <div className="border-t border-line px-5 py-4">
-              <div className="flex items-center justify-between text-[15px]">
-                <span className="text-sub">ยอดรวม</span>
-                <span className="font-semibold text-ink">{formatPrice(subtotal)}</span>
-              </div>
-              <p className="mt-1 text-[12px] text-sub">ค่าจัดส่งฟรีทั่วประเทศ</p>
+            <div className="border-t border-line">
+              {/* หมายเหตุถึงร้าน */}
               <button
-                onClick={goCheckout}
-                className="mt-4 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99]"
+                onClick={() => setNoteOpen((v) => !v)}
+                className="flex w-full items-center justify-center gap-2 py-3.5 text-[13px] font-medium text-ink transition hover:bg-mist/50"
               >
-                ดำเนินการสั่งซื้อ
+                <NoteIcon />
+                หมายเหตุถึงร้าน
+                {note.trim() && <span className="h-1.5 w-1.5 rounded-full bg-accent" />}
               </button>
-              <Link
-                to="/cart"
-                onClick={closeDrawer}
-                className="mt-2 block text-center text-[13px] text-sub hover:text-ink"
-              >
-                ดูตะกร้าแบบเต็ม
-              </Link>
+              {noteOpen && (
+                <div className="px-5 pb-3">
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={2}
+                    placeholder="ข้อความถึงร้าน เช่น เวลาที่สะดวกรับของ (ถ้ามี)"
+                    className="w-full resize-none rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30"
+                  />
+                </div>
+              )}
+
+              {/* ยอดรวม */}
+              <div className="flex items-end justify-between gap-3 border-t border-line bg-mist/30 px-5 py-4">
+                <p className="max-w-[56%] text-[12px] leading-relaxed text-sub">ราคารวมภาษีแล้ว · จัดส่งฟรีทั่วประเทศ</p>
+                <div className="text-right">
+                  <p className="text-[12px] text-sub">ยอดรวม</p>
+                  <p className="text-[26px] font-semibold leading-tight tracking-tight text-ink">{formatPrice(subtotal)}</p>
+                </div>
+              </div>
+
+              {/* ปุ่ม */}
+              <div className="grid grid-cols-2 gap-2.5 px-5 pb-5 pt-3">
+                <button
+                  onClick={goCheckout}
+                  className="flex items-center justify-center gap-2 rounded-full bg-ink py-3.5 text-[14px] font-medium text-white transition hover:bg-ink/90 active:scale-[0.99]"
+                >
+                  <LockIcon />
+                  ชำระเงิน
+                </button>
+                <Link
+                  to="/cart"
+                  onClick={closeDrawer}
+                  className="flex items-center justify-center rounded-full border border-line py-3.5 text-[14px] font-medium text-ink transition hover:border-ink/40 hover:bg-mist/50"
+                >
+                  ดูตะกร้า
+                </Link>
+              </div>
             </div>
           </>
         )}
@@ -175,6 +205,26 @@ function TrashIcon() {
         <path d="M6.5 7l.9 12a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12" />
         <path d="M10 11l4 5M14 11l-4 5" />
       </g>
+    </svg>
+  );
+}
+
+// ไอคอนหมายเหตุ (กระดาษโน้ต)
+function NoteIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L15.5 3Z" />
+      <path d="M15 3v5h5M8 13h8M8 17h5" />
+    </svg>
+  );
+}
+
+// ไอคอนแม่กุญแจ (ชำระเงินปลอดภัย)
+function LockIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
   );
 }
