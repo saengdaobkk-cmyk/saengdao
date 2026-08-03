@@ -59,6 +59,13 @@ export default function BlogPost() {
         </div>
       )}
 
+      {/* คำโปรย (lead) ใต้รูป */}
+      {post.excerpt && (
+        <p className="mx-auto mt-8 max-w-3xl px-5 text-center text-[18px] font-medium leading-relaxed text-ink/70 sm:text-[20px]">
+          {post.excerpt}
+        </p>
+      )}
+
       {/* เนื้อหา — คอลัมน์อ่านสบาย */}
       <div className="mx-auto mt-10 max-w-3xl space-y-4 px-5">
         <ReactMarkdown components={MD_COMPONENTS}>{post.content}</ReactMarkdown>
