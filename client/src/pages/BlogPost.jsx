@@ -9,13 +9,23 @@ import ShareButtons from "../components/ShareButtons";
 export const MD_COMPONENTS = {
   h2: (p) => <h2 className="mt-8 text-2xl font-semibold tracking-tight text-ink" {...p} />,
   h3: (p) => <h3 className="mt-6 text-xl font-semibold tracking-tight text-ink" {...p} />,
-  p: (p) => <p className="text-[16px] leading-relaxed text-ink/85" {...p} />,
+  // ย่อหน้าที่มีแค่รูป → ไม่ครอบ <p> (กัน figure ซ้อนใน p ที่ผิด HTML)
+  p: ({ node, children, ...rest }) => {
+    if (node?.children?.length === 1 && node.children[0].tagName === "img") return <>{children}</>;
+    return <p className="text-[16px] leading-relaxed text-ink/85" {...rest}>{children}</p>;
+  },
   strong: (p) => <strong className="font-semibold text-ink" {...p} />,
   a: (p) => <a className="text-accent underline underline-offset-2" target="_blank" rel="noreferrer" {...p} />,
   ul: (p) => <ul className="list-disc space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   ol: (p) => <ol className="list-decimal space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
   blockquote: (p) => <blockquote className="border-l-4 border-line pl-4 text-ink/70" {...p} />,
-  img: ({ node, ...p }) => <img className="my-2 w-full rounded-xl object-cover" loading="lazy" {...p} />,
+  // รูปในเนื้อหา → figure + คำบรรยาย (ใช้ข้อความ alt เป็น caption)
+  img: ({ node, alt, ...rest }) => (
+    <figure className="my-5">
+      <img className="w-full rounded-xl object-cover" loading="lazy" alt={alt || ""} {...rest} />
+      {alt ? <figcaption className="mt-2 text-[13px] leading-relaxed text-sub">{alt}</figcaption> : null}
+    </figure>
+  ),
   hr: () => <hr className="border-line" />,
   code: (p) => <code className="rounded bg-mist px-1.5 py-0.5 text-[14px]" {...p} />,
 };
