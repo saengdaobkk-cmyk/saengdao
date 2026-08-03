@@ -47,20 +47,38 @@ const FALLBACK = {
   footerNav: "",
 };
 
+// cache ค่า settings (สาธารณะ ไม่มีความลับ) ลง localStorage → โหลดครั้งถัดไปขึ้นโลโก้ทันที
+const LS_KEY = "sd_settings_v1";
+function readCache() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function writeCache(data) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch { /* เต็ม/ปิดใช้ */ }
+}
+
 function settingsQuery() {
   return {
     queryKey: ["settings"],
-    queryFn: async () => (await api.get("/settings")).data,
+    queryFn: async () => {
+      const data = (await api.get("/settings")).data;
+      writeCache(data); // อัปเดต cache ทุกครั้งที่ดึงสำเร็จ
+      return data;
+    },
+    initialData: () => readCache() || undefined, // มี cache → มีค่าให้ใช้ตั้งแต่ render แรก
+    initialDataUpdatedAt: 0, // ถือว่า cache เก่าเสมอ → refetch พื้นหลังทันที (โชว์ค่าเก่าไปก่อน)
     staleTime: 1000 * 60, // cache 1 นาที
   };
 }
 
 export function useSettings() {
   const { data } = useQuery(settingsQuery());
-  return data || FALLBACK;
+  return { ...FALLBACK, ...(data || {}) }; // เติม default ให้ key ที่ cache เก่าอาจยังไม่มี
 }
 
-// โหลดค่าจริงจาก server เสร็จหรือยัง (ใช้กันโลโก้กระพริบ text ก่อนขึ้นรูป)
+// มีค่าให้ใช้แล้วหรือยัง (จาก cache หรือ server) — กันโลโก้กระพริบ text ก่อนขึ้นรูป
 export function useSettingsLoaded() {
   const { data } = useQuery(settingsQuery());
   return !!data;
@@ -71,6 +89,6 @@ export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch) => (await api.patch("/settings", patch)).data,
-    onSuccess: (data) => qc.setQueryData(["settings"], data),
+    onSuccess: (data) => { qc.setQueryData(["settings"], data); writeCache(data); },
   });
 }
