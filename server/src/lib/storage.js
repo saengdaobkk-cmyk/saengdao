@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const UPLOAD_DIR = path.join(__dirname, "../../uploads");
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// prod ใช้ Supabase Storage — โฟลเดอร์ local ไว้ fallback ตอน dev เท่านั้น
+// ห่อ try/catch กัน boot ล่มบนโฮสต์ที่ path เขียนไม่ได้ (read-only filesystem)
+try { fs.mkdirSync(UPLOAD_DIR, { recursive: true }); } catch { /* ข้าม — prod ไม่ต้องใช้ */ }
 
 // 🔒 service key ใช้ฝั่ง server เท่านั้น (ดู never-expose-secrets)
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
