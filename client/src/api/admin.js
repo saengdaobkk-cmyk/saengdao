@@ -42,6 +42,9 @@ export function useImportBooks() {
   });
 }
 
+// เติม slug ให้เล่มเก่าที่ยังไม่มี (จากชื่อเรื่อง ถอดเสียงอังกฤษ)
+export const backfillBookSlugs = async () => (await api.post("/admin/books/backfill-slugs")).data;
+
 /* ---------- Categories / Publishers ---------- */
 export function useSaveCategory() {
   const qc = useQueryClient();

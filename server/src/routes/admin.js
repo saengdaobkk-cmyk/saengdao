@@ -123,7 +123,7 @@ function bookData(body) {
     sku: str(body.sku),
     metaTitle: str(body.metaTitle),
     metaDescription: str(body.metaDescription),
-    slug: str(body.slug)?.toLowerCase() || null,
+    slug: slugSanitize(body.slug) || null, // ที่แอดมินกรอก → อังกฤษล้วน (ไทย/ว่าง = null แล้วไปสร้างจากชื่อเรื่อง)
     importedAt: body.importedAt ? new Date(body.importedAt) : null,
   };
 }
@@ -145,11 +145,53 @@ function variantCreate(body) {
     }));
 }
 
+// ถอดเสียงไทย→อังกฤษ (RTGS คร่าวๆ · ตัดวรรณยุกต์/การันต์) เพื่อทำ slug อังกฤษล้วน
+const THAI_MAP = {
+  "ก":"k","ข":"kh","ฃ":"kh","ค":"kh","ฅ":"kh","ฆ":"kh","ง":"ng","จ":"ch","ฉ":"ch","ช":"ch","ซ":"s","ฌ":"ch","ญ":"y","ฎ":"d","ฏ":"t","ฐ":"th","ฑ":"th","ฒ":"th","ณ":"n","ด":"d","ต":"t","ถ":"th","ท":"th","ธ":"th","น":"n","บ":"b","ป":"p","ผ":"ph","ฝ":"f","พ":"ph","ฟ":"f","ภ":"ph","ม":"m","ย":"y","ร":"r","ล":"l","ว":"w","ศ":"s","ษ":"s","ส":"s","ห":"h","ฬ":"l","อ":"o","ฮ":"h","ฤ":"rue","ฦ":"lue",
+  "ะ":"a","ั":"a","า":"a","ำ":"am","ิ":"i","ี":"i","ึ":"ue","ื":"ue","ุ":"u","ู":"u","เ":"e","แ":"ae","โ":"o","ใ":"ai","ไ":"ai","ๅ":"a",
+  "๐":"0","๑":"1","๒":"2","๓":"3","๔":"4","๕":"5","๖":"6","๗":"7","๘":"8","๙":"9",
+};
+function thaiToRoman(s) {
+  // สลับสระหน้า (เ แ โ ใ ไ) กับพยัญชนะที่ตามมา → ลำดับเสียงถูกขึ้น (เจ→che ไม่ใช่ ech)
+  s = String(s).replace(/([เแโใไ])([ก-ฮ])/g, "$2$1");
+  let out = "";
+  for (const ch of String(s)) {
+    if (THAI_MAP[ch] !== undefined) out += THAI_MAP[ch];
+    else if (/[ั็-๎]/.test(ch)) out += ""; // วรรณยุกต์/การันต์/ไม้ไต่คู้ → ตัดทิ้ง
+    else out += ch; // อังกฤษ/เลข/ช่องว่าง คงไว้
+  }
+  return out;
+}
+// ทำความสะอาด slug ให้เป็นอังกฤษ-เลข-ขีด ล้วน
+function slugSanitize(s) {
+  return String(s || "").trim().toLowerCase()
+    .replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "")
+    .replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+// slug จากชื่อเรื่อง → ถอดเสียงเป็นอังกฤษก่อน แล้วทำความสะอาด
+function slugifyTitle(title) {
+  return slugSanitize(thaiToRoman(title));
+}
+// สร้าง slug ที่ไม่ซ้ำจากชื่อเรื่อง (เจอซ้ำเติม -2, -3, ...)
+async function uniqueBookSlug(title, excludeId = null) {
+  const base = slugifyTitle(title) || "book";
+  let slug = base;
+  for (let n = 2; ; n++) {
+    const dup = await prisma.book.findFirst({
+      where: { slug, ...(excludeId ? { id: { not: excludeId } } : {}) },
+      select: { id: true },
+    });
+    if (!dup) return slug;
+    slug = `${base}-${n}`;
+  }
+}
+
 router.post("/books", async (req, res, next) => {
   try {
     const data = bookData(req.body);
     if (!data.title || !data.author)
       return res.status(400).json({ error: "กรอกชื่อหนังสือและผู้แต่ง" });
+    if (!data.slug) data.slug = await uniqueBookSlug(data.title); // เว้นว่าง → สร้างจากชื่อเรื่อง
     const book = await prisma.book.create({
       data: { ...data, variants: { create: variantCreate(req.body) } },
       include: { variants: true },
@@ -167,6 +209,7 @@ router.patch("/books/:id", async (req, res, next) => {
     const data = bookData(req.body);
     if (!data.title || !data.author)
       return res.status(400).json({ error: "กรอกชื่อหนังสือและผู้แต่ง" });
+    if (!data.slug) data.slug = await uniqueBookSlug(data.title, req.params.id); // เว้นว่าง → สร้างจากชื่อเรื่อง
     // variants: ลบของเดิมแล้วสร้างใหม่ (ง่ายและถูกต้อง)
     const book = await prisma.book.update({
       where: { id: req.params.id },
@@ -177,6 +220,25 @@ router.patch("/books/:id", async (req, res, next) => {
     res.json(book);
   } catch (err) {
     if (err.code === "P2002") return res.status(409).json({ error: "ISBN หรือ Slug ซ้ำกับเล่มอื่น" });
+    next(err);
+  }
+});
+
+// เติม slug ให้เล่มเก่าที่ยังไม่มี (สร้างจากชื่อเรื่อง ถอดเสียงอังกฤษ) — ทำครั้งเดียว
+router.post("/books/backfill-slugs", async (req, res, next) => {
+  try {
+    const books = await prisma.book.findMany({
+      where: { OR: [{ slug: null }, { slug: "" }] },
+      select: { id: true, title: true },
+    });
+    let updated = 0;
+    for (const b of books) {
+      const slug = await uniqueBookSlug(b.title, b.id);
+      await prisma.book.update({ where: { id: b.id }, data: { slug } });
+      updated++;
+    }
+    res.json({ ok: true, updated });
+  } catch (err) {
     next(err);
   }
 });

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf } from "../../api/admin";
+import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf, backfillBookSlugs } from "../../api/admin";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCategories, useTermList } from "../../api/books";
 import { formatPrice } from "../../lib/format";
 import { priceInfo } from "../../lib/pricing";
@@ -39,7 +40,23 @@ export default function AdminProducts() {
   const save = useSaveBook();
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [slugBusy, setSlugBusy] = useState(false);
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
+
+  const runBackfill = async () => {
+    if (!confirm("สร้าง slug อัตโนมัติให้เล่มที่ยังไม่มี? (จากชื่อเรื่อง ถอดเสียงเป็นอังกฤษ)")) return;
+    setSlugBusy(true);
+    try {
+      const r = await backfillBookSlugs();
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+      alert(`เติม slug แล้ว ${r.updated} เล่ม`);
+    } catch (e) {
+      alert(e.response?.data?.error || "ไม่สำเร็จ");
+    } finally {
+      setSlugBusy(false);
+    }
+  };
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
 
@@ -125,6 +142,9 @@ export default function AdminProducts() {
           <option value="inactive">ปิดอยู่</option>
         </select>
         <div className="ml-auto flex gap-2">
+          <button onClick={runBackfill} disabled={slugBusy} className="rounded-full border border-line px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+            {slugBusy ? "กำลังสร้าง..." : "สร้าง slug ที่ยังไม่มี"}
+          </button>
           <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
             ⬆ นำเข้า CSV/Excel
           </button>
