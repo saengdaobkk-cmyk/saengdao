@@ -369,6 +369,7 @@ function BookForm({ book, categories, onClose }) {
           </Card>
 
           <Card title="รหัสสินค้า & SEO">
+            {form.id && <IdRow id={form.id} />}
             <div className="grid gap-4 sm:grid-cols-2">
               <F label="ISBN" hint="ISBN-13 ใช้เป็น GTIN ใน Google"><Inp value={form.isbn} onChange={set("isbn")} /></F>
               <F label="SKU (รหัสภายในร้าน)"><Inp value={form.sku} onChange={set("sku")} /></F>
@@ -492,6 +493,23 @@ const F = ({ label, hint, children }) => (
   </label>
 );
 const Inp = (props) => <input {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30" />;
+
+// รหัสระบบ (ID) แบบอ่านอย่างเดียว + ปุ่มคัดลอก — โชว์ตอนแก้ไขสินค้า
+const IdRow = ({ id }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = () => { navigator.clipboard?.writeText(id); setCopied(true); setTimeout(() => setCopied(false), 1500); };
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-mist px-3 py-2">
+      <div className="min-w-0">
+        <p className="text-[11px] text-sub">รหัสระบบ (ID) · ใช้ภายใน/URL (ต่างจาก SKU ที่ตั้งเอง)</p>
+        <p className="truncate font-mono text-[12px] text-ink">{id}</p>
+      </div>
+      <button type="button" onClick={copy} className={`shrink-0 rounded-md border px-2.5 py-1 text-[12px] transition ${copied ? "border-emerald-400 text-emerald-600" : "border-line text-ink hover:bg-white"}`}>
+        {copied ? "คัดลอกแล้ว" : "คัดลอก"}
+      </button>
+    </div>
+  );
+};
 const Select = (props) => <select {...props} className="w-full rounded-xl border border-line px-4 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30" />;
 const UploadBtn = ({ busy, onChange, label, multiple }) => (
   <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[13px] text-sub hover:text-ink">
