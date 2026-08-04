@@ -14,12 +14,13 @@ export default function BookCard({ book }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [added, setAdded] = useState(false);
+  const to = `/books/${book.slug || book.id}`; // ใช้ slug ถ้ามี ไม่งั้น id
 
-  // โหลดข้อมูลเล่มล่วงหน้าตอนชี้เมาส์ → กดแล้วหน้าสินค้าขึ้นทันที
+  // โหลดข้อมูลเล่มล่วงหน้าตอนชี้เมาส์ → กดแล้วหน้าสินค้าขึ้นทันที (คีย์ให้ตรงกับ useBook ในหน้าสินค้า)
   const prefetch = () =>
     qc.prefetchQuery({
-      queryKey: ["book", book.id],
-      queryFn: async () => (await api.get(`/books/${book.id}`)).data,
+      queryKey: ["book", book.slug || book.id],
+      queryFn: async () => (await api.get(to)).data,
     });
 
   // มี variant → ใช้ผลรวมสต็อกของ variant, ไม่มี → ใช้สต็อกของเล่ม
@@ -33,14 +34,14 @@ export default function BookCard({ book }) {
     e.preventDefault();
     e.stopPropagation();
     if (stock <= 0) return;
-    if (!canQuickAdd) { navigate(`/books/${book.id}`); return; } // มีตัวเลือก → ไปเลือกที่หน้าสินค้า
+    if (!canQuickAdd) { navigate(to); return; } // มีตัวเลือก → ไปเลือกที่หน้าสินค้า
     add(book, 1, null);
     setAdded(true);
     setTimeout(() => setAdded(false), 1300);
   };
 
   return (
-    <Link to={`/books/${book.id}`} onMouseEnter={prefetch} onFocus={prefetch} className="group block">
+    <Link to={to} onMouseEnter={prefetch} onFocus={prefetch} className="group block">
       {/* ปก */}
       <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         {book.coverImage ? (

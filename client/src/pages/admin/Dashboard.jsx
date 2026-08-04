@@ -69,7 +69,7 @@ export default function Dashboard() {
           <ul className="divide-y divide-line">
             {data.topBooks?.map((b, i) => (
               <li key={b.id}>
-                <Link to={`/books/${b.id}`} target="_blank" className="flex items-center gap-3 px-5 py-3 transition hover:bg-mist/40">
+                <Link to={`/books/${b.slug || b.id}`} target="_blank" className="flex items-center gap-3 px-5 py-3 transition hover:bg-mist/40">
                   <span className="w-4 text-center text-[13px] font-semibold text-sub">{i + 1}</span>
                   <div className="h-12 w-9 shrink-0 overflow-hidden rounded bg-mist ring-1 ring-line">
                     {b.coverImage && <img src={img(b.coverImage, 80)} alt="" loading="lazy" className="h-full w-full object-cover" />}

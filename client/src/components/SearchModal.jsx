@@ -97,7 +97,7 @@ export default function SearchModal({ open, onClose }) {
                   return (
                     <li key={b.id}>
                       <Link
-                        to={`/books/${b.id}`}
+                        to={`/books/${b.slug || b.id}`}
                         onClick={onClose}
                         className="flex items-center gap-4 px-5 py-2.5 transition hover:bg-mist"
                       >

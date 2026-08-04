@@ -54,7 +54,7 @@ export default function Cart() {
               </div>
 
               <div className="flex flex-1 flex-col">
-                <Link to={`/books/${item.id}`} className="text-[15px] font-medium text-ink hover:text-accent">
+                <Link to={`/books/${item.slug || item.id}`} className="text-[15px] font-medium text-ink hover:text-accent">
                   {item.title}
                 </Link>
                 {item.variantName && (

@@ -95,7 +95,7 @@ export default function CartDrawer() {
               {items.map((item) => (
                 <li key={item.key} className="flex gap-4 py-5">
                   <Link
-                    to={`/books/${item.id}`}
+                    to={`/books/${item.slug || item.id}`}
                     onClick={closeDrawer}
                     className="flex h-[92px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-mist shadow-[0_6px_16px_-6px_rgba(0,0,0,0.35)] ring-1 ring-black/[0.06] transition-transform duration-300 hover:-translate-y-0.5"
                   >
@@ -107,7 +107,7 @@ export default function CartDrawer() {
                   </Link>
                   <div className="flex flex-1 flex-col">
                     <Link
-                      to={`/books/${item.id}`}
+                      to={`/books/${item.slug || item.id}`}
                       onClick={closeDrawer}
                       className="line-clamp-2 text-[14px] font-medium leading-snug text-ink hover:text-accent"
                     >

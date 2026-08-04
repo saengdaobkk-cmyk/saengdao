@@ -53,6 +53,7 @@ export function CartProvider({ children }) {
         {
           key,
           id: book.id,
+          slug: book.slug || null,
           variantId: variant?.id || null,
           variantName: variant?.name || null,
           title: book.title,

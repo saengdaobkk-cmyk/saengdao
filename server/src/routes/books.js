@@ -162,13 +162,13 @@ router.get("/:id", async (req, res, next) => {
 // GET /api/books/:id/related — เล่มใกล้เคียง (หมวดเดียวกัน, ไม่รวมเล่มนี้)
 router.get("/:id/related", async (req, res, next) => {
   try {
-    const book = await prisma.book.findUnique({
-      where: { id: req.params.id },
-      select: { categoryId: true },
+    const book = await prisma.book.findFirst({
+      where: { OR: [{ id: req.params.id }, { slug: req.params.id }] },
+      select: { id: true, categoryId: true },
     });
     if (!book) return res.json([]);
     const related = await prisma.book.findMany({
-      where: { id: { not: req.params.id }, categoryId: book.categoryId || undefined, active: true },
+      where: { id: { not: book.id }, categoryId: book.categoryId || undefined, active: true },
       orderBy: { soldCount: "desc" },
       take: 4,
       include: { category: { select: { name: true } } },

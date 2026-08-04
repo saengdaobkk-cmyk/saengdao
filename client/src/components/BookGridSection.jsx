@@ -37,7 +37,7 @@ function MiniCard({ book }) {
   const pi = priceInfo(book);
   const hasCut = pi.price < pi.original;
   return (
-    <Link to={`/books/${book.id}`} className="group flex gap-4">
+    <Link to={`/books/${book.slug || book.id}`} className="group flex gap-4">
       <div className="aspect-[145/210] w-[104px] shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line">
         {book.coverImage ? (
           <img src={img(book.coverImage, 300)} alt={book.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
