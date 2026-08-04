@@ -199,7 +199,11 @@ router.post("/books", async (req, res, next) => {
     await syncTermsFromBook(book);
     res.status(201).json(book);
   } catch (err) {
-    if (err.code === "P2002") return res.status(409).json({ error: "ISBN หรือ Slug ซ้ำกับเล่มอื่น" });
+    if (err.code === "P2002") {
+      const f = String(err.meta?.target || "");
+      const which = f.includes("slug") ? "Slug (URL)" : f.includes("isbn") ? "ISBN" : "ข้อมูล";
+      return res.status(409).json({ error: `${which} นี้ซ้ำกับเล่มอื่น — เปลี่ยนเป็นค่าอื่น` });
+    }
     next(err);
   }
 });
@@ -219,7 +223,11 @@ router.patch("/books/:id", async (req, res, next) => {
     await syncTermsFromBook(book);
     res.json(book);
   } catch (err) {
-    if (err.code === "P2002") return res.status(409).json({ error: "ISBN หรือ Slug ซ้ำกับเล่มอื่น" });
+    if (err.code === "P2002") {
+      const f = String(err.meta?.target || "");
+      const which = f.includes("slug") ? "Slug (URL)" : f.includes("isbn") ? "ISBN" : "ข้อมูล";
+      return res.status(409).json({ error: `${which} นี้ซ้ำกับเล่มอื่น — เปลี่ยนเป็นค่าอื่น` });
+    }
     next(err);
   }
 });
