@@ -43,6 +43,13 @@ app.use(morgan("dev"));
 // ไฟล์สลิปที่อัปโหลด
 app.use("/uploads", express.static(UPLOAD_DIR));
 
+// กัน proxy/CDN ของโฮสต์ (Hostinger LiteSpeed) แคช response ของ API ที่เป็นข้อมูลสด
+// — เคยแคช response ที่ถูกตัดจน frontend อ่าน items ไม่ได้แล้วหน้าขาว
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
+
 // Health check — เช็คว่า server + DB ทำงาน
 app.get("/api/health", async (req, res) => {
   try {

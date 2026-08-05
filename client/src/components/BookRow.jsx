@@ -44,7 +44,7 @@ export default function BookRow({ title, subtitle, sort, mode = "auto", bookIds 
           ref={scroller}
           className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {data?.items.map((book) => (
+          {(data?.items || []).map((book) => (
             <div key={book.id} className="w-[160px] shrink-0 snap-start sm:w-[200px]">
               <BookCard book={book} />
             </div>
