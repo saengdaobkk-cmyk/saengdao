@@ -21,6 +21,7 @@ export const ROW_SORTS = [
   { value: "popular", label: "ขายดี (ขายมากก่อน)" },
   { value: "price_asc", label: "ราคาถูก → แพง" },
   { value: "price_desc", label: "ราคาแพง → ถูก" },
+  { value: "random", label: "สุ่ม (เปลี่ยนไปเรื่อยๆ)" },
 ];
 
 // section แถวหนังสือที่แก้ไขได้ (หัวข้อ/คำโปรย/โหมด) + ค่าเริ่มต้น

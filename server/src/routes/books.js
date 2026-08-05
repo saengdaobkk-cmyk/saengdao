@@ -56,6 +56,23 @@ router.get("/", async (req, res, next) => {
       where.translator = { contains: req.query.translator, mode: "insensitive" };
     }
 
+    // สุ่ม: ดึง id ทั้งหมดที่เข้าเงื่อนไข → สลับ → หยิบตาม limit → ดึงเล่มพร้อม include
+    if (sort === "random") {
+      const all = await prisma.book.findMany({ where, select: { id: true } });
+      for (let i = all.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [all[i], all[j]] = [all[j], all[i]];
+      }
+      const pickIds = all.slice(0, limit).map((b) => b.id);
+      const found = await prisma.book.findMany({
+        where: { id: { in: pickIds } },
+        include: { category: { select: { name: true, slug: true } }, variants: { select: { stock: true } } },
+      });
+      const byId = new Map(found.map((b) => [b.id, b]));
+      const items = pickIds.map((id) => byId.get(id)).filter(Boolean); // คงลำดับที่สุ่ม
+      return res.json({ items, total: all.length, page: 1, pageSize: items.length, totalPages: 1 });
+    }
+
     const orderBy =
       sort === "price_asc"
         ? { price: "asc" }
