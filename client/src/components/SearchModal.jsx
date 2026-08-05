@@ -38,14 +38,15 @@ export default function SearchModal({ open, onClose }) {
     if (!open) { setTerm(""); setDq(""); }
   }, [open]);
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isPlaceholderData } = useQuery({
     queryKey: ["search", dq],
     queryFn: async () => (await api.get("/books", { params: { q: dq, limit: 8 } })).data,
     enabled: open && dq.length >= 1,
     placeholderData: keepPreviousData,
   });
 
-  const items = dq ? data?.items || [] : [];
+  // กำลังโหลดผลชุดใหม่ (isPlaceholderData) → ไม่โชว์ผลเก่าค้าง
+  const items = dq && !isPlaceholderData ? data?.items || [] : [];
   const total = data?.total || 0;
 
   const goAll = () => {
@@ -86,6 +87,9 @@ export default function SearchModal({ open, onClose }) {
 
           {/* ผลลัพธ์ */}
           <div className="max-h-[62vh] overflow-y-auto">
+            {dq && isFetching && items.length === 0 && (
+              <p className="px-5 py-10 text-center text-[13px] text-sub">กำลังค้นหา...</p>
+            )}
             {dq && items.length === 0 && !isFetching && (
               <p className="px-5 py-10 text-center text-[13px] text-sub">ไม่พบผลลัพธ์สำหรับ “{dq}”</p>
             )}
