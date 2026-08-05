@@ -37,7 +37,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 
   const { showCollectionCount } = useSettings();
   const { data: categories } = useCategories();
-  const { data, isLoading, isError } = useBooks({
+  const { data, isLoading, isError, isPlaceholderData } = useBooks({
     q: q || undefined,
     category: category || undefined,
     publisher: publisher || undefined,
@@ -45,6 +45,8 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     page,
     limit,
   });
+  // กำลังโหลดผลชุดใหม่ (รวมตอนแสดงข้อมูลเก่าค้างระหว่างค้นหา/กรอง) → โชว์ skeleton ไม่ให้เห็นผลเก่าแวบ
+  const busy = isLoading || isPlaceholderData;
 
   const pickCategory = (slug) => {
     setCategory(slug);
@@ -61,7 +63,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
             <p className="text-[13px] font-medium tracking-tight text-sub">ผลการค้นหา</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">“{q}”</h2>
             <p className="mt-2 flex items-center gap-3 text-[13px] text-sub">
-              {data && <span>{data.total} เล่ม</span>}
+              {!busy && data && <span>{data.total} เล่ม</span>}
               <button onClick={clearSearch} className="text-accent hover:underline">ล้างการค้นหา</button>
             </p>
           </>
@@ -69,7 +71,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
           <>
             {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
             <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
-            {data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+            {!busy && data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
           </>
         )}
       </div>
@@ -96,11 +98,11 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
       </div>
 
       {/* รายการ */}
-      {isLoading && <GridSkeleton n={limit} />}
+      {busy && <GridSkeleton n={limit} />}
       {isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
-      {data && data.items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
+      {!busy && data && data.items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
 
-      {data && data.items.length > 0 && (
+      {!busy && data && data.items.length > 0 && (
         <>
           <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
             {data.items.map((book) => <BookCard key={book.id} book={book} />)}
