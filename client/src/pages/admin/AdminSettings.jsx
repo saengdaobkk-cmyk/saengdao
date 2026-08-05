@@ -30,6 +30,13 @@ export default function AdminSettings() {
             onChange={(v) => update.mutate({ showCardCategory: v })}
           />
           <ToggleRow
+            title="แสดงจำนวนหนังสือในหน้าเลือกซื้อ"
+            desc="เปิด: โชว์ “X เล่ม” ใต้หัวข้อหน้าหนังสือ/หมวดหมู่ · ปิด: ซ่อน"
+            checked={settings.showCollectionCount}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showCollectionCount: v })}
+          />
+          <ToggleRow
             title="แถบจุดเด่นในหน้าสินค้า"
             desc="เปิด: โชว์แถบ “จัดส่งฟรีทั่วประเทศ / รับประกันหลังการขาย” ใต้ปุ่มหยิบใส่ตะกร้า · ปิด: ซ่อน"
             checked={settings.showProductTrust}
