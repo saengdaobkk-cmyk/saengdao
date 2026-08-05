@@ -54,11 +54,6 @@ export default function BlogPost() {
         <div className="mt-8 text-center">
           <p className="text-[13px] text-sub">{fmtDate(post.publishedAt || post.createdAt)}{post.author ? ` · โดย ${post.author}` : ""}</p>
           <h1 className="mx-auto mt-3 max-w-3xl text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-[44px]">{post.title}</h1>
-          {showBlogShare !== false && (
-            <div className="mt-7 flex justify-center">
-              <ShareButtons title={post.title} />
-            </div>
-          )}
         </div>
       </div>
 
@@ -80,6 +75,13 @@ export default function BlogPost() {
       <div className="mx-auto mt-10 max-w-page space-y-4 px-5">
         <ReactMarkdown components={MD_COMPONENTS}>{post.content}</ReactMarkdown>
       </div>
+
+      {/* แชร์ — ท้ายบทความ */}
+      {showBlogShare !== false && (
+        <div className="mx-auto mt-12 flex max-w-3xl justify-center border-t border-line px-5 pt-8">
+          <ShareButtons title={post.title} />
+        </div>
+      )}
     </article>
   );
 }
