@@ -126,6 +126,7 @@ export default function AdminBlog() {
               </label>
               {form.coverImage && <button type="button" onClick={() => setForm((f) => ({ ...f, coverImage: "" }))} className="text-[13px] text-sub hover:text-red-600">ลบรูป</button>}
             </div>
+            <p className="mt-2 text-[12px] text-sub">แนะนำ <b className="text-ink">1200 × 630 px</b> (อัตราส่วน 1.91:1) — พอดีกับรูป preview ตอนแชร์ Facebook / LINE</p>
           </Field>
 
           <div>
