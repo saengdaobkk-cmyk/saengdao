@@ -14,7 +14,7 @@ import { parseOrder, parseRows, parseCustomRows, customKey, isCustomKey, customI
 // แถวหนังสือ (มาใหม่/ขายดี/แถวที่สร้างเอง) — ครอบด้วยระยะห่างมาตรฐาน
 const Row = (cfg) => (
   <div className="pt-10 sm:pt-14">
-    <BookRow title={cfg.title} subtitle={cfg.subtitle} sort={cfg.sort} mode={cfg.mode} bookIds={cfg.bookIds} />
+    <BookRow title={cfg.title} subtitle={cfg.subtitle} sort={cfg.sort} mode={cfg.mode} bookIds={cfg.bookIds} limit={cfg.limit} />
   </div>
 );
 
@@ -33,7 +33,7 @@ export default function Home() {
     browse: <BrowseSections title={rows.browse.title} subtitle={rows.browse.subtitle} />,
     recommend: (
       <div className="pt-10 sm:pt-14">
-        <BookGridSection title={rows.recommend.title} subtitle={rows.recommend.subtitle} sort={rows.recommend.sort} mode={rows.recommend.mode} bookIds={rows.recommend.bookIds} />
+        <BookGridSection title={rows.recommend.title} subtitle={rows.recommend.subtitle} sort={rows.recommend.sort} mode={rows.recommend.mode} bookIds={rows.recommend.bookIds} limit={rows.recommend.limit} />
       </div>
     ),
     textmarquee: <TextMarquee />,

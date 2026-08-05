@@ -3,7 +3,7 @@ import { useSettings, useUpdateSettings } from "../../api/settings";
 import { useBooks } from "../../api/books";
 import {
   parseOrder, parseRows, parseCustomRows, newCustomRow, customKey, isCustomKey,
-  SECTION_LABEL, ROW_SORTS, ROW_KEYS, ROW_DEFAULTS, BOOKS_EDITABLE_KEYS,
+  SECTION_LABEL, ROW_SORTS, ROW_KEYS, ROW_DEFAULTS, BOOKS_EDITABLE_KEYS, ROW_LIMIT_MAX,
 } from "../../lib/homeSections";
 import { img } from "../../lib/img";
 
@@ -133,6 +133,7 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
   const [subtitle, setSubtitle] = useState(cfg.subtitle);
   const [mode, setMode] = useState(cfg.mode);
   const [sort, setSort] = useState(cfg.sort);
+  const [limit, setLimit] = useState(cfg.limit ?? 12);
   const [bookIds, setBookIds] = useState(cfg.bookIds);
   const [q, setQ] = useState("");
 
@@ -141,7 +142,7 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
   const { data: searchData } = useBooks(q.trim() ? { q: q.trim(), limit: 8 } : { ids: "" });
   const results = (q.trim() ? searchData?.items : []) || [];
 
-  const add = (id) => { if (!bookIds.includes(id)) setBookIds([...bookIds, id]); };
+  const add = (id) => { if (!bookIds.includes(id) && bookIds.length < ROW_LIMIT_MAX) setBookIds([...bookIds, id]); };
   const removeBook = (id) => setBookIds(bookIds.filter((x) => x !== id));
   const moveBook = (i, dir) => {
     const t = i + dir;
@@ -156,6 +157,7 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
     subtitle: subtitle.trim(),
     mode: booksEditable ? mode : "auto",
     sort: booksEditable ? sort : cfg.sort,
+    limit: Math.min(ROW_LIMIT_MAX, Math.max(1, Math.round(Number(limit)) || 12)),
     bookIds: booksEditable ? bookIds : [],
   });
 
@@ -185,12 +187,21 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
           </div>
 
           {mode === "auto" ? (
-            <label className="block max-w-sm">
-              <span className="mb-1 block text-[12px] text-sub">เรียงลำดับ</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value)} className={inp}>
-                {ROW_SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-            </label>
+            <div className="grid max-w-md gap-3 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-[12px] text-sub">เรียงลำดับ</span>
+                <select value={sort} onChange={(e) => setSort(e.target.value)} className={inp}>
+                  {ROW_SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[12px] text-sub">จำนวนเล่ม (1–{ROW_LIMIT_MAX})</span>
+                <input type="number" min={1} max={ROW_LIMIT_MAX} value={limit}
+                  onChange={(e) => setLimit(e.target.value)}
+                  onBlur={(e) => setLimit(Math.min(ROW_LIMIT_MAX, Math.max(1, Math.round(Number(e.target.value)) || 12)))}
+                  className={inp} />
+              </label>
+            </div>
           ) : (
             <div className="space-y-3">
               <div>

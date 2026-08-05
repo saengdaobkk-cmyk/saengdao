@@ -24,15 +24,21 @@ export const ROW_SORTS = [
   { value: "random", label: "สุ่ม (เปลี่ยนไปเรื่อยๆ)" },
 ];
 
-// section แถวหนังสือที่แก้ไขได้ (หัวข้อ/คำโปรย/โหมด) + ค่าเริ่มต้น
+export const ROW_LIMIT_MAX = 30; // จำนวนเล่มสูงสุดต่อแถว (โหมดอัตโนมัติ + เลือกเอง)
+const clampLimit = (v, def) => {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) && n >= 1 ? Math.min(n, ROW_LIMIT_MAX) : def;
+};
+
+// section แถวหนังสือที่แก้ไขได้ (หัวข้อ/คำโปรย/โหมด/จำนวน) + ค่าเริ่มต้น
 export const ROW_DEFAULTS = {
-  new: { title: "มาใหม่", subtitle: "หนังสืออัปเดตล่าสุดจากเรา", mode: "auto", sort: "newest", bookIds: [] },
-  bestseller: { title: "ขายดี", subtitle: "เล่มที่นักอ่านเลือกมากที่สุด", mode: "auto", sort: "popular", bookIds: [] },
-  hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", bookIds: [] },
-  recommend: { title: "แนะนำสำหรับคุณ", subtitle: "คัดสรรมาเพื่อนักอ่านทุกคน", mode: "auto", sort: "popular", bookIds: [] },
-  blog: { title: "บทความ", subtitle: "เรื่องเล่า รีวิว และแรงบันดาลใจจากหนังสือ", mode: "auto", sort: "newest", bookIds: [] },
-  browse: { title: "หมวดหมู่หนังสือ", subtitle: "เลือกอ่านตามหมวดที่คุณสนใจ", mode: "auto", sort: "newest", bookIds: [] },
-  brands: { title: "สำนักพิมพ์ที่คัดสรร", subtitle: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ", mode: "auto", sort: "newest", bookIds: [] },
+  new: { title: "มาใหม่", subtitle: "หนังสืออัปเดตล่าสุดจากเรา", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
+  bestseller: { title: "ขายดี", subtitle: "เล่มที่นักอ่านเลือกมากที่สุด", mode: "auto", sort: "popular", limit: 10, bookIds: [] },
+  hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
+  recommend: { title: "แนะนำสำหรับคุณ", subtitle: "คัดสรรมาเพื่อนักอ่านทุกคน", mode: "auto", sort: "popular", limit: 12, bookIds: [] },
+  blog: { title: "บทความ", subtitle: "เรื่องเล่า รีวิว และแรงบันดาลใจจากหนังสือ", mode: "auto", sort: "newest", limit: 4, bookIds: [] },
+  browse: { title: "หมวดหมู่หนังสือ", subtitle: "เลือกอ่านตามหมวดที่คุณสนใจ", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
+  brands: { title: "สำนักพิมพ์ที่คัดสรร", subtitle: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
 };
 export const ROW_KEYS = Object.keys(ROW_DEFAULTS);
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)
@@ -53,6 +59,7 @@ export function parseCustomRows(raw) {
       subtitle: typeof r.subtitle === "string" ? r.subtitle : "",
       mode: r.mode === "manual" ? "manual" : "auto",
       sort: ROW_SORTS.some((s) => s.value === r.sort) ? r.sort : "newest",
+      limit: clampLimit(r.limit, 12),
       bookIds: Array.isArray(r.bookIds) ? r.bookIds.filter((x) => typeof x === "string") : [],
     }));
 }
@@ -60,7 +67,7 @@ export function parseCustomRows(raw) {
 // สร้างแถวใหม่ (id สุ่ม) + คีย์สำหรับลำดับ section
 export function newCustomRow() {
   const id = (crypto.randomUUID?.() || String(Date.now())).slice(0, 8);
-  return { id, title: "แถวหนังสือใหม่", subtitle: "", mode: "auto", sort: "newest", bookIds: [] };
+  return { id, title: "แถวหนังสือใหม่", subtitle: "", mode: "auto", sort: "newest", limit: 12, bookIds: [] };
 }
 export const customKey = (id) => `custom:${id}`;
 export const isCustomKey = (k) => typeof k === "string" && k.startsWith("custom:");
@@ -82,6 +89,7 @@ export function parseRows(raw) {
       subtitle: typeof c.subtitle === "string" ? c.subtitle : d.subtitle,
       mode: c.mode === "manual" ? "manual" : "auto",
       sort: ROW_SORTS.some((s) => s.value === c.sort) ? c.sort : d.sort,
+      limit: clampLimit(c.limit, d.limit),
       bookIds: Array.isArray(c.bookIds) ? c.bookIds.filter((x) => typeof x === "string") : [],
     };
   }

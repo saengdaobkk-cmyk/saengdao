@@ -5,11 +5,11 @@ import SectionHeading from "./SectionHeading";
 
 // แถวเลื่อนแนวนอน — หัวข้อ + ปุ่มเลื่อนซ้าย/ขวา
 // โหมดอัตโนมัติ: เรียงตาม sort · โหมดเลือกเอง: ส่ง bookIds มาแสดงตามลำดับที่จัด
-export default function BookRow({ title, subtitle, sort, mode = "auto", bookIds = [] }) {
+export default function BookRow({ title, subtitle, sort, mode = "auto", bookIds = [], limit = 10 }) {
   const scroller = useRef(null);
   const manual = mode === "manual" && bookIds.length > 0;
   const { data, isLoading } = useBooks(
-    manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit: 10 }
+    manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit }
   );
 
   const scroll = (dir) => {

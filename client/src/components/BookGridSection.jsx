@@ -7,9 +7,9 @@ import SectionHeading from "./SectionHeading";
 
 // section แนะนำ — กริดการ์ดแนวนอน (ปกซ้าย + ข้อมูลขวา) + ปุ่มดูทั้งหมด
 // โหมดอัตโนมัติ: เรียงตาม sort · โหมดเลือกเอง: ตาม bookIds
-export default function BookGridSection({ title, subtitle, sort, mode = "auto", bookIds = [] }) {
+export default function BookGridSection({ title, subtitle, sort, mode = "auto", bookIds = [], limit = 12 }) {
   const manual = mode === "manual" && bookIds.length > 0;
-  const { data } = useBooks(manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit: 12 });
+  const { data } = useBooks(manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit });
   const items = data?.items || [];
   if (!items.length) return null;
 
