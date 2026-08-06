@@ -26,17 +26,36 @@ export async function getEmailConfig() {
   };
 }
 
-// เลย์เอาต์อีเมลกลาง (inline style — email client ต้องการ)
-function layout(title, bodyHtml) {
-  return `<!doctype html><html><body style="margin:0;background:#f5f5f7;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#1d1d1f">
-  <div style="max-width:560px;margin:0 auto;padding:24px 16px">
-    <div style="text-align:center;padding:8px 0 20px"><span style="font-size:22px;font-weight:700;letter-spacing:3px;color:#1d1d1f">SAENGDAO</span></div>
-    <div style="background:#fff;border-radius:16px;padding:28px 24px;border:1px solid #e5e5e7">
-      <h1 style="margin:0 0 16px;font-size:20px;color:#1d1d1f">${esc(title)}</h1>
+// เลย์เอาต์อีเมลกลาง (table-based + inline style — เพื่อความเข้ากันได้กับ email client)
+function layout(title, bodyHtml, opts = {}) {
+  const eyebrow = opts.eyebrow || "";
+  return `<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<body style="margin:0;padding:0;background:#f0f0f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'IBM Plex Sans Thai',sans-serif;-webkit-font-smoothing:antialiased">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f2"><tr><td align="center" style="padding:36px 16px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:544px;margin:0 auto">
+    <tr><td align="center" style="padding:0 0 26px">
+      <span style="font-size:23px;font-weight:700;letter-spacing:6px;color:#1d1d1f">SAENGDAO</span>
+      <div style="width:30px;height:3px;background:#0071e3;border-radius:3px;margin:11px auto 0;line-height:0;font-size:0">&nbsp;</div>
+    </td></tr>
+    <tr><td style="background:#ffffff;border-radius:20px;padding:34px 30px;box-shadow:0 6px 24px -12px rgba(0,0,0,0.12)">
+      ${eyebrow ? `<p style="margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#0071e3">${esc(eyebrow)}</p>` : ""}
+      <h1 style="margin:0 0 20px;font-size:21px;font-weight:600;line-height:1.3;letter-spacing:-0.3px;color:#1d1d1f">${esc(title)}</h1>
       ${bodyHtml}
-    </div>
-    <p style="text-align:center;color:#86868b;font-size:12px;margin:18px 0 0">SAENGDAO · สำนักพิมพ์แสงดาว · <a href="${SITE}" style="color:#86868b">saengdao.vercel.app</a></p>
-  </div></body></html>`;
+    </td></tr>
+    <tr><td align="center" style="padding:22px 8px 0">
+      <p style="margin:0;color:#a1a1a6;font-size:12px;line-height:1.7">สำนักพิมพ์แสงดาว · SAENGDAO<br><a href="${SITE}" style="color:#0071e3;text-decoration:none">saengdao.vercel.app</a></p>
+    </td></tr>
+  </table>
+</td></tr></table>
+</body></html>`;
+}
+
+// ปุ่ม (bulletproof — ใช้ table กัน email client เพี้ยน)
+function button(href, text, dark = false) {
+  const bg = dark ? "#1d1d1f" : "#0071e3";
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0 2px"><tr><td style="border-radius:999px;background:${bg}">
+    <a href="${href}" style="display:inline-block;padding:12px 26px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px">${esc(text)}</a>
+  </td></tr></table>`;
 }
 
 // ส่งอีเมลผ่าน Brevo API — best-effort ไม่ throw
@@ -72,33 +91,40 @@ function itemsTable(order) {
   const rows = order.items
     .map(
       (it) => `<tr>
-      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0">${esc(it.book?.title || "หนังสือ")}${it.variantName ? ` <span style="color:#86868b">(${esc(it.variantName)})</span>` : ""} <span style="color:#86868b">× ${it.quantity}</span></td>
-      <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;text-align:right;white-space:nowrap">${baht(Number(it.price) * it.quantity)}</td>
+      <td style="padding:11px 0;border-bottom:1px solid #f0f0f2;font-size:14px;color:#1d1d1f;line-height:1.45">${esc(it.book?.title || "หนังสือ")}${it.variantName ? ` <span style="color:#a1a1a6">(${esc(it.variantName)})</span>` : ""} <span style="color:#a1a1a6">× ${it.quantity}</span></td>
+      <td style="padding:11px 0;border-bottom:1px solid #f0f0f2;text-align:right;font-size:14px;color:#1d1d1f;white-space:nowrap">${baht(Number(it.price) * it.quantity)}</td>
     </tr>`
     )
     .join("");
   const shipping = Math.max(0, Number(order.shippingFee) || 0);
   const discount = Math.max(0, Number(order.discount) || 0);
-  return `<table style="width:100%;border-collapse:collapse;font-size:14px;margin:14px 0">
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 4px;border-collapse:collapse">
     ${rows}
-    ${shipping ? `<tr><td style="padding:6px 0;color:#86868b">ค่าจัดส่ง</td><td style="padding:6px 0;text-align:right">${baht(shipping)}</td></tr>` : ""}
-    ${discount ? `<tr><td style="padding:6px 0;color:#86868b">ส่วนลด</td><td style="padding:6px 0;text-align:right;color:#e2483d">-${baht(discount)}</td></tr>` : ""}
-    <tr><td style="padding:12px 0 0;font-weight:700;font-size:16px">ยอดรวม</td><td style="padding:12px 0 0;text-align:right;font-weight:700;font-size:16px">${baht(order.total)}</td></tr>
+    ${shipping ? `<tr><td style="padding:9px 0 0;font-size:13px;color:#86868b">ค่าจัดส่ง</td><td style="padding:9px 0 0;text-align:right;font-size:13px;color:#515154">${baht(shipping)}</td></tr>` : ""}
+    ${discount ? `<tr><td style="padding:7px 0 0;font-size:13px;color:#86868b">ส่วนลด</td><td style="padding:7px 0 0;text-align:right;font-size:13px;color:#e2483d">-${baht(discount)}</td></tr>` : ""}
+    <tr><td style="padding:15px 0 0;font-size:15px;font-weight:700;color:#1d1d1f">ยอดรวม</td><td style="padding:15px 0 0;text-align:right;font-size:19px;font-weight:700;color:#1d1d1f">${baht(order.total)}</td></tr>
   </table>`;
 }
 
-const trackOrderBtn = (order) =>
-  `<div style="margin-top:8px"><a href="${SITE}/orders/${order.id}" style="display:inline-block;background:#0071e3;color:#fff;text-decoration:none;padding:11px 22px;border-radius:999px;font-size:14px;font-weight:500">ดูรายละเอียดคำสั่งซื้อ</a></div>`;
+// แถวข้อมูล (label ซ้าย · ค่าขวา) — value เป็น HTML แล้ว (esc มาก่อน)
+function infoRows(pairs) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+    ${pairs.filter(Boolean).map(([k, v]) => `<tr><td style="padding:7px 0;font-size:13px;color:#a1a1a6;width:84px;vertical-align:top">${esc(k)}</td><td style="padding:7px 0;font-size:14px;color:#1d1d1f;line-height:1.5">${v}</td></tr>`).join("")}
+  </table>`;
+}
+
+const trackOrderBtn = (order) => button(`${SITE}/orders/${order.id}`, "ดูรายละเอียดคำสั่งซื้อ");
 
 // 1) ยืนยันคำสั่งซื้อ
 export async function sendOrderConfirmation(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
   if (!order?.email) return { skipped: true };
-  const html = layout(`ได้รับคำสั่งซื้อแล้ว · #${orderNo(order.id)}`,
-    `<p style="font-size:14px;color:#515154">สวัสดีค่ะ คุณ${esc(order.shipName || "")} — ขอบคุณที่สั่งซื้อกับแสงดาว 🙏<br>เราได้รับคำสั่งซื้อของคุณแล้ว รายละเอียดด้านล่างค่ะ</p>
+  const html = layout(`ได้รับคำสั่งซื้อแล้ว #${orderNo(order.id)}`,
+    `<p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#515154">สวัสดีค่ะ คุณ${esc(order.shipName || "")} 🙏<br>ขอบคุณที่สั่งซื้อกับแสงดาว — เราได้รับคำสั่งซื้อเรียบร้อยแล้ว</p>
     ${itemsTable(order)}
-    <p style="font-size:13px;color:#86868b">จัดส่งไปที่: ${esc(order.shipAddress || "")}</p>
-    ${trackOrderBtn(order)}`);
+    <p style="margin:14px 0 0;font-size:13px;line-height:1.55;color:#86868b">📍 จัดส่งไปที่<br><span style="color:#515154">${esc(order.shipAddress || "")}</span></p>
+    ${trackOrderBtn(order)}`,
+    { eyebrow: "ยืนยันคำสั่งซื้อ" });
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · ยืนยันคำสั่งซื้อ #${orderNo(order.id)}`, html });
 }
 
@@ -109,17 +135,18 @@ export async function sendNewOrderToShop(orderId) {
   if (!cfg.shopEmail) return { skipped: true, reason: "ยังไม่ได้ตั้งอีเมลร้าน" };
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
   if (!order) return { skipped: true };
-  const html = layout(`🔔 ออเดอร์ใหม่ · #${orderNo(order.id)}`,
-    `<table style="width:100%;font-size:14px;border-collapse:collapse">
-      <tr><td style="padding:5px 0;color:#86868b;width:90px">ลูกค้า</td><td style="padding:5px 0">${esc(order.shipName)}</td></tr>
-      <tr><td style="padding:5px 0;color:#86868b">โทร</td><td style="padding:5px 0">${esc(order.shipPhone)}</td></tr>
-      ${order.email ? `<tr><td style="padding:5px 0;color:#86868b">อีเมล</td><td style="padding:5px 0">${esc(order.email)}</td></tr>` : ""}
-      <tr><td style="padding:5px 0;color:#86868b;vertical-align:top">ที่อยู่</td><td style="padding:5px 0">${esc(order.shipAddress)}</td></tr>
-      <tr><td style="padding:5px 0;color:#86868b">ชำระเงิน</td><td style="padding:5px 0">${PAY_LABEL[order.paymentMethod] || esc(order.paymentMethod || "-")}</td></tr>
-      ${order.note ? `<tr><td style="padding:5px 0;color:#86868b;vertical-align:top">หมายเหตุ</td><td style="padding:5px 0">${esc(order.note)}</td></tr>` : ""}
-    </table>
+  const html = layout(`ออเดอร์ใหม่ #${orderNo(order.id)}`,
+    `${infoRows([
+      ["ลูกค้า", esc(order.shipName)],
+      ["โทร", esc(order.shipPhone)],
+      order.email && ["อีเมล", esc(order.email)],
+      ["ที่อยู่", esc(order.shipAddress)],
+      ["ชำระเงิน", PAY_LABEL[order.paymentMethod] || esc(order.paymentMethod || "-")],
+      order.note && ["หมายเหตุ", esc(order.note)],
+    ])}
     ${itemsTable(order)}
-    <div style="margin-top:8px"><a href="${SITE}/sdpub/orders/${order.id}" style="display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;padding:11px 22px;border-radius:999px;font-size:14px;font-weight:500">เปิดในหลังบ้าน</a></div>`);
+    ${button(`${SITE}/sdpub/orders/${order.id}`, "เปิดในหลังบ้าน", true)}`,
+    { eyebrow: "🔔 คำสั่งซื้อใหม่" });
   return send({ to: cfg.shopEmail, subject: `SAENGDAO · ออเดอร์ใหม่ #${orderNo(order.id)} · ${baht(order.total)}`, html });
 }
 
@@ -127,10 +154,11 @@ export async function sendNewOrderToShop(orderId) {
 export async function sendPaymentReceived(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
   if (!order?.email) return { skipped: true };
-  const html = layout(`ได้รับชำระเงินแล้ว · #${orderNo(order.id)}`,
-    `<p style="font-size:14px;color:#515154">เราได้รับชำระเงินสำหรับคำสั่งซื้อ #${orderNo(order.id)} เรียบร้อยแล้ว ✅<br>กำลังเตรียมจัดส่งให้เร็วที่สุดค่ะ</p>
+  const html = layout(`ได้รับชำระเงินแล้ว #${orderNo(order.id)}`,
+    `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154">เราได้รับชำระเงินสำหรับคำสั่งซื้อนี้เรียบร้อยแล้ว ✅<br>กำลังเตรียมจัดส่งให้เร็วที่สุดค่ะ</p>
     ${itemsTable(order)}
-    ${trackOrderBtn(order)}`);
+    ${trackOrderBtn(order)}`,
+    { eyebrow: "ชำระเงินสำเร็จ" });
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · ยืนยันการชำระเงิน #${orderNo(order.id)}`, html });
 }
 
@@ -139,15 +167,16 @@ export async function sendShipped(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
   if (!order?.email) return { skipped: true };
   const track = order.trackingNumber
-    ? `<div style="background:#f5f5f7;border-radius:12px;padding:14px 16px;margin:14px 0">
-        <p style="margin:0;font-size:13px;color:#86868b">เลขพัสดุ${order.shippingMethod ? ` · ${esc(order.shippingMethod)}` : ""}</p>
-        <p style="margin:4px 0 0;font-size:18px;font-weight:700;letter-spacing:1px">${esc(order.trackingNumber)}</p>
+    ? `<div style="background:#f0f0f2;border-radius:14px;padding:16px 18px;margin:18px 0 4px">
+        <p style="margin:0;font-size:12px;color:#86868b">เลขพัสดุ${order.shippingMethod ? ` · ${esc(order.shippingMethod)}` : ""}</p>
+        <p style="margin:5px 0 0;font-size:20px;font-weight:700;letter-spacing:1.5px;color:#1d1d1f">${esc(order.trackingNumber)}</p>
       </div>`
     : "";
-  const html = layout(`พัสดุกำลังจัดส่ง · #${orderNo(order.id)}`,
-    `<p style="font-size:14px;color:#515154">คำสั่งซื้อ #${orderNo(order.id)} ถูกจัดส่งแล้ว 📦</p>
+  const html = layout(`พัสดุกำลังจัดส่ง #${orderNo(order.id)}`,
+    `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154">คำสั่งซื้อของคุณถูกจัดส่งแล้ว 📦 ติดตามพัสดุได้จากเลขด้านล่างค่ะ</p>
     ${track}
-    ${trackOrderBtn(order)}`);
+    ${trackOrderBtn(order)}`,
+    { eyebrow: "จัดส่งแล้ว" });
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · จัดส่งแล้ว #${orderNo(order.id)}`, html });
 }
 
@@ -155,17 +184,18 @@ export async function sendShipped(orderId) {
 export async function sendContactMessage({ name, email, phone, message }) {
   const cfg = await getEmailConfig();
   if (!cfg.shopEmail) return { skipped: true, reason: "ยังไม่ได้ตั้งอีเมลร้าน" };
-  const html = layout("ข้อความใหม่จากฟอร์มติดต่อ",
-    `<table style="width:100%;font-size:14px;border-collapse:collapse">
-      <tr><td style="padding:6px 0;color:#86868b;width:80px">ชื่อ</td><td style="padding:6px 0">${esc(name)}</td></tr>
-      <tr><td style="padding:6px 0;color:#86868b">อีเมล</td><td style="padding:6px 0">${esc(email)}</td></tr>
-      ${phone ? `<tr><td style="padding:6px 0;color:#86868b">โทร</td><td style="padding:6px 0">${esc(phone)}</td></tr>` : ""}
-    </table>
-    <div style="background:#f5f5f7;border-radius:12px;padding:14px 16px;margin:14px 0;white-space:pre-wrap;font-size:14px">${esc(message)}</div>`);
+  const html = layout("ข้อความใหม่จากลูกค้า",
+    `${infoRows([
+      ["ชื่อ", esc(name)],
+      ["อีเมล", esc(email)],
+      phone && ["โทร", esc(phone)],
+    ])}
+    <div style="background:#f0f0f2;border-radius:14px;padding:16px 18px;margin:16px 0 2px;white-space:pre-wrap;font-size:14px;line-height:1.6;color:#1d1d1f">${esc(message)}</div>`,
+    { eyebrow: "ฟอร์มติดต่อ" });
   return send({ to: cfg.shopEmail, subject: `SAENGDAO · ข้อความติดต่อจาก ${name}`, html, replyTo: email ? { email, name } : undefined });
 }
 
 // ทดสอบระบบ
 export async function sendTestEmail(to) {
-  return send({ to, subject: "SAENGDAO · ทดสอบระบบอีเมล", html: layout("ทดสอบระบบอีเมล", `<p style="font-size:14px">ระบบอีเมลผ่าน Brevo ทำงานปกติแล้ว ✅</p>`) });
+  return send({ to, subject: "SAENGDAO · ทดสอบระบบอีเมล", html: layout("ระบบอีเมลพร้อมใช้งาน ✅", `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154">ยินดีด้วยค่ะ — ระบบอีเมลผ่าน Brevo ทำงานปกติแล้ว<br>อีเมลยืนยันคำสั่งซื้อ ชำระเงิน จัดส่ง และฟอร์มติดต่อ จะส่งอัตโนมัติจากนี้ไป</p>`, { eyebrow: "ทดสอบ" }) });
 }
