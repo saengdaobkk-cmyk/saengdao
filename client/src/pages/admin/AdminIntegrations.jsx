@@ -297,7 +297,7 @@ function ThaipostCard({ thpost }) {
   );
 }
 
-function EmailCard({ email }) {
+function EmailCard({ email = {} }) {
   const save = useSaveIntegrations();
   const [form, setForm] = useState({ fromEmail: "", fromName: "", shopEmail: "", apiKey: "", enabled: false });
   const [savedMsg, setSavedMsg] = useState("");
