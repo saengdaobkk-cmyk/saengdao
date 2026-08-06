@@ -10,7 +10,7 @@ import { storeFile } from "../lib/storage.js";
 import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { computeCartRuleDiscount } from "../lib/discountRules.js";
 import { expireStaleOrders, refundUsedPoints } from "../lib/orderExpiry.js";
-import { sendOrderConfirmation } from "../lib/email.js";
+import { sendOrderConfirmation, sendNewOrderToShop } from "../lib/email.js";
 
 // แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
 async function attachTrackingLink(order) {
@@ -352,7 +352,8 @@ router.post("/", async (req, res, next) => {
       return created;
     });
 
-    sendOrderConfirmation(order.id).catch(() => {}); // อีเมลยืนยันคำสั่งซื้อ (best-effort ไม่บล็อก)
+    sendOrderConfirmation(order.id).catch(() => {}); // อีเมลยืนยันคำสั่งซื้อ → ลูกค้า
+    sendNewOrderToShop(order.id).catch(() => {}); // แจ้งเตือนออเดอร์ใหม่ → อีเมลร้าน
     res.status(201).json(order);
   } catch (err) {
     next(err);

@@ -102,6 +102,27 @@ export async function sendOrderConfirmation(orderId) {
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · ยืนยันคำสั่งซื้อ #${orderNo(order.id)}`, html });
 }
 
+// 1.5) แจ้งเตือนร้าน — มีออเดอร์ใหม่เข้ามา
+const PAY_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนธนาคาร", CARD: "บัตรเครดิต" };
+export async function sendNewOrderToShop(orderId) {
+  const cfg = await getEmailConfig();
+  if (!cfg.shopEmail) return { skipped: true, reason: "ยังไม่ได้ตั้งอีเมลร้าน" };
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
+  if (!order) return { skipped: true };
+  const html = layout(`🔔 ออเดอร์ใหม่ · #${orderNo(order.id)}`,
+    `<table style="width:100%;font-size:14px;border-collapse:collapse">
+      <tr><td style="padding:5px 0;color:#86868b;width:90px">ลูกค้า</td><td style="padding:5px 0">${esc(order.shipName)}</td></tr>
+      <tr><td style="padding:5px 0;color:#86868b">โทร</td><td style="padding:5px 0">${esc(order.shipPhone)}</td></tr>
+      ${order.email ? `<tr><td style="padding:5px 0;color:#86868b">อีเมล</td><td style="padding:5px 0">${esc(order.email)}</td></tr>` : ""}
+      <tr><td style="padding:5px 0;color:#86868b;vertical-align:top">ที่อยู่</td><td style="padding:5px 0">${esc(order.shipAddress)}</td></tr>
+      <tr><td style="padding:5px 0;color:#86868b">ชำระเงิน</td><td style="padding:5px 0">${PAY_LABEL[order.paymentMethod] || esc(order.paymentMethod || "-")}</td></tr>
+      ${order.note ? `<tr><td style="padding:5px 0;color:#86868b;vertical-align:top">หมายเหตุ</td><td style="padding:5px 0">${esc(order.note)}</td></tr>` : ""}
+    </table>
+    ${itemsTable(order)}
+    <div style="margin-top:8px"><a href="${SITE}/sdpub/orders/${order.id}" style="display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;padding:11px 22px;border-radius:999px;font-size:14px;font-weight:500">เปิดในหลังบ้าน</a></div>`);
+  return send({ to: cfg.shopEmail, subject: `SAENGDAO · ออเดอร์ใหม่ #${orderNo(order.id)} · ${baht(order.total)}`, html });
+}
+
 // 2) ยืนยันรับชำระเงิน
 export async function sendPaymentReceived(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
