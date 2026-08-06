@@ -153,7 +153,7 @@ function shipBlock(order) {
 function receiptBlock(order) {
   if (!order.needReceipt) return "";
   return `<div style="background:#f7f7f9;border-radius:14px;padding:15px 17px;margin:12px 0 2px">
-    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#86868b">🧾 ข้อมูลออกใบกำกับภาษี</p>
+    <p style="margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:0.3px;color:#86868b">ข้อมูลออกใบกำกับภาษี</p>
     ${infoRows([
       ["ชื่อ", esc(order.receiptName || order.shipName || "-")],
       order.receiptTaxId && ["เลขผู้เสียภาษี", esc(order.receiptTaxId)],
@@ -170,7 +170,7 @@ export async function sendOrderConfirmation(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
   if (!order?.email) return { skipped: true };
   const html = layout(`ได้รับคำสั่งซื้อแล้ว #${orderNo(order.id)}`,
-    `<p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#515154;text-align:center">สวัสดีค่ะ คุณ${esc(order.shipName || "")} 🙏<br>ขอบคุณที่สั่งซื้อกับแสงดาว — เราได้รับคำสั่งซื้อเรียบร้อยแล้ว</p>
+    `<p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#515154;text-align:center">สวัสดีค่ะ คุณ${esc(order.shipName || "")}<br>ขอบคุณที่สั่งซื้อกับแสงดาว — เราได้รับคำสั่งซื้อเรียบร้อยแล้ว</p>
     ${itemsTable(order)}
     ${shipBlock(order)}
     ${receiptBlock(order)}
