@@ -11,6 +11,7 @@ import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, u
 import { ensureNav } from "../lib/navDefaults.js";
 import { expireStaleOrders } from "../lib/orderExpiry.js";
 import { effectivePrice } from "../lib/pricing.js";
+import { EK, getEmailConfig, sendPaymentReceived, sendShipped, sendTestEmail } from "../lib/email.js";
 
 function httpError(status, message) {
   const e = new Error(message);
@@ -773,7 +774,13 @@ router.patch("/orders/:id", async (req, res, next) => {
     if (data.receiptTaxId && !/^\d{13}$/.test(data.receiptTaxId))
       return res.status(400).json({ error: "เลขผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก" });
 
+    // สถานะก่อนอัปเดต — ใช้เช็กว่าเพิ่งเปลี่ยน (กันส่งอีเมลซ้ำตอนบันทึกซ้ำ)
+    const prev = await prisma.order.findUnique({ where: { id: req.params.id }, select: { status: true, paymentStatus: true } });
     const order = await prisma.order.update({ where: { id: req.params.id }, data });
+
+    // อีเมลแจ้งลูกค้า (best-effort ไม่บล็อก) — เฉพาะตอนเพิ่งเปลี่ยนสถานะ
+    if (data.paymentStatus === "PAID" && prev?.paymentStatus !== "PAID") sendPaymentReceived(order.id).catch(() => {});
+    if (data.status === "SHIPPED" && prev?.status !== "SHIPPED") sendShipped(order.id).catch(() => {});
 
     // ยืนยันชำระเงินแล้ว → สะสมแต้ม + ส่งออเดอร์ไป ZORT อัตโนมัติ (best-effort)
     if (data.paymentStatus === "PAID") {
@@ -1122,15 +1129,28 @@ function publicThpost(c) {
   return { enabled: c.enabled, hasKey: !!c.apikey, connected: c.enabled && !!c.apikey };
 }
 
+function publicEmail(e) {
+  return {
+    enabled: e.enabled,
+    fromEmail: e.fromEmail,
+    fromName: e.fromName,
+    shopEmail: e.shopEmail,
+    hasApiKey: !!e.apiKey, // ไม่ส่ง key จริงออก
+    connected: e.enabled && !!e.apiKey && !!e.fromEmail,
+  };
+}
+
 async function integrationsPayload() {
-  const [zort, thpost, syncedRow] = await Promise.all([
+  const [zort, thpost, email, syncedRow] = await Promise.all([
     getZortConfig(),
     getThaipostConfig(),
+    getEmailConfig(),
     prisma.setting.findUnique({ where: { key: ZORT_STOCK_SYNCED_AT } }),
   ]);
   return {
     zort: { ...publicZort(zort), stockSyncedAt: syncedRow?.value || null },
     thpost: publicThpost(thpost),
+    email: publicEmail(email),
   };
 }
 
@@ -1160,6 +1180,14 @@ router.patch("/integrations", async (req, res, next) => {
     if ("enabled" in tp) await set(TPK.enabled, !!tp.enabled);
     if (tp.apikey) await set(TPK.apikey, tp.apikey.trim()); // เว้นว่าง = คงของเดิม
 
+    // อีเมล (Brevo)
+    const em = req.body?.email || {};
+    if ("enabled" in em) await set(EK.enabled, !!em.enabled);
+    if ("fromEmail" in em) await set(EK.fromEmail, em.fromEmail?.trim() || "");
+    if ("fromName" in em) await set(EK.fromName, em.fromName?.trim() || "SAENGDAO");
+    if ("shopEmail" in em) await set(EK.shopEmail, em.shopEmail?.trim() || "");
+    if (em.apiKey) await set(EK.apiKey, em.apiKey.trim()); // เว้นว่าง = คงของเดิม
+
     res.json(await integrationsPayload());
   } catch (err) {
     next(err);
@@ -1181,6 +1209,19 @@ router.post("/integrations/thpost/test", async (req, res, next) => {
     res.json(await testThaipostConnection());
   } catch (err) {
     res.json({ ok: false, error: "เชื่อมต่อไม่ได้: " + err.message });
+  }
+});
+
+// ส่งอีเมลทดสอบ (Brevo)
+router.post("/integrations/email/test", async (req, res, next) => {
+  try {
+    const to = String(req.body?.to || "").trim();
+    if (!to) return res.status(400).json({ error: "กรอกอีเมลผู้รับสำหรับทดสอบ" });
+    const r = await sendTestEmail(to);
+    if (r.ok) return res.json({ ok: true, message: `ส่งอีเมลทดสอบไปที่ ${to} แล้ว` });
+    res.json({ ok: false, error: r.error || r.reason || "ส่งไม่สำเร็จ" });
+  } catch (err) {
+    res.json({ ok: false, error: "ส่งไม่สำเร็จ: " + err.message });
   }
 });
 

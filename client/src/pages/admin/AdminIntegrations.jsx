@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useIntegrations, useSaveIntegrations, testZort, testThpost, syncZortStock, syncZortOrders } from "../../api/admin";
+import { useIntegrations, useSaveIntegrations, testZort, testThpost, testEmail, syncZortStock, syncZortOrders } from "../../api/admin";
 
 function fmtDateTime(d) {
   if (!d) return "";
@@ -18,6 +18,7 @@ export default function AdminIntegrations() {
       <p className="text-[13px] text-sub">เชื่อม SAENGDAO กับแอปภายนอกผ่าน API</p>
       <ZortCard zort={data.zort} />
       <ThaipostCard thpost={data.thpost} />
+      <EmailCard email={data.email} />
 
       {/* ช่องทางอื่นในอนาคต */}
       <div className="rounded-2xl border border-dashed border-line bg-white p-6 text-center">
@@ -291,6 +292,98 @@ function ThaipostCard({ thpost }) {
 
       <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">
         สมัคร API key ฟรีที่ track.thailandpost.co.th → Track &amp; Trace API · ใส่เลขพัสดุที่ออเดอร์แล้วระบบจะดึงสถานะล่าสุดให้ลูกค้าเห็นเองในหน้าติดตามคำสั่งซื้อ
+      </p>
+    </div>
+  );
+}
+
+function EmailCard({ email }) {
+  const save = useSaveIntegrations();
+  const [form, setForm] = useState({ fromEmail: "", fromName: "", shopEmail: "", apiKey: "", enabled: false });
+  const [savedMsg, setSavedMsg] = useState("");
+  const [testTo, setTestTo] = useState("");
+  const [testing, setTesting] = useState(false);
+  const [test, setTest] = useState(null);
+
+  useEffect(() => {
+    setForm({ fromEmail: email.fromEmail || "", fromName: email.fromName || "", shopEmail: email.shopEmail || "", apiKey: "", enabled: email.enabled });
+  }, [email]);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSavedMsg("");
+    const payload = { enabled: form.enabled, fromEmail: form.fromEmail.trim(), fromName: form.fromName.trim(), shopEmail: form.shopEmail.trim() };
+    if (form.apiKey.trim()) payload.apiKey = form.apiKey.trim();
+    save.mutate({ email: payload }, { onSuccess: () => { setSavedMsg("บันทึกแล้ว"); setForm((f) => ({ ...f, apiKey: "" })); } });
+  };
+
+  const runTest = async () => {
+    if (!testTo.trim()) { setTest({ ok: false, error: "กรอกอีเมลผู้รับสำหรับทดสอบ" }); return; }
+    setTesting(true);
+    setTest(null);
+    try {
+      setTest(await testEmail(testTo.trim()));
+    } catch (err) {
+      setTest({ ok: false, error: err.response?.data?.error || "ส่งไม่สำเร็จ" });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-line bg-white p-6">
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0B996E] text-[15px] font-bold text-white">✉</div>
+          <div>
+            <p className="text-[15px] font-semibold text-ink">อีเมล (Brevo)</p>
+            <p className="text-[12px] text-sub">ยืนยันคำสั่งซื้อ · แจ้งชำระเงิน · จัดส่ง · ฟอร์มติดต่อ</p>
+          </div>
+        </div>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${email.connected ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+          {email.connected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"}
+        </span>
+      </div>
+
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Brevo API Key" type="password" value={form.apiKey} onChange={set("apiKey")} autoComplete="new-password"
+          placeholder={email.hasApiKey ? "•••••• (บันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)" : "วาง API key จาก Brevo (xkeysib-...)"} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="อีเมลผู้ส่ง (From)" value={form.fromEmail} onChange={set("fromEmail")} placeholder="no-reply@saengdao.com" />
+          <Field label="ชื่อผู้ส่ง" value={form.fromName} onChange={set("fromName")} placeholder="SAENGDAO" />
+        </div>
+        <Field label="อีเมลร้าน (รับฟอร์มติดต่อ)" value={form.shopEmail} onChange={set("shopEmail")} placeholder="info@saengdao.com" />
+
+        <label className="flex items-center gap-2 text-[14px] text-ink">
+          <input type="checkbox" checked={form.enabled} onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))} className="h-4 w-4 accent-accent" />
+          เปิดใช้งานการส่งอีเมล
+        </label>
+
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          {savedMsg && <span className="text-[13px] text-emerald-600">{savedMsg}</span>}
+        </div>
+      </form>
+
+      {/* ส่งอีเมลทดสอบ */}
+      <div className="mt-5 flex flex-wrap items-end gap-3 border-t border-line pt-4">
+        <label className="block flex-1 min-w-[200px]">
+          <span className="mb-1.5 block text-[12px] font-medium text-sub">ส่งอีเมลทดสอบไปที่</span>
+          <input value={testTo} onChange={(e) => setTestTo(e.target.value)} placeholder="you@example.com"
+            className="w-full rounded-xl border border-line px-4 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30" />
+        </label>
+        <button type="button" onClick={runTest} disabled={testing} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+          {testing ? "กำลังส่ง..." : "ส่งทดสอบ"}
+        </button>
+      </div>
+      {test && <p className={`mt-2 text-[13px] ${test.ok ? "text-emerald-600" : "text-red-600"}`}>{test.ok ? `✓ ${test.message}` : `✕ ${test.error}`}</p>}
+
+      <p className="mt-4 border-t border-line pt-4 text-[12px] text-sub">
+        สมัคร Brevo ฟรีที่ brevo.com → SMTP &amp; API → API Keys (v3) · ฟรี 300 อีเมล/วัน · ควรยืนยันโดเมนผู้ส่งใน Brevo เพื่อไม่ให้เข้า Spam
       </p>
     </div>
   );

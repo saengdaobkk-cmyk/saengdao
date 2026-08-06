@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
+import { api } from "../lib/api";
 import { img } from "../lib/img";
 
 export default function Contact() {
@@ -14,15 +15,24 @@ export default function Contact() {
     hours: s.contactHours,
   };
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState("");
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    const to = CONTACT.email || "";
-    const body = `จาก: ${form.name} (${form.email})%0D%0A%0D%0A${encodeURIComponent(form.message)}`;
-    window.location.href = `mailto:${to}?subject=ติดต่อจากเว็บ SAENGDAO&body=${body}`;
-    setSent(true);
+    setSending(true);
+    setErr("");
+    try {
+      await api.post("/contact", form);
+      setSent(true);
+      setForm({ name: "", email: "", message: "" });
+    } catch (e) {
+      setErr(e.response?.data?.error || "ส่งข้อความไม่สำเร็จ ลองใหม่อีกครั้ง");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -79,10 +89,11 @@ export default function Contact() {
               <textarea value={form.message} onChange={set("message")} rows={5} required
                 className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30" />
             </label>
-            <button type="submit" className="w-full rounded-full bg-accent px-7 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99]">
-              {t("contact.form_submit", "ส่งข้อความ")}
+            <button type="submit" disabled={sending} className="w-full rounded-full bg-accent px-7 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50">
+              {sending ? "กำลังส่ง…" : t("contact.form_submit", "ส่งข้อความ")}
             </button>
-            {sent && <p className="text-[13px] text-emerald-600">กำลังเปิดแอปอีเมลให้คุณส่ง…</p>}
+            {sent && <p className="text-[13px] text-emerald-600">ส่งข้อความเรียบร้อยแล้ว ขอบคุณค่ะ 🙏 เราจะติดต่อกลับโดยเร็ว</p>}
+            {err && <p className="text-[13px] text-red-600">{err}</p>}
           </form>
         </div>
       </div>

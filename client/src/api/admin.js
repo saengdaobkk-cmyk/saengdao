@@ -224,6 +224,7 @@ export const testZort = async () => (await api.post("/admin/integrations/zort/te
 export const syncZortStock = async () => (await api.post("/admin/integrations/zort/sync-stock")).data;
 export const syncZortOrders = async () => (await api.post("/admin/integrations/zort/sync-orders")).data;
 export const testThpost = async () => (await api.post("/admin/integrations/thpost/test")).data;
+export const testEmail = async (to) => (await api.post("/admin/integrations/email/test", { to })).data;
 export const refreshTracking = async (id) => (await api.post(`/admin/orders/${id}/tracking-refresh`)).data;
 
 /* ---------- Upload ---------- */

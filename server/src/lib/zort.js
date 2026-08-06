@@ -1,4 +1,5 @@
 import { prisma } from "./prisma.js";
+import { sendShipped } from "./email.js";
 
 // keys ใน Setting สำหรับ ZORT
 export const ZK = {
@@ -230,6 +231,8 @@ export async function syncOrdersFromZort({ throttleMs = 2 * 60 * 1000, force = f
       if (Object.keys(patch).length) {
         await prisma.order.update({ where: { id: w.id }, data: patch });
         updated++;
+        // เพิ่งเปลี่ยนเป็นจัดส่ง → อีเมลแจ้งลูกค้า + เลขพัสดุ (best-effort)
+        if (patch.status === "SHIPPED") sendShipped(w.id).catch(() => {});
       }
     }
     return { ok: true, updated, zortOrders: list.length };
