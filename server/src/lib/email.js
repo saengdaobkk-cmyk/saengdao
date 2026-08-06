@@ -139,6 +139,13 @@ function infoRows(pairs) {
   </table>`;
 }
 
+// แถวข้อมูลแบบ label เล็กอยู่บน–ค่าอยู่ล่าง (เลี่ยงช่องว่างเมื่อ label ยาวไม่เท่ากัน) — value esc มาก่อน
+function stackRows(pairs) {
+  return pairs.filter(Boolean).map(([k, v]) =>
+    `<div style="margin:0 0 11px"><div style="font-size:11px;letter-spacing:0.3px;color:#a1a1a6;margin:0 0 2px">${esc(k)}</div><div style="font-size:14px;line-height:1.45;color:#1d1d1f">${v}</div></div>`
+  ).join("");
+}
+
 // กล่องที่อยู่จัดส่ง — ชื่อผู้รับ · เบอร์ · ที่อยู่
 function shipBlock(order) {
   const line1 = [order.shipName, order.shipPhone].filter(Boolean).map(esc).join("  ·  ");
@@ -153,13 +160,13 @@ function shipBlock(order) {
 function receiptBlock(order) {
   if (!order.needReceipt) return "";
   return `<div style="background:#f7f7f9;border-radius:14px;padding:15px 17px;margin:12px 0 2px">
-    <p style="margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:0.3px;color:#86868b">ข้อมูลออกใบกำกับภาษี</p>
-    ${infoRows([
+    <p style="margin:0 0 12px;font-size:12px;font-weight:600;letter-spacing:0.3px;color:#86868b">ข้อมูลออกใบกำกับภาษี</p>
+    ${stackRows([
       ["ชื่อ", esc(order.receiptName || order.shipName || "-")],
       order.receiptTaxId && ["เลขผู้เสียภาษี", esc(order.receiptTaxId)],
       ["ที่อยู่", esc(order.receiptAddress || order.shipAddress || "-")],
     ])}
-    <p style="margin:9px 0 0;font-size:11px;line-height:1.5;color:#a1a1a6">โปรดตรวจสอบความถูกต้อง หากมีข้อผิดพลาดกรุณาแจ้งเราภายใน 3 วัน</p>
+    <p style="margin:2px 0 0;font-size:11px;line-height:1.5;color:#a1a1a6">โปรดตรวจสอบความถูกต้อง หากมีข้อผิดพลาดกรุณาแจ้งเราภายใน 3 วัน</p>
   </div>`;
 }
 
