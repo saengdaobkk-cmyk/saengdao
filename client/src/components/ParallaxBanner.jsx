@@ -58,12 +58,13 @@ export default function ParallaxBanner({ banner }) {
   if (!enabled) return null;
   const {
     title, subtitle, buttonText, buttonLink,
-    height = "md", overlay = 25, align = "center",
+    height = "md", overlay = 25, align = "center", valign = "middle",
   } = banner;
 
   const scrim = `rgba(0,0,0,${Math.min(60, Math.max(0, overlay)) / 100})`;
   const alignCls =
     align === "left" ? "items-start text-left" : align === "right" ? "items-end text-right" : "items-center text-center";
+  const valignCls = valign === "top" ? "justify-start" : valign === "bottom" ? "justify-end" : "justify-center";
   const external = /^https?:\/\//i.test(buttonLink || "");
 
   return (
@@ -92,7 +93,7 @@ export default function ParallaxBanner({ banner }) {
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />
 
       <div
-        className={`relative z-[1] mx-auto flex max-w-page flex-col justify-center px-6 py-16 ${HEIGHT_CLS[height] || HEIGHT_CLS.md} ${alignCls}`}
+        className={`relative z-[1] mx-auto flex max-w-page flex-col px-6 py-16 ${HEIGHT_CLS[height] || HEIGHT_CLS.md} ${valignCls} ${alignCls}`}
       >
         {title && (
           <h2

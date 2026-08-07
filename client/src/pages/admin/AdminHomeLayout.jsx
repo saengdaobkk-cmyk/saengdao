@@ -370,18 +370,27 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-[12px] text-sub">การจัดวาง</span>
+          <span className="mb-1.5 block text-[12px] text-sub">แนวนอน</span>
           <div className="flex gap-2">
             <ModeBtn active={f.align === "left"} onClick={() => setF((s) => ({ ...s, align: "left" }))}>ชิดซ้าย</ModeBtn>
             <ModeBtn active={f.align === "center"} onClick={() => setF((s) => ({ ...s, align: "center" }))}>กึ่งกลาง</ModeBtn>
             <ModeBtn active={f.align === "right"} onClick={() => setF((s) => ({ ...s, align: "right" }))}>ชิดขวา</ModeBtn>
           </div>
         </div>
-        <label className="block">
-          <span className="mb-1.5 block text-[12px] text-sub">ความเข้มฉากมืด ({f.overlay}%)</span>
-          <input type="range" min={0} max={60} value={f.overlay} onChange={(e) => setF((s) => ({ ...s, overlay: Number(e.target.value) }))} className="w-full accent-accent" />
-        </label>
+        <div>
+          <span className="mb-1.5 block text-[12px] text-sub">แนวตั้ง</span>
+          <div className="flex gap-2">
+            <ModeBtn active={f.valign === "top"} onClick={() => setF((s) => ({ ...s, valign: "top" }))}>บน</ModeBtn>
+            <ModeBtn active={f.valign === "middle"} onClick={() => setF((s) => ({ ...s, valign: "middle" }))}>กลาง</ModeBtn>
+            <ModeBtn active={f.valign === "bottom"} onClick={() => setF((s) => ({ ...s, valign: "bottom" }))}>ล่าง</ModeBtn>
+          </div>
+        </div>
       </div>
+
+      <label className="block">
+        <span className="mb-1.5 block text-[12px] text-sub">ความเข้มฉากมืด ({f.overlay}%)</span>
+        <input type="range" min={0} max={60} value={f.overlay} onChange={(e) => setF((s) => ({ ...s, overlay: Number(e.target.value) }))} className="w-full accent-accent" />
+      </label>
 
       <label className="block">
         <span className="mb-1.5 block text-[12px] text-sub">
