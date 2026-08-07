@@ -25,27 +25,28 @@ export default function ParallaxBanner({ banner }) {
     if (!sec || !bg || !image || overscan <= 0) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
+    // rAF loop วิ่งเฉพาะตอนแบนเนอร์อยู่ในจอ — ไม่พึ่ง scroll event
+    // (Safari/iOS ยิง scroll event ไม่สม่ำเสมอตอน momentum; rAF ทำงานเหมือนกันทุก browser)
+    let running = false;
     let raf = 0;
-    const update = () => {
-      raf = 0;
+    const frame = () => {
       const rect = sec.getBoundingClientRect();
       const vh = window.innerHeight || document.documentElement.clientHeight;
-      if (rect.bottom < 0 || rect.top > vh) return; // นอกจอ — ข้าม
       // progress: -1 (แบนเนอร์อยู่ล่างสุดจอ) → +1 (บนสุดจอ), 0 = กึ่งกลาง
       const progress = (rect.top + rect.height / 2 - vh / 2) / (vh / 2 + rect.height / 2);
       const y = Math.max(-1, Math.min(1, progress)) * overscan;
       bg.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+      if (running) raf = requestAnimationFrame(frame);
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    const start = () => { if (!running) { running = true; raf = requestAnimationFrame(frame); } };
+    const stop = () => { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; };
 
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    const io = new IntersectionObserver(
+      ([e]) => (e.isIntersecting ? start() : stop()),
+      { rootMargin: "120px 0px" }
+    );
+    io.observe(sec);
+    return () => { stop(); io.disconnect(); };
   }, [image, overscan]);
 
   if (!enabled) return null;
