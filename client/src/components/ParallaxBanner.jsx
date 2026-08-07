@@ -54,20 +54,26 @@ export default function ParallaxBanner({ banner }) {
     height = "md", overlay = 25, align = "center",
   } = banner;
 
-  const bg = image ? `url("${img(image, 1800, 72)}")` : "linear-gradient(135deg,#2b2b2f,#0071e3)";
   const scrim = `rgba(0,0,0,${Math.min(60, Math.max(0, overlay)) / 100})`;
   const left = align === "left";
   const external = /^https?:\/\//i.test(buttonLink || "");
 
   return (
     <section ref={sectionRef} className="relative w-full overflow-hidden">
-      {/* ชั้นภาพพื้นหลัง — ยื่นเกินขอบบน-ล่าง แล้วขยับด้วย transform (parallax) */}
-      <div
-        ref={bgRef}
-        aria-hidden
-        className="absolute inset-x-0 bg-cover bg-center will-change-transform"
-        style={{ top: -overscan, bottom: -overscan, backgroundImage: bg }}
-      />
+      {/* ชั้นภาพพื้นหลัง — ใช้ <img> จริง (Safari จัดการ transform ได้ลื่นกว่า background-image)
+          ภาพสูงเกินกรอบด้านละ overscan แล้วขยับด้วย transform (parallax) */}
+      {image ? (
+        <img
+          ref={bgRef}
+          src={img(image, 1800, 72)}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 w-full object-cover will-change-transform"
+          style={{ top: -overscan, height: `calc(100% + ${overscan * 2}px)`, WebkitBackfaceVisibility: "hidden", backfaceVisibility: "hidden" }}
+        />
+      ) : (
+        <div aria-hidden className="absolute inset-0" style={{ background: "linear-gradient(135deg,#2b2b2f,#0071e3)" }} />
+      )}
       {/* ฉากมืดทับให้ตัวอักษรอ่านชัด */}
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />
 
