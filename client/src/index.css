@@ -26,6 +26,22 @@
   }
 }
 
+/* พารัลแลกซ์แบนเนอร์ด้วย CSS Scroll-Driven Animation — วิ่งบน compositor
+   จึงลื่นบน iOS Safari ตอน momentum scroll (ที่ requestAnimationFrame ถูกหยุด) */
+@keyframes sd-banner-parallax {
+  from { transform: translate3d(0, calc(var(--sd-ov, 200) * -1px), 0); }
+  to   { transform: translate3d(0, calc(var(--sd-ov, 200) *  1px), 0); }
+}
+.sd-parallax-css {
+  animation: sd-banner-parallax linear both;
+  animation-timeline: view();
+  animation-range: cover 0% cover 100%;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-parallax-css { animation: none; transform: none; }
+}
+
 /* ปุ่มหยิบใส่ตะกร้าบนการ์ด — เด้งตอนกด */
 @keyframes cartAdded {
   0% { transform: scale(1); }

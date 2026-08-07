@@ -2,13 +2,17 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { img } from "../lib/img";
 
-// แบนเนอร์ภาพตรึง (parallax) — ขยับเลเยอร์ภาพตาม scroll ด้วย JS
-// ใช้ได้ทุกอุปกรณ์รวมมือถือ (iOS ไม่รองรับ background-attachment:fixed จึงเลี่ยงมาใช้ transform)
+// แบนเนอร์ภาพตรึง (parallax) — ขยับเลเยอร์ภาพตาม scroll
+// หลัก: CSS Scroll-Driven Animation (วิ่งบน compositor → ลื่นบน iOS Safari ตอน momentum)
+// สำรอง: JS rAF loop สำหรับ browser ที่ยังไม่รองรับ (iOS ≤17 บางเวอร์ชัน ฯลฯ)
 const HEIGHT_CLS = {
   sm: "min-h-[240px] md:min-h-[300px]",
   md: "min-h-[320px] md:min-h-[430px]",
   lg: "min-h-[420px] md:min-h-[560px]",
 };
+// รองรับ CSS scroll-driven animation หรือไม่ (ตรวจครั้งเดียวตอนโหลด)
+const SUPPORTS_CSS_PARALLAX =
+  typeof CSS !== "undefined" && CSS.supports?.("animation-timeline: view()");
 
 export default function ParallaxBanner({ banner }) {
   const sectionRef = useRef(null);
@@ -18,8 +22,10 @@ export default function ParallaxBanner({ banner }) {
   const image = banner?.image;
   // ระยะขยับ parallax (px) จากหลังบ้าน — 0 = ปิด (ภาพนิ่ง)
   const overscan = Math.max(0, Number(banner?.parallax ?? 220));
+  const useCss = SUPPORTS_CSS_PARALLAX && !!image && overscan > 0;
 
   useEffect(() => {
+    if (useCss) return; // CSS scroll-timeline จัดการเองบน compositor
     const sec = sectionRef.current;
     const bg = bgRef.current;
     if (!sec || !bg || !image || overscan <= 0) return;
@@ -47,7 +53,7 @@ export default function ParallaxBanner({ banner }) {
     );
     io.observe(sec);
     return () => { stop(); io.disconnect(); };
-  }, [image, overscan]);
+  }, [image, overscan, useCss]);
 
   if (!enabled) return null;
   const {
@@ -69,8 +75,14 @@ export default function ParallaxBanner({ banner }) {
           src={img(image, 1800, 72)}
           alt=""
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 w-full object-cover will-change-transform"
-          style={{ top: -overscan, height: `calc(100% + ${overscan * 2}px)`, WebkitBackfaceVisibility: "hidden", backfaceVisibility: "hidden" }}
+          className={`pointer-events-none absolute inset-x-0 w-full object-cover will-change-transform ${useCss ? "sd-parallax-css" : ""}`}
+          style={{
+            top: -overscan,
+            height: `calc(100% + ${overscan * 2}px)`,
+            WebkitBackfaceVisibility: "hidden",
+            backfaceVisibility: "hidden",
+            ...(useCss ? { "--sd-ov": overscan } : null),
+          }}
         />
       ) : (
         <div aria-hidden className="absolute inset-0" style={{ background: "linear-gradient(135deg,#2b2b2f,#0071e3)" }} />
