@@ -33,13 +33,17 @@
   to   { transform: translate3d(0, calc(var(--sd-ov, 200) *  1px), 0); }
 }
 .sd-parallax-css {
-  animation: sd-banner-parallax linear both;
+  /* ใช้ longhand ทั้งหมด — เลี่ยง `animation` shorthand ที่ Safari reset animation-timeline เป็น auto */
+  animation-name: sd-banner-parallax;
+  animation-duration: 1s; /* ถูกแทนที่ด้วย timeline — ใส่ค่าไว้กัน engine เก่ามองเป็น instant */
+  animation-timing-function: linear;
+  animation-fill-mode: both;
   animation-timeline: view();
   animation-range: cover 0% cover 100%;
   will-change: transform;
 }
 @media (prefers-reduced-motion: reduce) {
-  .sd-parallax-css { animation: none; transform: none; }
+  .sd-parallax-css { animation-name: none; }
 }
 
 /* ปุ่มหยิบใส่ตะกร้าบนการ์ด — เด้งตอนกด */

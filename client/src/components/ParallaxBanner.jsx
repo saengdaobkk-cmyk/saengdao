@@ -37,6 +37,8 @@ export default function ParallaxBanner({ banner }) {
         transform: cs?.transform || "-",
         animTimeline: cs?.animationTimeline || "-",
         animName: cs?.animationName || "-",
+        animRange: cs ? `${cs.animationRangeStart || "?"}→${cs.animationRangeEnd || "?"}` : "-",
+        reduceMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
         innerH: window.innerHeight,
       });
     };
@@ -123,9 +125,11 @@ export default function ParallaxBanner({ banner }) {
             borderRadius: 8, maxWidth: "94vw", whiteSpace: "pre-wrap", wordBreak: "break-all",
           }}
         >{`path: ${useCss ? "CSS view()" : "JS rAF"}
-supportsCSS: ${String(SUPPORTS_CSS_PARALLAX)}
+supportsCSS: ${String(SUPPORTS_CSS_PARALLAX)}   reduceMotion: ${String(dbg?.reduceMotion)}
 imgLoaded: ${String(imgLoaded)}   overscan: ${overscan}
+animName: ${dbg?.animName ?? "?"}
 animTimeline: ${dbg?.animTimeline ?? "?"}
+animRange: ${dbg?.animRange ?? "?"}
 transform: ${dbg?.transform ?? "?"}
 innerH: ${dbg?.innerH ?? "?"}
 UA: ${typeof navigator !== "undefined" ? navigator.userAgent : ""}`}</pre>
