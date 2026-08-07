@@ -49,6 +49,7 @@ export const BANNER_HEIGHTS = [
   { value: "md", label: "กลาง" },
   { value: "lg", label: "สูง" },
 ];
+export const BANNER_PARALLAX_MAX = 400; // ระยะขยับ parallax สูงสุด (px)
 export const BANNER_DEFAULT = {
   enabled: true,
   image: "",
@@ -59,6 +60,7 @@ export const BANNER_DEFAULT = {
   height: "md",
   overlay: 25, // ความเข้มฉากมืดทับรูป (%) เพื่อให้ตัวอักษรอ่านชัด — 0..60
   align: "center", // center | left
+  parallax: 220, // ระยะขยับภาพ parallax (px) — 0 = ปิด (ภาพนิ่ง)
 };
 export function parseBanner(raw) {
   let o = {};
@@ -78,6 +80,7 @@ export function parseBanner(raw) {
     height: BANNER_HEIGHTS.some((h) => h.value === o.height) ? o.height : d.height,
     overlay: Math.min(60, Math.max(0, Math.round(Number(o.overlay)) || 0)),
     align: o.align === "left" ? "left" : "center",
+    parallax: Math.min(BANNER_PARALLAX_MAX, Math.max(0, o.parallax == null ? d.parallax : Math.round(Number(o.parallax)) || 0)),
   };
 }
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)

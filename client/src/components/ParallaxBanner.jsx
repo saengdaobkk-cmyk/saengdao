@@ -9,7 +9,6 @@ const HEIGHT_CLS = {
   md: "min-h-[320px] md:min-h-[430px]",
   lg: "min-h-[420px] md:min-h-[560px]",
 };
-const OVERSCAN = 320; // ระยะขยับภาพ parallax (px) — เลเยอร์ยื่นเกินขอบบน-ล่างด้านละเท่านี้ กันเห็นขอบเวลาขยับ
 
 export default function ParallaxBanner({ banner }) {
   const sectionRef = useRef(null);
@@ -17,11 +16,13 @@ export default function ParallaxBanner({ banner }) {
 
   const enabled = banner?.enabled;
   const image = banner?.image;
+  // ระยะขยับ parallax (px) จากหลังบ้าน — 0 = ปิด (ภาพนิ่ง)
+  const overscan = Math.max(0, Number(banner?.parallax ?? 220));
 
   useEffect(() => {
     const sec = sectionRef.current;
     const bg = bgRef.current;
-    if (!sec || !bg || !image) return;
+    if (!sec || !bg || !image || overscan <= 0) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
     let raf = 0;
@@ -32,7 +33,7 @@ export default function ParallaxBanner({ banner }) {
       if (rect.bottom < 0 || rect.top > vh) return; // นอกจอ — ข้าม
       // progress: -1 (แบนเนอร์อยู่ล่างสุดจอ) → +1 (บนสุดจอ), 0 = กึ่งกลาง
       const progress = (rect.top + rect.height / 2 - vh / 2) / (vh / 2 + rect.height / 2);
-      const y = Math.max(-1, Math.min(1, progress)) * OVERSCAN;
+      const y = Math.max(-1, Math.min(1, progress)) * overscan;
       bg.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
@@ -45,7 +46,7 @@ export default function ParallaxBanner({ banner }) {
       window.removeEventListener("resize", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [image]);
+  }, [image, overscan]);
 
   if (!enabled) return null;
   const {
@@ -65,7 +66,7 @@ export default function ParallaxBanner({ banner }) {
         ref={bgRef}
         aria-hidden
         className="absolute inset-x-0 bg-cover bg-center will-change-transform"
-        style={{ top: -OVERSCAN, bottom: -OVERSCAN, backgroundImage: bg }}
+        style={{ top: -overscan, bottom: -overscan, backgroundImage: bg }}
       />
       {/* ฉากมืดทับให้ตัวอักษรอ่านชัด */}
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />

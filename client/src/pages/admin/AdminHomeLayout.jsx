@@ -5,7 +5,7 @@ import { uploadImage } from "../../api/admin";
 import {
   parseOrder, parseRows, parseCustomRows, parseBanner, newCustomRow, customKey, isCustomKey,
   SECTION_LABEL, ROW_SORTS, ROW_KEYS, ROW_DEFAULTS, BOOKS_EDITABLE_KEYS, ROW_LIMIT_MAX,
-  BANNER_HEIGHTS, BANNER_DEFAULT,
+  BANNER_HEIGHTS, BANNER_DEFAULT, BANNER_PARALLAX_MAX,
 } from "../../lib/homeSections";
 import { img } from "../../lib/img";
 
@@ -381,6 +381,14 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           <input type="range" min={0} max={60} value={f.overlay} onChange={(e) => setF((s) => ({ ...s, overlay: Number(e.target.value) }))} className="w-full accent-accent" />
         </label>
       </div>
+
+      <label className="block">
+        <span className="mb-1.5 block text-[12px] text-sub">
+          ความแรง Parallax ({f.parallax}px){f.parallax === 0 ? " · ปิด (ภาพนิ่ง)" : ""}
+        </span>
+        <input type="range" min={0} max={BANNER_PARALLAX_MAX} step={10} value={f.parallax} onChange={(e) => setF((s) => ({ ...s, parallax: Number(e.target.value) }))} className="w-full accent-accent" />
+        <span className="mt-1 block text-[11px] text-sub">ยิ่งมาก ภาพยิ่งเลื่อนต่างจากเนื้อหาเวลา scroll · 0 = ปิดเอฟเฟกต์</span>
+      </label>
 
       <div className="flex items-center gap-3 border-t border-line pt-3">
         <button onClick={() => onSave(f)} disabled={saving || uploading} className="rounded-full bg-accent px-6 py-2 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">บันทึก</button>
