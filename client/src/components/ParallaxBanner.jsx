@@ -9,7 +9,7 @@ const HEIGHT_CLS = {
   md: "min-h-[320px] md:min-h-[430px]",
   lg: "min-h-[420px] md:min-h-[560px]",
 };
-const OVERSCAN = 70; // เลเยอร์ภาพยื่นเกินขอบบน-ล่างด้านละกี่ px (กันเห็นขอบเวลาขยับ)
+const OVERSCAN = 140; // ระยะขยับภาพ parallax (px) — เลเยอร์ยื่นเกินขอบบน-ล่างด้านละเท่านี้ กันเห็นขอบเวลาขยับ
 
 export default function ParallaxBanner({ banner }) {
   const sectionRef = useRef(null);
