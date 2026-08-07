@@ -32,13 +32,19 @@
   from { transform: translate3d(0, calc(var(--sd-ov, 200) * -1px), 0); }
   to   { transform: translate3d(0, calc(var(--sd-ov, 200) *  1px), 0); }
 }
+/* section เป็นตัวประกาศ timeline (มันเลื่อนไปตามหน้า) — เลี่ยงปัญหา overflow:hidden
+   ของ section ทำให้ view() ของ <img> ไปวัดเทียบ section ที่ไม่เลื่อน */
+.sd-parallax-wrap {
+  view-timeline-name: --sd-banner;
+  view-timeline-axis: block;
+}
 .sd-parallax-css {
   /* ใช้ longhand ทั้งหมด — เลี่ยง `animation` shorthand ที่ Safari reset animation-timeline เป็น auto */
   animation-name: sd-banner-parallax;
   animation-duration: 1s; /* ถูกแทนที่ด้วย timeline — ใส่ค่าไว้กัน engine เก่ามองเป็น instant */
   animation-timing-function: linear;
   animation-fill-mode: both;
-  animation-timeline: view();
+  animation-timeline: --sd-banner;
   animation-range: cover 0% cover 100%;
   will-change: transform;
 }

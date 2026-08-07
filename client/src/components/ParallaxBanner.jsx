@@ -24,22 +24,18 @@ export default function ParallaxBanner({ banner }) {
   const overscan = Math.max(0, Number(banner?.parallax ?? 220));
   const useCss = SUPPORTS_CSS_PARALLAX && !!image && overscan > 0;
 
-  // โหมด debug (เปิดด้วย ?bannerdebug) — โชว์ว่าเครื่องนี้ใช้ path ไหน/รองรับอะไร
+  // โหมด debug ชั่วคราว (เปิดด้วย ?bannerdebug) — ลบออกหลังยืนยันว่า iOS ทำงาน
   const debug = typeof window !== "undefined" && /bannerdebug/.test(window.location.search);
-  const [imgLoaded, setImgLoaded] = useState(false);
   const [dbg, setDbg] = useState(null);
   useEffect(() => {
     if (!debug) return;
     const sample = () => {
-      const bg = bgRef.current;
-      const cs = bg ? getComputedStyle(bg) : null;
+      const cs = bgRef.current ? getComputedStyle(bgRef.current) : null;
       setDbg({
         transform: cs?.transform || "-",
-        animTimeline: cs?.animationTimeline || "-",
         animName: cs?.animationName || "-",
-        animRange: cs ? `${cs.animationRangeStart || "?"}→${cs.animationRangeEnd || "?"}` : "-",
+        animTimeline: cs?.animationTimeline || "-",
         reduceMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
-        innerH: window.innerHeight,
       });
     };
     sample();
@@ -91,7 +87,7 @@ export default function ParallaxBanner({ banner }) {
   const external = /^https?:\/\//i.test(buttonLink || "");
 
   return (
-    <section ref={sectionRef} className="relative w-full overflow-hidden">
+    <section ref={sectionRef} className={`relative w-full overflow-hidden ${useCss ? "sd-parallax-wrap" : ""}`}>
       {/* ชั้นภาพพื้นหลัง — ใช้ <img> จริง (Safari จัดการ transform ได้ลื่นกว่า background-image)
           ภาพสูงเกินกรอบด้านละ overscan แล้วขยับด้วย transform (parallax) */}
       {image ? (
@@ -100,7 +96,6 @@ export default function ParallaxBanner({ banner }) {
           src={img(image, 1800, 72)}
           alt=""
           aria-hidden
-          onLoad={() => setImgLoaded(true)}
           className={`pointer-events-none absolute inset-x-0 w-full object-cover will-change-transform ${useCss ? "sd-parallax-css" : ""}`}
           style={{
             top: -overscan,
@@ -117,22 +112,10 @@ export default function ParallaxBanner({ banner }) {
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />
 
       {debug && (
-        <pre
-          style={{
-            position: "fixed", top: 6, left: 6, zIndex: 99999, margin: 0,
-            background: "rgba(0,0,0,0.82)", color: "#5dff8f",
-            font: "11px/1.45 ui-monospace,Menlo,monospace", padding: "8px 10px",
-            borderRadius: 8, maxWidth: "94vw", whiteSpace: "pre-wrap", wordBreak: "break-all",
-          }}
-        >{`path: ${useCss ? "CSS view()" : "JS rAF"}
-supportsCSS: ${String(SUPPORTS_CSS_PARALLAX)}   reduceMotion: ${String(dbg?.reduceMotion)}
-imgLoaded: ${String(imgLoaded)}   overscan: ${overscan}
+        <pre style={{ position: "fixed", top: 6, left: 6, zIndex: 99999, margin: 0, background: "rgba(0,0,0,0.82)", color: "#5dff8f", font: "12px/1.5 ui-monospace,Menlo,monospace", padding: "8px 10px", borderRadius: 8, maxWidth: "94vw", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{`useCss: ${String(useCss)}   reduceMotion: ${String(dbg?.reduceMotion)}
 animName: ${dbg?.animName ?? "?"}
 animTimeline: ${dbg?.animTimeline ?? "?"}
-animRange: ${dbg?.animRange ?? "?"}
-transform: ${dbg?.transform ?? "?"}
-innerH: ${dbg?.innerH ?? "?"}
-UA: ${typeof navigator !== "undefined" ? navigator.userAgent : ""}`}</pre>
+transform: ${dbg?.transform ?? "?"}`}</pre>
       )}
 
       <div
