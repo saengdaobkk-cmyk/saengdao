@@ -8,8 +8,9 @@ import TextMarquee from "../components/TextMarquee";
 import HotDealSection from "../components/HotDealSection";
 import BookGridSection from "../components/BookGridSection";
 import BlogSection from "../components/BlogSection";
+import ParallaxBanner from "../components/ParallaxBanner";
 import { useSettings } from "../api/settings";
-import { parseOrder, parseRows, parseCustomRows, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
+import { parseOrder, parseRows, parseCustomRows, parseBanner, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
 
 // แถวหนังสือ (มาใหม่/ขายดี/แถวที่สร้างเอง) — ครอบด้วยระยะห่างมาตรฐาน
 const Row = (cfg) => (
@@ -19,14 +20,16 @@ const Row = (cfg) => (
 );
 
 export default function Home() {
-  const { homeSectionOrder, homeRows, homeCustomRows } = useSettings();
+  const { homeSectionOrder, homeRows, homeCustomRows, homeBanner } = useSettings();
   const rows = parseRows(homeRows);
   const custom = parseCustomRows(homeCustomRows);
+  const banner = parseBanner(homeBanner);
   const customBy = Object.fromEntries(custom.map((r) => [customKey(r.id), r]));
   const order = parseOrder(homeSectionOrder, custom.map((r) => customKey(r.id)));
 
   const sections = {
     hero: <HeroSlider />,
+    banner: <div className="pt-10 sm:pt-14"><ParallaxBanner banner={banner} /></div>,
     hotdeal: <HotDealSection title={rows.hotdeal.title} subtitle={rows.hotdeal.subtitle} />,
     new: Row(rows.new),
     bestseller: Row(rows.bestseller),

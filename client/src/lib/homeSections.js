@@ -1,6 +1,7 @@
 // section หน้าแรก ที่สลับลำดับได้ (ใช้ร่วมกันระหว่างหน้าร้าน + admin)
 export const HOME_SECTIONS = [
   { key: "hero", label: "สไลด์หน้าแรก (Hero)" },
+  { key: "banner", label: "แบนเนอร์ภาพตรึง (Parallax)" },
   { key: "hotdeal", label: "Hot Deal" },
   { key: "new", label: "หนังสือมาใหม่" },
   { key: "bestseller", label: "หนังสือขายดี" },
@@ -41,6 +42,44 @@ export const ROW_DEFAULTS = {
   brands: { title: "สำนักพิมพ์ที่คัดสรร", subtitle: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
 };
 export const ROW_KEYS = Object.keys(ROW_DEFAULTS);
+
+// ---- แบนเนอร์ภาพตรึง (parallax) — เก็บใน setting homeBanner (JSON เดี่ยว) ----
+export const BANNER_HEIGHTS = [
+  { value: "sm", label: "เตี้ย" },
+  { value: "md", label: "กลาง" },
+  { value: "lg", label: "สูง" },
+];
+export const BANNER_DEFAULT = {
+  enabled: true,
+  image: "",
+  title: "ของขวัญสุดพิเศษ",
+  subtitle: "มอบหนังสือดีๆ ให้คนที่คุณรัก",
+  buttonText: "เลือกซื้อเลย",
+  buttonLink: "/books",
+  height: "md",
+  overlay: 25, // ความเข้มฉากมืดทับรูป (%) เพื่อให้ตัวอักษรอ่านชัด — 0..60
+  align: "center", // center | left
+};
+export function parseBanner(raw) {
+  let o = {};
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (p && typeof p === "object") o = p;
+  } catch { /* ใช้ค่าเริ่มต้น */ }
+  const d = BANNER_DEFAULT;
+  const str = (v, def) => (typeof v === "string" ? v : def);
+  return {
+    enabled: o.enabled !== false,
+    image: str(o.image, d.image),
+    title: str(o.title, d.title),
+    subtitle: str(o.subtitle, d.subtitle),
+    buttonText: str(o.buttonText, d.buttonText),
+    buttonLink: str(o.buttonLink, d.buttonLink),
+    height: BANNER_HEIGHTS.some((h) => h.value === o.height) ? o.height : d.height,
+    overlay: Math.min(60, Math.max(0, Math.round(Number(o.overlay)) || 0)),
+    align: o.align === "left" ? "left" : "center",
+  };
+}
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)
 export const BOOKS_EDITABLE_KEYS = ["new", "bestseller", "recommend"];
 

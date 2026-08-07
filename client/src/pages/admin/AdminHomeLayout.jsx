@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
 import { useBooks } from "../../api/books";
+import { uploadImage } from "../../api/admin";
 import {
-  parseOrder, parseRows, parseCustomRows, newCustomRow, customKey, isCustomKey,
+  parseOrder, parseRows, parseCustomRows, parseBanner, newCustomRow, customKey, isCustomKey,
   SECTION_LABEL, ROW_SORTS, ROW_KEYS, ROW_DEFAULTS, BOOKS_EDITABLE_KEYS, ROW_LIMIT_MAX,
+  BANNER_HEIGHTS, BANNER_DEFAULT,
 } from "../../lib/homeSections";
 import { img } from "../../lib/img";
 
@@ -24,6 +26,7 @@ export default function AdminHomeLayout() {
   const custom = parseCustomRows(settings.homeCustomRows);
   const customBy = Object.fromEntries(custom.map((r) => [customKey(r.id), r]));
   const order = parseOrder(settings.homeSectionOrder, custom.map((r) => customKey(r.id)));
+  const banner = parseBanner(settings.homeBanner);
   const [editing, setEditing] = useState("");
 
   const move = (i, dir) => {
@@ -41,6 +44,10 @@ export default function AdminHomeLayout() {
   // บันทึกแถวที่สร้างเอง → homeCustomRows
   const saveCustom = (id, cfg) =>
     update.mutate({ homeCustomRows: JSON.stringify(custom.map((r) => (r.id === id ? { ...r, ...cfg } : r))) }, { onSuccess: () => setEditing("") });
+
+  // บันทึกแบนเนอร์ parallax → homeBanner
+  const saveBanner = (cfg) =>
+    update.mutate({ homeBanner: JSON.stringify(cfg) }, { onSuccess: () => setEditing("") });
 
   const addCustom = () => {
     const row = newCustomRow();
@@ -71,8 +78,9 @@ export default function AdminHomeLayout() {
         <ul className="divide-y divide-line">
           {order.map((key, i) => {
             const cust = isCustomKey(key);
-            const cfg = cust ? customBy[key] : rows[key];
-            const editable = cust || ROW_KEYS.includes(key);
+            const isBanner = key === "banner";
+            const cfg = cust ? customBy[key] : isBanner ? banner : rows[key];
+            const editable = cust || ROW_KEYS.includes(key) || isBanner;
             const booksEditable = cust || BOOKS_EDITABLE_KEYS.includes(key);
             const isOpen = editing === key;
             if (cust && !cfg) return null; // แถวถูกลบไปแล้ว
@@ -91,7 +99,11 @@ export default function AdminHomeLayout() {
                   <div className="flex-1">
                     <span className="text-[14px] font-medium text-ink">{cust ? cfg.title : SECTION_LABEL[key] || key}</span>
                     {cust && <span className="ml-2 rounded-full bg-mist px-2 py-0.5 text-[11px] text-sub">แถวที่สร้างเอง</span>}
-                    {editable && (
+                    {isBanner ? (
+                      <span className="ml-2 text-[12px] text-sub">
+                        · {cfg.enabled ? (cfg.image ? "เปิด" : "เปิด (ยังไม่ใส่รูป)") : "ปิดอยู่"}{cfg.title ? ` · ${cfg.title}` : ""}
+                      </span>
+                    ) : editable && (
                       <span className="ml-2 text-[12px] text-sub">
                         · {cfg.title} {!booksEditable ? "(อัตโนมัติ)" : cfg.mode === "manual" ? `(เลือกเอง ${cfg.bookIds.length} เล่ม)` : "(อัตโนมัติ)"}
                       </span>
@@ -104,7 +116,14 @@ export default function AdminHomeLayout() {
                   )}
                 </div>
 
-                {editable && isOpen && (
+                {editable && isOpen && (isBanner ? (
+                  <BannerEditor
+                    cfg={cfg}
+                    saving={update.isPending}
+                    onSave={saveBanner}
+                    onReset={() => saveBanner(BANNER_DEFAULT)}
+                  />
+                ) : (
                   <RowEditor
                     cfg={cfg}
                     saving={update.isPending}
@@ -114,7 +133,7 @@ export default function AdminHomeLayout() {
                     onReset={cust ? undefined : () => saveRow(key, ROW_DEFAULTS[key])}
                     onDelete={cust ? () => deleteCustom(cfg.id) : undefined}
                   />
-                )}
+                ))}
               </li>
             );
           })}
@@ -269,6 +288,103 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
         {onDelete && (
           <button onClick={() => confirm("ลบแถวนี้ออกจากหน้าแรก?") && onDelete()} disabled={saving} className="ml-auto text-[13px] text-sub hover:text-red-600">ลบแถวนี้</button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function BannerEditor({ cfg, onSave, onReset, saving }) {
+  const [f, setF] = useState({ ...BANNER_DEFAULT, ...cfg });
+  const [uploading, setUploading] = useState(false);
+  const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setF((s) => ({ ...s, image: url }));
+    } catch {
+      alert("อัปโหลดรูปไม่สำเร็จ");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-4 rounded-xl border border-line bg-mist/40 p-4">
+      <label className="flex items-center gap-2 text-[13px] font-medium text-ink">
+        <input type="checkbox" checked={f.enabled} onChange={(e) => setF((s) => ({ ...s, enabled: e.target.checked }))} className="h-4 w-4 accent-accent" />
+        แสดงแบนเนอร์นี้บนหน้าแรก
+      </label>
+
+      {/* รูปพื้นหลัง */}
+      <div>
+        <span className="mb-1.5 block text-[12px] text-sub">รูปพื้นหลัง (แนะนำแนวนอน กว้าง ≥ 1600px)</span>
+        <div className="flex items-center gap-3">
+          <div className="h-20 w-36 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
+            {f.image ? (
+              <img src={img(f.image, 400)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-[11px] text-sub">ยังไม่มีรูป</div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="cursor-pointer rounded-full border border-line bg-white px-4 py-1.5 text-center text-[13px] font-medium text-ink transition hover:bg-mist">
+              {uploading ? "กำลังอัปโหลด..." : f.image ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+              <input type="file" accept="image/*" onChange={onFile} className="hidden" disabled={uploading} />
+            </label>
+            {f.image && <button type="button" onClick={() => setF((s) => ({ ...s, image: "" }))} className="text-[12px] text-sub hover:text-red-600">ลบรูป</button>}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">หัวข้อ</span>
+          <input value={f.title} onChange={set("title")} className={inp} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">คำโปรย (ใต้หัวข้อ)</span>
+          <input value={f.subtitle} onChange={set("subtitle")} className={inp} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">ข้อความปุ่ม (เว้นว่าง = ไม่แสดงปุ่ม)</span>
+          <input value={f.buttonText} onChange={set("buttonText")} className={inp} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">ลิงก์ปุ่ม</span>
+          <input value={f.buttonLink} onChange={set("buttonLink")} placeholder="เช่น /books หรือ https://..." className={inp} />
+        </label>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div>
+          <span className="mb-1.5 block text-[12px] text-sub">ความสูง</span>
+          <div className="flex gap-2">
+            {BANNER_HEIGHTS.map((h) => (
+              <ModeBtn key={h.value} active={f.height === h.value} onClick={() => setF((s) => ({ ...s, height: h.value }))}>{h.label}</ModeBtn>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="mb-1.5 block text-[12px] text-sub">การจัดวาง</span>
+          <div className="flex gap-2">
+            <ModeBtn active={f.align === "center"} onClick={() => setF((s) => ({ ...s, align: "center" }))}>กึ่งกลาง</ModeBtn>
+            <ModeBtn active={f.align === "left"} onClick={() => setF((s) => ({ ...s, align: "left" }))}>ชิดซ้าย</ModeBtn>
+          </div>
+        </div>
+        <label className="block">
+          <span className="mb-1.5 block text-[12px] text-sub">ความเข้มฉากมืด ({f.overlay}%)</span>
+          <input type="range" min={0} max={60} value={f.overlay} onChange={(e) => setF((s) => ({ ...s, overlay: Number(e.target.value) }))} className="w-full accent-accent" />
+        </label>
+      </div>
+
+      <div className="flex items-center gap-3 border-t border-line pt-3">
+        <button onClick={() => onSave(f)} disabled={saving || uploading} className="rounded-full bg-accent px-6 py-2 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">บันทึก</button>
+        <button onClick={onReset} disabled={saving} className="text-[13px] text-sub hover:text-ink">คืนค่าเริ่มต้น</button>
       </div>
     </div>
   );

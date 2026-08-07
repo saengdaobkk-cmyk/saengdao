@@ -20,6 +20,7 @@ const STRING_KEYS = [
   "homeSectionOrder", // ลำดับ section หน้าแรก (JSON array)
   "homeRows", // ตั้งค่าแถวหนังสือหน้าแรก: หัวข้อ/คำโปรย/โหมดอัตโนมัติ-เลือกเอง (JSON)
   "homeCustomRows", // แถวหนังสือที่แอดมินสร้างเอง (JSON array)
+  "homeBanner", // แบนเนอร์ภาพตรึง parallax หน้าแรก (JSON เดี่ยว)
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร
