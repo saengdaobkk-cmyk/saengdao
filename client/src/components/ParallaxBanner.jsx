@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { img } from "../lib/img";
 
@@ -23,27 +23,6 @@ export default function ParallaxBanner({ banner }) {
   // ระยะขยับ parallax (px) จากหลังบ้าน — 0 = ปิด (ภาพนิ่ง)
   const overscan = Math.max(0, Number(banner?.parallax ?? 220));
   const useCss = SUPPORTS_CSS_PARALLAX && !!image && overscan > 0;
-
-  // โหมด debug ชั่วคราว (เปิดด้วย ?bannerdebug) — ลบออกหลังยืนยันว่า iOS ทำงาน
-  const debug = typeof window !== "undefined" && /bannerdebug/.test(window.location.search);
-  const [dbg, setDbg] = useState(null);
-  useEffect(() => {
-    if (!debug) return;
-    const sample = () => {
-      const cs = bgRef.current ? getComputedStyle(bgRef.current) : null;
-      setDbg({
-        transform: cs?.transform || "-",
-        animName: cs?.animationName || "-",
-        animTimeline: cs?.animationTimeline || "-",
-        reduceMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
-      });
-    };
-    sample();
-    const id = setInterval(sample, 300);
-    window.addEventListener("scroll", sample, { passive: true });
-    window.addEventListener("touchend", sample, { passive: true });
-    return () => { clearInterval(id); window.removeEventListener("scroll", sample); window.removeEventListener("touchend", sample); };
-  }, [debug]);
 
   useEffect(() => {
     if (useCss) return; // CSS scroll-timeline จัดการเองบน compositor
@@ -110,13 +89,6 @@ export default function ParallaxBanner({ banner }) {
       )}
       {/* ฉากมืดทับให้ตัวอักษรอ่านชัด */}
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />
-
-      {debug && (
-        <pre style={{ position: "fixed", top: 6, left: 6, zIndex: 99999, margin: 0, background: "rgba(0,0,0,0.82)", color: "#5dff8f", font: "12px/1.5 ui-monospace,Menlo,monospace", padding: "8px 10px", borderRadius: 8, maxWidth: "94vw", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{`useCss: ${String(useCss)}   reduceMotion: ${String(dbg?.reduceMotion)}
-animName: ${dbg?.animName ?? "?"}
-animTimeline: ${dbg?.animTimeline ?? "?"}
-transform: ${dbg?.transform ?? "?"}`}</pre>
-      )}
 
       <div
         className={`relative z-[1] mx-auto flex max-w-page flex-col justify-center px-6 py-16 ${HEIGHT_CLS[height] || HEIGHT_CLS.md} ${
