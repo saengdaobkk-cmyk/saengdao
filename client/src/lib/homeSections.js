@@ -79,7 +79,7 @@ export function parseBanner(raw) {
     buttonLink: str(o.buttonLink, d.buttonLink),
     height: BANNER_HEIGHTS.some((h) => h.value === o.height) ? o.height : d.height,
     overlay: Math.min(60, Math.max(0, Math.round(Number(o.overlay)) || 0)),
-    align: o.align === "left" ? "left" : "center",
+    align: o.align === "left" || o.align === "right" ? o.align : "center",
     parallax: Math.min(BANNER_PARALLAX_MAX, Math.max(0, o.parallax == null ? d.parallax : Math.round(Number(o.parallax)) || 0)),
   };
 }

@@ -372,8 +372,9 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
         <div>
           <span className="mb-1.5 block text-[12px] text-sub">การจัดวาง</span>
           <div className="flex gap-2">
-            <ModeBtn active={f.align === "center"} onClick={() => setF((s) => ({ ...s, align: "center" }))}>กึ่งกลาง</ModeBtn>
             <ModeBtn active={f.align === "left"} onClick={() => setF((s) => ({ ...s, align: "left" }))}>ชิดซ้าย</ModeBtn>
+            <ModeBtn active={f.align === "center"} onClick={() => setF((s) => ({ ...s, align: "center" }))}>กึ่งกลาง</ModeBtn>
+            <ModeBtn active={f.align === "right"} onClick={() => setF((s) => ({ ...s, align: "right" }))}>ชิดขวา</ModeBtn>
           </div>
         </div>
         <label className="block">
