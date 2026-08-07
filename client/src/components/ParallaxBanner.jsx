@@ -1,18 +1,55 @@
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { img } from "../lib/img";
 
-// แบนเนอร์ภาพตรึง (parallax) — พื้นหลังตรึงกับ viewport, เนื้อหาเลื่อนทับตอน scroll
-// บนมือถือ (iOS ไม่รองรับ bg-fixed) จะ fallback เป็นภาพนิ่งอัตโนมัติ
+// แบนเนอร์ภาพตรึง (parallax) — ขยับเลเยอร์ภาพตาม scroll ด้วย JS
+// ใช้ได้ทุกอุปกรณ์รวมมือถือ (iOS ไม่รองรับ background-attachment:fixed จึงเลี่ยงมาใช้ transform)
 const HEIGHT_CLS = {
   sm: "min-h-[240px] md:min-h-[300px]",
   md: "min-h-[320px] md:min-h-[430px]",
   lg: "min-h-[420px] md:min-h-[560px]",
 };
+const OVERSCAN = 70; // เลเยอร์ภาพยื่นเกินขอบบน-ล่างด้านละกี่ px (กันเห็นขอบเวลาขยับ)
 
 export default function ParallaxBanner({ banner }) {
-  if (!banner?.enabled) return null;
+  const sectionRef = useRef(null);
+  const bgRef = useRef(null);
+
+  const enabled = banner?.enabled;
+  const image = banner?.image;
+
+  useEffect(() => {
+    const sec = sectionRef.current;
+    const bg = bgRef.current;
+    if (!sec || !bg || !image) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const rect = sec.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      if (rect.bottom < 0 || rect.top > vh) return; // นอกจอ — ข้าม
+      // progress: -1 (แบนเนอร์อยู่ล่างสุดจอ) → +1 (บนสุดจอ), 0 = กึ่งกลาง
+      const progress = (rect.top + rect.height / 2 - vh / 2) / (vh / 2 + rect.height / 2);
+      const y = Math.max(-1, Math.min(1, progress)) * OVERSCAN;
+      bg.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [image]);
+
+  if (!enabled) return null;
   const {
-    image, title, subtitle, buttonText, buttonLink,
+    title, subtitle, buttonText, buttonLink,
     height = "md", overlay = 25, align = "center",
   } = banner;
 
@@ -22,12 +59,13 @@ export default function ParallaxBanner({ banner }) {
   const external = /^https?:\/\//i.test(buttonLink || "");
 
   return (
-    <section className="relative w-full overflow-hidden">
-      {/* ชั้นภาพพื้นหลังตรึง (parallax) */}
+    <section ref={sectionRef} className="relative w-full overflow-hidden">
+      {/* ชั้นภาพพื้นหลัง — ยื่นเกินขอบบน-ล่าง แล้วขยับด้วย transform (parallax) */}
       <div
+        ref={bgRef}
         aria-hidden
-        className="absolute inset-0 bg-scroll bg-cover bg-center md:bg-fixed"
-        style={{ backgroundImage: bg }}
+        className="absolute inset-x-0 bg-cover bg-center will-change-transform"
+        style={{ top: -OVERSCAN, bottom: -OVERSCAN, backgroundImage: bg }}
       />
       {/* ฉากมืดทับให้ตัวอักษรอ่านชัด */}
       <div aria-hidden className="absolute inset-0" style={{ background: scrim }} />
