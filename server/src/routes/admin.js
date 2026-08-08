@@ -284,66 +284,90 @@ router.post("/books/import", async (req, res, next) => {
     };
     const truthy = (v) => v === 1 || v === "1" || v === true || /^(true|yes|y|ใช่)$/i.test(String(v || ""));
 
+    // โหลดหนังสือทั้งหมดไว้จับคู่ (id → isbn → sku) เพื่อ "อัปเดต" เล่มเดิมแทนการสร้างซ้ำ
+    const allBooks = await prisma.book.findMany({ select: { id: true, isbn: true, sku: true } });
+    const byId = new Map(allBooks.map((b) => [b.id, b]));
+    const byIsbn = new Map(allBooks.filter((b) => b.isbn).map((b) => [String(b.isbn).trim(), b]));
+    const bySku = new Map(allBooks.filter((b) => b.sku).map((b) => [String(b.sku).trim().toLowerCase(), b]));
+    // คอลัมน์นี้มีอยู่ในไฟล์หรือไม่ (คอลัมน์ที่ไม่มี = ไม่แตะค่าเดิมตอนอัปเดต)
+    const has = (r, ...keys) => keys.some((k) => Object.prototype.hasOwnProperty.call(r, k));
+
     let created = 0;
+    let updated = 0;
     const errors = [];
 
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       const line = i + 2; // แถวในไฟล์ (มี header)
       try {
-        const title = val(r, "title", "ชื่อหนังสือ", "ชื่อสินค้า");
-        if (!title) { errors.push({ line, error: "ไม่มีชื่อหนังสือ (title)" }); continue; }
-        const price = Number(val(r, "price", "ราคา", "ราคาปกติ"));
-        if (!price || price <= 0) { errors.push({ line, error: "ราคาไม่ถูกต้อง" }); continue; }
+        // หาเล่มเดิมที่ตรงกัน — id ก่อน แล้ว isbn แล้ว sku
+        const idv = val(r, "id");
+        const isbnv = val(r, "isbn", "ISBN");
+        const skuv = val(r, "sku", "SKU");
+        const target =
+          (idv && byId.get(idv)) ||
+          (isbnv && byIsbn.get(isbnv)) ||
+          (skuv && bySku.get(skuv.toLowerCase())) ||
+          null;
 
-        // หมวด
-        let categoryId = null;
-        const cname = val(r, "category", "หมวด", "หมวดหมู่");
-        if (cname) {
-          let cat = catByName.get(cname.toLowerCase());
-          if (!cat) {
-            cat = await prisma.category.create({ data: { name: cname, slug: slugify(cname) || `cat-${Date.now()}` } });
-            catByName.set(cname.toLowerCase(), cat);
+        // หมวด — เฉพาะเมื่อไฟล์มีคอลัมน์ category (เว้นว่าง = เอาออกจากหมวด)
+        let categoryId; // undefined = ไม่แตะ
+        if (has(r, "category", "หมวด", "หมวดหมู่")) {
+          const cname = val(r, "category", "หมวด", "หมวดหมู่");
+          if (!cname) categoryId = null;
+          else {
+            let cat = catByName.get(cname.toLowerCase());
+            if (!cat) {
+              cat = await prisma.category.create({ data: { name: cname, slug: slugify(cname) || `cat-${Date.now()}` } });
+              catByName.set(cname.toLowerCase(), cat);
+            }
+            categoryId = cat.id;
           }
-          categoryId = cat.id;
         }
 
-        const saleRaw = val(r, "sale_price", "ราคาลด", "discount_price");
-        const pagesRaw = val(r, "pages", "pageCount", "จำนวนหน้า");
-        const tagsRaw = val(r, "tags", "แท็ก");
+        // ประกอบข้อมูล — เฉพาะคอลัมน์ที่มีในไฟล์
+        const data = {};
+        const setStr = (field, ...keys) => { if (has(r, ...keys)) data[field] = val(r, ...keys) || null; };
+        if (has(r, "title", "ชื่อหนังสือ", "ชื่อสินค้า")) data.title = val(r, "title", "ชื่อหนังสือ", "ชื่อสินค้า");
+        if (has(r, "price", "ราคา", "ราคาปกติ")) { const v = val(r, "price", "ราคา", "ราคาปกติ"); data.price = v === "" ? null : Number(v); }
+        if (has(r, "sale_price", "ราคาลด", "discount_price")) { const v = val(r, "sale_price", "ราคาลด", "discount_price"); data.discountPrice = v === "" ? null : Number(v); }
+        setStr("author", "author", "ผู้เขียน", "ผู้แต่ง");
+        setStr("translator", "translator", "ผู้แปล");
+        if (has(r, "stock", "สต็อก")) data.stock = parseInt(val(r, "stock", "สต็อก")) || 0;
+        if (has(r, "is_featured", "featured", "แนะนำ")) data.featured = truthy(r.is_featured ?? r.featured ?? r["แนะนำ"]);
+        setStr("publisher", "publisher", "สำนักพิมพ์");
+        setStr("edition", "edition", "พิมพ์ครั้งที่");
+        if (has(r, "pages", "pageCount", "จำนวนหน้า")) { const v = val(r, "pages", "pageCount", "จำนวนหน้า"); data.pageCount = v === "" ? null : parseInt(v); }
+        setStr("dimensions", "dimensions", "ขนาด");
+        setStr("weight", "weight", "น้ำหนัก");
+        setStr("paperType", "paper_inner", "paperType", "กระดาษเนื้อใน");
+        setStr("coverType", "cover_type", "coverType", "ปก");
+        setStr("isbn", "isbn", "ISBN");
+        setStr("sku", "sku", "SKU");
+        setStr("coverImage", "image_url", "coverImage", "รูปปก");
+        setStr("description", "description", "รายละเอียด");
+        if (has(r, "tags", "แท็ก")) { const t = val(r, "tags", "แท็ก"); data.tags = t ? t.split(",").map((x) => x.trim()).filter(Boolean) : []; }
+        if (categoryId !== undefined) data.categoryId = categoryId;
 
-        const newBook = await prisma.book.create({
-          data: {
-            title,
-            author: val(r, "author", "ผู้เขียน", "ผู้แต่ง"),
-            translator: val(r, "translator", "ผู้แปล") || null,
-            price,
-            discountPrice: saleRaw ? Number(saleRaw) : null,
-            stock: parseInt(val(r, "stock", "สต็อก")) || 0,
-            featured: truthy(r.is_featured ?? r.featured ?? r["แนะนำ"]),
-            publisher: val(r, "publisher", "สำนักพิมพ์") || null,
-            edition: val(r, "edition", "พิมพ์ครั้งที่") || null,
-            pageCount: pagesRaw ? parseInt(pagesRaw) : null,
-            dimensions: val(r, "dimensions", "ขนาด") || null,
-            weight: val(r, "weight", "น้ำหนัก") || null,
-            paperType: val(r, "paper_inner", "paperType", "กระดาษเนื้อใน") || null,
-            coverType: val(r, "cover_type", "coverType", "ปก") || null,
-            isbn: val(r, "isbn", "ISBN") || null,
-            sku: val(r, "sku", "SKU") || null,
-            coverImage: val(r, "image_url", "coverImage", "รูปปก") || null,
-            description: val(r, "description", "รายละเอียด") || null,
-            tags: tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [],
-            categoryId,
-          },
-        });
-        await syncTermsFromBook(newBook);
-        created++;
+        if (target) {
+          // อัปเดตเล่มเดิม
+          const book = await prisma.book.update({ where: { id: target.id }, data });
+          await syncTermsFromBook(book);
+          updated++;
+        } else {
+          // สร้างใหม่ — ต้องมีชื่อ + ราคา
+          if (!data.title) { errors.push({ line, error: "ไม่มีชื่อหนังสือ (title)" }); continue; }
+          if (!data.price || data.price <= 0) { errors.push({ line, error: "ราคาไม่ถูกต้อง" }); continue; }
+          const book = await prisma.book.create({ data: { author: "", stock: 0, tags: [], ...data } });
+          await syncTermsFromBook(book);
+          created++;
+        }
       } catch (e) {
-        errors.push({ line, error: e.code === "P2002" ? "ISBN/Slug ซ้ำกับเล่มอื่น" : e.message });
+        errors.push({ line, error: e.code === "P2002" ? "ISBN/SKU/Slug ซ้ำกับเล่มอื่น" : e.message });
       }
     }
 
-    res.json({ created, failed: errors.length, errors: errors.slice(0, 50) });
+    res.json({ created, updated, failed: errors.length, errors: errors.slice(0, 50) });
   } catch (err) {
     next(err);
   }

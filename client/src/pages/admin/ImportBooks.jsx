@@ -3,12 +3,13 @@ import * as XLSX from "xlsx";
 import { useImportBooks } from "../../api/admin";
 
 const COLUMNS = [
-  "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured",
+  "id", "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured",
   "publisher", "edition", "pages", "dimensions", "weight", "paper_inner", "cover_type",
   "isbn", "sku", "image_url", "description", "tags",
 ];
 const COL_DESC = {
-  title: "ชื่อหนังสือ (จำเป็น)",
+  id: "เว้นว่างสำหรับเล่มใหม่ · มีค่า = อัปเดตเล่มเดิม (จาก Export)",
+  title: "ชื่อหนังสือ (จำเป็นสำหรับเล่มใหม่)",
   price: "ราคาปกติ (จำเป็น)",
   sale_price: "ราคาลด (เว้นว่าง = ไม่ลด)",
   category: "ชื่อหมวด — ไม่มีจะสร้างให้",
@@ -22,7 +23,7 @@ const COL_DESC = {
   tags: "แท็ก คั่นด้วย , เช่น ขายดี, ใหม่",
 };
 const SAMPLE = {
-  title: "ตัวอย่างหนังสือ", price: 250, sale_price: 199, category: "นิยาย",
+  id: "", title: "ตัวอย่างหนังสือ", price: 250, sale_price: 199, category: "นิยาย",
   author: "ชื่อผู้เขียน", translator: "", stock: 10, is_featured: 1, publisher: "แสงดาว",
   edition: "1", pages: 320, dimensions: "14.5x21 cm.", weight: "330 g",
   paper_inner: "ถนอมสายตา 65 gsm", cover_type: "ปกอ่อน", isbn: "9781234567890",
@@ -85,7 +86,9 @@ export default function ImportBooks({ onClose }) {
           /* ---- ผลลัพธ์ ---- */
           <div>
             <div className="rounded-2xl bg-emerald-50 p-5 text-center">
-              <p className="text-2xl font-semibold text-emerald-700">นำเข้าสำเร็จ {result.created} เล่ม</p>
+              <p className="text-2xl font-semibold text-emerald-700">
+                สำเร็จ — เพิ่มใหม่ {result.created} · อัปเดต {result.updated || 0} เล่ม
+              </p>
               {result.failed > 0 && <p className="mt-1 text-[14px] text-amber-700">ข้าม {result.failed} แถว (ข้อมูลไม่ครบ/ซ้ำ)</p>}
             </div>
             {result.errors?.length > 0 && (
@@ -130,8 +133,13 @@ export default function ImportBooks({ onClose }) {
                 </div>
               )}
 
-              <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-[12px] text-emerald-800">
-                💡 แนะนำอัปโหลดเป็น <b>.xlsx</b> โดยตรง — เลข ISBN จะไม่เพี้ยน · ถ้าใช้ CSV ให้ตั้งคอลัมน์ ISBN เป็น Text ก่อน
+              <div className="mt-4 space-y-2">
+                <div className="rounded-xl bg-blue-50 p-3 text-[12px] text-blue-800">
+                  🔄 <b>แก้ไขสินค้าเดิม:</b> กด <b>“⬇ Export Excel”</b> ที่หน้าสินค้า แก้ไขในไฟล์แล้วอัปกลับ — แถวที่มี <b>id/isbn/sku</b> ตรงกับเล่มเดิมจะถูก <b>อัปเดต</b> (ไม่สร้างซ้ำ) · คอลัมน์ที่ลบออกจากไฟล์ = ไม่แตะค่าเดิม
+                </div>
+                <div className="rounded-xl bg-emerald-50 p-3 text-[12px] text-emerald-800">
+                  💡 แนะนำอัปโหลดเป็น <b>.xlsx</b> โดยตรง — เลข ISBN จะไม่เพี้ยน · ถ้าใช้ CSV ให้ตั้งคอลัมน์ ISBN เป็น Text ก่อน
+                </div>
               </div>
             </div>
 

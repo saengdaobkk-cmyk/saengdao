@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf, backfillBookSlugs } from "../../api/admin";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories, useTermList } from "../../api/books";
@@ -56,6 +57,40 @@ export default function AdminProducts() {
     } finally {
       setSlugBusy(false);
     }
+  };
+
+  // Export เป็น .xlsx ตามรูปแบบเดียวกับ import (มีคอลัมน์ id ไว้ให้ import กลับมาอัปเดตเล่มเดิม)
+  const exportBooks = () => {
+    const list = sorted || [];
+    if (!list.length) return;
+    const header = ["id", "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured", "publisher", "edition", "pages", "dimensions", "weight", "paper_inner", "cover_type", "isbn", "sku", "image_url", "description", "tags"];
+    const data = list.map((b) => ({
+      id: b.id,
+      title: b.title || "",
+      price: b.price ?? "",
+      sale_price: b.discountPrice ?? "",
+      category: b.category?.name || "",
+      author: b.author || "",
+      translator: b.translator || "",
+      stock: b.stock ?? 0,
+      is_featured: b.featured ? 1 : 0,
+      publisher: b.publisher || "",
+      edition: b.edition || "",
+      pages: b.pageCount ?? "",
+      dimensions: b.dimensions || "",
+      weight: b.weight || "",
+      paper_inner: b.paperType || "",
+      cover_type: b.coverType || "",
+      isbn: b.isbn || "",
+      sku: b.sku || "",
+      image_url: b.coverImage || "",
+      description: b.description || "",
+      tags: (b.tags || []).join(", "),
+    }));
+    const ws = XLSX.utils.json_to_sheet(data, { header });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "books");
+    XLSX.writeFile(wb, `saengdao-books-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
   const [cat, setCat] = useState("");
   const [status, setStatus] = useState("");
@@ -144,6 +179,9 @@ export default function AdminProducts() {
         <div className="ml-auto flex gap-2">
           <button onClick={runBackfill} disabled={slugBusy} className="rounded-full border border-line px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
             {slugBusy ? "กำลังสร้าง..." : "สร้าง slug ที่ยังไม่มี"}
+          </button>
+          <button onClick={exportBooks} disabled={!sorted?.length} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+            ⬇ Export Excel
           </button>
           <button onClick={() => setImporting(true)} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist">
             ⬆ นำเข้า CSV/Excel
