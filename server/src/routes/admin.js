@@ -252,6 +252,21 @@ router.post("/books/backfill-slugs", async (req, res, next) => {
   }
 });
 
+// เติม "วันที่นำเข้า" ให้เล่มที่ยังว่าง = วันที่สร้างเล่มนั้น (createdAt)
+router.post("/books/backfill-imported", async (req, res, next) => {
+  try {
+    const books = await prisma.book.findMany({ where: { importedAt: null }, select: { id: true, createdAt: true } });
+    let updated = 0;
+    for (const b of books) {
+      await prisma.book.update({ where: { id: b.id }, data: { importedAt: b.createdAt } });
+      updated++;
+    }
+    res.json({ ok: true, updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete("/books/:id", async (req, res, next) => {
   try {
     // กันลบหนังสือที่มีในออเดอร์แล้ว
@@ -347,6 +362,11 @@ router.post("/books/import", async (req, res, next) => {
         setStr("coverImage", "image_url", "coverImage", "รูปปก");
         setStr("description", "description", "รายละเอียด");
         if (has(r, "tags", "แท็ก")) { const t = val(r, "tags", "แท็ก"); data.tags = t ? t.split(",").map((x) => x.trim()).filter(Boolean) : []; }
+        if (has(r, "imported_at", "importedAt", "วันที่นำเข้า")) {
+          const v = val(r, "imported_at", "importedAt", "วันที่นำเข้า");
+          const d = v ? new Date(v) : null;
+          data.importedAt = d && !isNaN(d) ? d : null;
+        }
         if (categoryId !== undefined) data.categoryId = categoryId;
 
         if (target) {
@@ -355,10 +375,10 @@ router.post("/books/import", async (req, res, next) => {
           await syncTermsFromBook(book);
           updated++;
         } else {
-          // สร้างใหม่ — ต้องมีชื่อ + ราคา
+          // สร้างใหม่ — ต้องมีชื่อ + ราคา · วันที่นำเข้า default = วันนี้ (ถ้าไฟล์ไม่ได้ระบุ)
           if (!data.title) { errors.push({ line, error: "ไม่มีชื่อหนังสือ (title)" }); continue; }
           if (!data.price || data.price <= 0) { errors.push({ line, error: "ราคาไม่ถูกต้อง" }); continue; }
-          const book = await prisma.book.create({ data: { author: "", stock: 0, tags: [], ...data } });
+          const book = await prisma.book.create({ data: { author: "", stock: 0, tags: [], importedAt: new Date(), ...data } });
           await syncTermsFromBook(book);
           created++;
         }

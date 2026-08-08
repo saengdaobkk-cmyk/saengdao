@@ -5,7 +5,7 @@ import { useImportBooks } from "../../api/admin";
 const COLUMNS = [
   "id", "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured",
   "publisher", "edition", "pages", "dimensions", "weight", "paper_inner", "cover_type",
-  "isbn", "sku", "image_url", "description", "tags",
+  "isbn", "sku", "image_url", "description", "tags", "imported_at",
 ];
 const COL_DESC = {
   id: "เว้นว่างสำหรับเล่มใหม่ · มีค่า = อัปเดตเล่มเดิม (จาก Export)",
@@ -21,13 +21,14 @@ const COL_DESC = {
   "isbn / sku": "รหัสสินค้า",
   image_url: "ลิงก์รูปปก (เว้นว่าง = ปกไล่เฉดสี)",
   tags: "แท็ก คั่นด้วย , เช่น ขายดี, ใหม่",
+  imported_at: "วันที่นำเข้า YYYY-MM-DD (เว้นว่าง = วันนี้)",
 };
 const SAMPLE = {
   id: "", title: "ตัวอย่างหนังสือ", price: 250, sale_price: 199, category: "นิยาย",
   author: "ชื่อผู้เขียน", translator: "", stock: 10, is_featured: 1, publisher: "แสงดาว",
   edition: "1", pages: 320, dimensions: "14.5x21 cm.", weight: "330 g",
   paper_inner: "ถนอมสายตา 65 gsm", cover_type: "ปกอ่อน", isbn: "9781234567890",
-  sku: "SD-001", image_url: "", description: "เรื่องย่อของหนังสือ...", tags: "ขายดี, ใหม่",
+  sku: "SD-001", image_url: "", description: "เรื่องย่อของหนังสือ...", tags: "ขายดี, ใหม่", imported_at: "",
 };
 
 export default function ImportBooks({ onClose }) {

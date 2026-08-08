@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf, backfillBookSlugs } from "../../api/admin";
+import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf, backfillBookSlugs, backfillImportedDates } from "../../api/admin";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories, useTermList } from "../../api/books";
 import { formatPrice } from "../../lib/format";
@@ -42,6 +42,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null);
   const [importing, setImporting] = useState(false);
   const [slugBusy, setSlugBusy] = useState(false);
+  const [impBusy, setImpBusy] = useState(false);
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 
@@ -59,11 +60,25 @@ export default function AdminProducts() {
     }
   };
 
+  const runBackfillImported = async () => {
+    if (!confirm("เติม “วันที่นำเข้า” ให้เล่มที่ยังว่าง (ใช้วันที่สร้างเล่มนั้น)?")) return;
+    setImpBusy(true);
+    try {
+      const r = await backfillImportedDates();
+      qc.invalidateQueries({ queryKey: ["admin", "books"] });
+      alert(`เติมวันที่นำเข้าแล้ว ${r.updated} เล่ม`);
+    } catch (e) {
+      alert(e.response?.data?.error || "ไม่สำเร็จ");
+    } finally {
+      setImpBusy(false);
+    }
+  };
+
   // Export เป็น .xlsx ตามรูปแบบเดียวกับ import (มีคอลัมน์ id ไว้ให้ import กลับมาอัปเดตเล่มเดิม)
   const exportBooks = () => {
     const list = sorted || [];
     if (!list.length) return;
-    const header = ["id", "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured", "publisher", "edition", "pages", "dimensions", "weight", "paper_inner", "cover_type", "isbn", "sku", "image_url", "description", "tags"];
+    const header = ["id", "title", "price", "sale_price", "category", "author", "translator", "stock", "is_featured", "publisher", "edition", "pages", "dimensions", "weight", "paper_inner", "cover_type", "isbn", "sku", "image_url", "description", "tags", "imported_at"];
     const data = list.map((b) => ({
       id: b.id,
       title: b.title || "",
@@ -86,6 +101,7 @@ export default function AdminProducts() {
       image_url: b.coverImage || "",
       description: b.description || "",
       tags: (b.tags || []).join(", "),
+      imported_at: b.importedAt ? b.importedAt.slice(0, 10) : "",
     }));
     const ws = XLSX.utils.json_to_sheet(data, { header });
     const wb = XLSX.utils.book_new();
@@ -179,6 +195,9 @@ export default function AdminProducts() {
         <div className="ml-auto flex gap-2">
           <button onClick={runBackfill} disabled={slugBusy} className="rounded-full border border-line px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
             {slugBusy ? "กำลังสร้าง..." : "สร้าง slug ที่ยังไม่มี"}
+          </button>
+          <button onClick={runBackfillImported} disabled={impBusy} className="rounded-full border border-line px-4 py-2.5 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
+            {impBusy ? "กำลังเติม..." : "เติมวันที่นำเข้า"}
           </button>
           <button onClick={exportBooks} disabled={!sorted?.length} className="rounded-full border border-line px-5 py-2.5 text-[14px] font-medium text-ink transition hover:bg-mist disabled:opacity-50">
             ⬇ Export Excel
