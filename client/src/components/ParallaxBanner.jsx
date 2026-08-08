@@ -59,12 +59,14 @@ export default function ParallaxBanner({ banner }) {
   const {
     title, subtitle, buttonText, buttonLink,
     height = "md", overlay = 25, align = "center", valign = "middle",
+    imageX = "center", imageY = "center",
   } = banner;
 
   const scrim = `rgba(0,0,0,${Math.min(60, Math.max(0, overlay)) / 100})`;
   const alignCls =
     align === "left" ? "items-start text-left" : align === "right" ? "items-end text-right" : "items-center text-center";
   const valignCls = valign === "top" ? "justify-start" : valign === "bottom" ? "justify-end" : "justify-center";
+  const objectPosition = `${imageX} ${imageY}`; // โฟกัสรูปเมื่อถูก crop
   const external = /^https?:\/\//i.test(buttonLink || "");
 
   return (
@@ -81,6 +83,7 @@ export default function ParallaxBanner({ banner }) {
           style={{
             top: -overscan,
             height: `calc(100% + ${overscan * 2}px)`,
+            objectPosition,
             WebkitBackfaceVisibility: "hidden",
             backfaceVisibility: "hidden",
             ...(useCss ? { "--sd-ov": overscan } : null),

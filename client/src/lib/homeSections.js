@@ -59,8 +59,10 @@ export const BANNER_DEFAULT = {
   buttonLink: "/books",
   height: "md",
   overlay: 25, // ความเข้มฉากมืดทับรูป (%) เพื่อให้ตัวอักษรอ่านชัด — 0..60
-  align: "center", // แนวนอน: left | center | right
-  valign: "middle", // แนวตั้ง: top | middle | bottom
+  align: "center", // ตำแหน่งข้อความ แนวนอน: left | center | right
+  valign: "middle", // ตำแหน่งข้อความ แนวตั้ง: top | middle | bottom
+  imageX: "center", // โฟกัสรูป แนวนอน: left | center | right
+  imageY: "center", // โฟกัสรูป แนวตั้ง: top | center | bottom
   parallax: 220, // ระยะขยับภาพ parallax (px) — 0 = ปิด (ภาพนิ่ง)
 };
 export function parseBanner(raw) {
@@ -82,6 +84,8 @@ export function parseBanner(raw) {
     overlay: Math.min(60, Math.max(0, Math.round(Number(o.overlay)) || 0)),
     align: o.align === "left" || o.align === "right" ? o.align : "center",
     valign: o.valign === "top" || o.valign === "bottom" ? o.valign : "middle",
+    imageX: o.imageX === "left" || o.imageX === "right" ? o.imageX : "center",
+    imageY: o.imageY === "top" || o.imageY === "bottom" ? o.imageY : "center",
     parallax: Math.min(BANNER_PARALLAX_MAX, Math.max(0, o.parallax == null ? d.parallax : Math.round(Number(o.parallax)) || 0)),
   };
 }

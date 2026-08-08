@@ -326,7 +326,7 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
         <div className="flex items-center gap-3">
           <div className="h-20 w-36 shrink-0 overflow-hidden rounded-lg border border-line bg-white">
             {f.image ? (
-              <img src={img(f.image, 400)} alt="" className="h-full w-full object-cover" />
+              <img src={img(f.image, 400)} alt="" className="h-full w-full object-cover" style={{ objectPosition: `${f.imageX} ${f.imageY}` }} />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-[11px] text-sub">ยังไม่มีรูป</div>
             )}
@@ -339,6 +339,27 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
             {f.image && <button type="button" onClick={() => setF((s) => ({ ...s, image: "" }))} className="text-[12px] text-sub hover:text-red-600">ลบรูป</button>}
           </div>
         </div>
+
+        {f.image && (
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <span className="mb-1.5 block text-[12px] text-sub">โฟกัสรูป — แนวนอน</span>
+              <div className="flex gap-2">
+                <ModeBtn active={f.imageX === "left"} onClick={() => setF((s) => ({ ...s, imageX: "left" }))}>ซ้าย</ModeBtn>
+                <ModeBtn active={f.imageX === "center"} onClick={() => setF((s) => ({ ...s, imageX: "center" }))}>กลาง</ModeBtn>
+                <ModeBtn active={f.imageX === "right"} onClick={() => setF((s) => ({ ...s, imageX: "right" }))}>ขวา</ModeBtn>
+              </div>
+            </div>
+            <div>
+              <span className="mb-1.5 block text-[12px] text-sub">โฟกัสรูป — แนวตั้ง</span>
+              <div className="flex gap-2">
+                <ModeBtn active={f.imageY === "top"} onClick={() => setF((s) => ({ ...s, imageY: "top" }))}>บน</ModeBtn>
+                <ModeBtn active={f.imageY === "center"} onClick={() => setF((s) => ({ ...s, imageY: "center" }))}>กลาง</ModeBtn>
+                <ModeBtn active={f.imageY === "bottom"} onClick={() => setF((s) => ({ ...s, imageY: "bottom" }))}>ล่าง</ModeBtn>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -370,7 +391,7 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-[12px] text-sub">แนวนอน</span>
+          <span className="mb-1.5 block text-[12px] text-sub">ข้อความ — แนวนอน</span>
           <div className="flex gap-2">
             <ModeBtn active={f.align === "left"} onClick={() => setF((s) => ({ ...s, align: "left" }))}>ชิดซ้าย</ModeBtn>
             <ModeBtn active={f.align === "center"} onClick={() => setF((s) => ({ ...s, align: "center" }))}>กึ่งกลาง</ModeBtn>
@@ -378,7 +399,7 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           </div>
         </div>
         <div>
-          <span className="mb-1.5 block text-[12px] text-sub">แนวตั้ง</span>
+          <span className="mb-1.5 block text-[12px] text-sub">ข้อความ — แนวตั้ง</span>
           <div className="flex gap-2">
             <ModeBtn active={f.valign === "top"} onClick={() => setF((s) => ({ ...s, valign: "top" }))}>บน</ModeBtn>
             <ModeBtn active={f.valign === "middle"} onClick={() => setF((s) => ({ ...s, valign: "middle" }))}>กลาง</ModeBtn>
