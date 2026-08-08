@@ -12,6 +12,7 @@ import { ensureNav } from "../lib/navDefaults.js";
 import { expireStaleOrders } from "../lib/orderExpiry.js";
 import { effectivePrice } from "../lib/pricing.js";
 import { EK, getEmailConfig, sendPaymentReceived, sendShipped, sendTestEmail } from "../lib/email.js";
+import { AIK, getAiConfig, aiSlugBase, aiTest } from "../lib/ai.js";
 
 function httpError(status, message) {
   const e = new Error(message);
@@ -174,8 +175,9 @@ function slugifyTitle(title) {
   return slugSanitize(thaiToRoman(title));
 }
 // สร้าง slug ที่ไม่ซ้ำจากชื่อเรื่อง (เจอซ้ำเติม -2, -3, ...)
-async function uniqueBookSlug(title, excludeId = null) {
-  const base = slugifyTitle(title) || "book";
+// ลองแปลด้วย Claude ก่อน (ชื่ออังกฤษต้นฉบับ/แปลความหมาย) — ล้มเหลว/ปิดใช้งาน → ถอดเสียงแบบเดิม
+async function uniqueBookSlug(title, excludeId = null, author = "") {
+  const base = (await aiSlugBase(title, author)) || slugifyTitle(title) || "book";
   let slug = base;
   for (let n = 2; ; n++) {
     const dup = await prisma.book.findFirst({
@@ -192,7 +194,7 @@ router.post("/books", async (req, res, next) => {
     const data = bookData(req.body);
     if (!data.title || !data.author)
       return res.status(400).json({ error: "กรอกชื่อหนังสือและผู้แต่ง" });
-    if (!data.slug) data.slug = await uniqueBookSlug(data.title); // เว้นว่าง → สร้างจากชื่อเรื่อง
+    if (!data.slug) data.slug = await uniqueBookSlug(data.title, null, data.author); // เว้นว่าง → สร้างจากชื่อเรื่อง
     const book = await prisma.book.create({
       data: { ...data, variants: { create: variantCreate(req.body) } },
       include: { variants: true },
@@ -214,7 +216,7 @@ router.patch("/books/:id", async (req, res, next) => {
     const data = bookData(req.body);
     if (!data.title || !data.author)
       return res.status(400).json({ error: "กรอกชื่อหนังสือและผู้แต่ง" });
-    if (!data.slug) data.slug = await uniqueBookSlug(data.title, req.params.id); // เว้นว่าง → สร้างจากชื่อเรื่อง
+    if (!data.slug) data.slug = await uniqueBookSlug(data.title, req.params.id, data.author); // เว้นว่าง → สร้างจากชื่อเรื่อง
     // variants: ลบของเดิมแล้วสร้างใหม่ (ง่ายและถูกต้อง)
     const book = await prisma.book.update({
       where: { id: req.params.id },
@@ -238,11 +240,11 @@ router.post("/books/backfill-slugs", async (req, res, next) => {
   try {
     const books = await prisma.book.findMany({
       where: { OR: [{ slug: null }, { slug: "" }] },
-      select: { id: true, title: true },
+      select: { id: true, title: true, author: true },
     });
     let updated = 0;
     for (const b of books) {
-      const slug = await uniqueBookSlug(b.title, b.id);
+      const slug = await uniqueBookSlug(b.title, b.id, b.author || "");
       await prisma.book.update({ where: { id: b.id }, data: { slug } });
       updated++;
     }
@@ -1184,17 +1186,28 @@ function publicEmail(e) {
   };
 }
 
+function publicAi(a) {
+  return {
+    enabled: a.enabled,
+    model: a.model,
+    hasApiKey: !!a.apiKey, // ไม่ส่ง key จริงออก
+    connected: a.enabled && !!a.apiKey,
+  };
+}
+
 async function integrationsPayload() {
-  const [zort, thpost, email, syncedRow] = await Promise.all([
+  const [zort, thpost, email, ai, syncedRow] = await Promise.all([
     getZortConfig(),
     getThaipostConfig(),
     getEmailConfig(),
+    getAiConfig(),
     prisma.setting.findUnique({ where: { key: ZORT_STOCK_SYNCED_AT } }),
   ]);
   return {
     zort: { ...publicZort(zort), stockSyncedAt: syncedRow?.value || null },
     thpost: publicThpost(thpost),
     email: publicEmail(email),
+    ai: publicAi(ai),
   };
 }
 
@@ -1232,6 +1245,12 @@ router.patch("/integrations", async (req, res, next) => {
     if ("shopEmail" in em) await set(EK.shopEmail, em.shopEmail?.trim() || "");
     if (em.apiKey) await set(EK.apiKey, em.apiKey.trim()); // เว้นว่าง = คงของเดิม
 
+    // Claude AI (แปลชื่อหนังสือ → slug)
+    const ai = req.body?.ai || {};
+    if ("enabled" in ai) await set(AIK.enabled, !!ai.enabled);
+    if ("model" in ai) await set(AIK.model, ai.model?.trim() || "claude-opus-5");
+    if (ai.apiKey) await set(AIK.apiKey, ai.apiKey.trim()); // เว้นว่าง = คงของเดิม
+
     res.json(await integrationsPayload());
   } catch (err) {
     next(err);
@@ -1253,6 +1272,15 @@ router.post("/integrations/thpost/test", async (req, res, next) => {
     res.json(await testThaipostConnection());
   } catch (err) {
     res.json({ ok: false, error: "เชื่อมต่อไม่ได้: " + err.message });
+  }
+});
+
+// ทดสอบ Claude AI + โชว์ตัวอย่างการแปล slug
+router.post("/integrations/ai/test", async (req, res, next) => {
+  try {
+    res.json(await aiTest());
+  } catch (err) {
+    res.json({ ok: false, error: "เรียก API ไม่สำเร็จ: " + err.message });
   }
 });
 
