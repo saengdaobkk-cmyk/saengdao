@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useContent } from "../api/content";
+import ContactSection from "../components/ContactSection";
 
 export default function About() {
   const { t } = useContent();
@@ -45,10 +46,13 @@ export default function About() {
         <Link to="/books" className="rounded-full bg-accent px-7 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90">
           เลือกซื้อหนังสือ
         </Link>
-        <Link to="/contact" className="rounded-full border border-line px-7 py-3 text-[15px] font-medium text-ink transition hover:bg-mist">
+        <a href="#contact" className="rounded-full border border-line px-7 py-3 text-[15px] font-medium text-ink transition hover:bg-mist">
           ติดต่อเรา
-        </Link>
+        </a>
       </div>
+
+      {/* ข้อมูลติดต่อ + ฟอร์ม (ย้ายมาจากหน้า Contact) */}
+      <ContactSection id="contact" />
     </div>
   );
 }
