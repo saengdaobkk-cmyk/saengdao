@@ -97,25 +97,32 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
         <SortDropdown value={sort} onChange={(v) => { setSort(v); setPage(1); }} />
       </div>
 
-      {/* รายการ */}
-      {busy && <GridSkeleton n={limit} />}
-      {isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
-      {!busy && data && data.items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
-
-      {!busy && data && data.items.length > 0 && (
-        <>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-            {data.items.map((book) => <BookCard key={book.id} book={book} />)}
-          </div>
-          {data.totalPages > 1 && (
-            <div className="mt-16 flex items-center justify-center gap-6">
-              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">← ก่อนหน้า</button>
-              <span className="text-[13px] tabular-nums text-sub">{data.page} / {data.totalPages}</span>
-              <button disabled={page >= data.totalPages} onClick={() => setPage((p) => p + 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">ถัดไป →</button>
-            </div>
-          )}
-        </>
-      )}
+      {/* รายการ — กัน data ที่ไม่มี items (เช่น response ผิดรูป) ไม่ให้หน้าขาว */}
+      {(() => {
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const totalPages = Number(data?.totalPages) || 1;
+        return (
+          <>
+            {busy && <GridSkeleton n={limit} />}
+            {!busy && isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
+            {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
+            {!busy && items.length > 0 && (
+              <>
+                <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+                  {items.map((book) => <BookCard key={book.id} book={book} />)}
+                </div>
+                {totalPages > 1 && (
+                  <div className="mt-16 flex items-center justify-center gap-6">
+                    <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">← ก่อนหน้า</button>
+                    <span className="text-[13px] tabular-nums text-sub">{data?.page ?? page} / {totalPages}</span>
+                    <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">ถัดไป →</button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        );
+      })()}
     </section>
   );
 }

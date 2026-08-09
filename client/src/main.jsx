@@ -7,6 +7,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { CartProvider } from "./cart/CartContext";
 import App from "./App.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import Collection from "./pages/Collection.jsx";
 import BookDetail from "./pages/BookDetail.jsx";
@@ -65,6 +66,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
+            <ErrorBoundary>
             <Routes>
               {/* หน้าร้าน */}
               <Route path="/" element={<App />}>
@@ -122,6 +124,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Routes>
+            </ErrorBoundary>
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
