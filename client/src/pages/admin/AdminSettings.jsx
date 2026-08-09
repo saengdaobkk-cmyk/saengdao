@@ -81,11 +81,87 @@ export default function AdminSettings() {
         </div>
       </section>
 
+      <ProductSpecSettings settings={settings} save={update} />
       <LoyaltySettings settings={settings} save={update} />
       <OrderSettings settings={settings} save={update} />
       <ContactSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
+  );
+}
+
+// ตัวเลือกข้อมูลจำเพาะสินค้า — ประเภทปก/กระดาษ (dropdown ในฟอร์มสินค้า) + หน่วยขนาด/น้ำหนัก
+const parseOptList = (raw) => {
+  try {
+    const a = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(a) ? a.map((x) => String(x).trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+};
+function ProductSpecSettings({ settings, save }) {
+  const [cover, setCover] = useState(() => parseOptList(settings.coverTypeOptions).join("\n"));
+  const [paper, setPaper] = useState(() => parseOptList(settings.paperTypeOptions).join("\n"));
+  const [dimU, setDimU] = useState(settings.dimensionUnit ?? "cm.");
+  const [wU, setWU] = useState(settings.weightUnit ?? "g");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setCover(parseOptList(settings.coverTypeOptions).join("\n"));
+    setPaper(parseOptList(settings.paperTypeOptions).join("\n"));
+    setDimU(settings.dimensionUnit ?? "cm.");
+    setWU(settings.weightUnit ?? "g");
+  }, [settings.coverTypeOptions, settings.paperTypeOptions, settings.dimensionUnit, settings.weightUnit]);
+
+  const toArr = (s) => s.split("\n").map((x) => x.trim()).filter(Boolean);
+  const submit = () => {
+    save.mutate(
+      {
+        coverTypeOptions: JSON.stringify(toArr(cover)),
+        paperTypeOptions: JSON.stringify(toArr(paper)),
+        dimensionUnit: dimU.trim(),
+        weightUnit: wU.trim(),
+      },
+      { onSuccess: () => setSaved(true) }
+    );
+  };
+  const ta = "w-full rounded-xl border border-line px-4 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30 resize-none";
+  const inp = "w-24 rounded-lg border border-line px-3 py-2 text-center text-[14px] outline-none focus:border-ink/30";
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ข้อมูลจำเพาะสินค้า</h2>
+      <p className="mb-4 text-[12px] text-sub">ตัวเลือกที่จะขึ้นเป็น dropdown ในฟอร์มสินค้า (ปก/กระดาษ) และหน่วยที่เติมท้ายอัตโนมัติ (ขนาด/น้ำหนัก)</p>
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">ประเภทปก <span className="font-normal text-sub">(บรรทัดละ 1 ตัวเลือก)</span></span>
+            <textarea rows={4} value={cover} onChange={(e) => { setCover(e.target.value); setSaved(false); }} placeholder={"ปกอ่อน\nปกแข็ง"} className={ta} />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">กระดาษเนื้อใน <span className="font-normal text-sub">(บรรทัดละ 1 ตัวเลือก)</span></span>
+            <textarea rows={4} value={paper} onChange={(e) => { setPaper(e.target.value); setSaved(false); }} placeholder={"กระดาษถนอมสายตา\nกระดาษปอนด์"} className={ta} />
+          </label>
+        </div>
+        <div className="flex flex-wrap items-end gap-6">
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">หน่วยขนาด</span>
+            <input value={dimU} onChange={(e) => { setDimU(e.target.value); setSaved(false); }} placeholder="cm." className={inp} />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">หน่วยน้ำหนัก</span>
+            <input value={wU} onChange={(e) => { setWU(e.target.value); setSaved(false); }} placeholder="g" className={inp} />
+          </label>
+          <div className="flex items-center gap-2">
+            <button onClick={submit} disabled={save.isPending} className="rounded-full bg-accent px-5 py-2.5 text-[14px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">
+              {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+            </button>
+            {saved && <span className="text-[13px] text-emerald-600">✓ บันทึกแล้ว</span>}
+          </div>
+        </div>
+        <p className="text-[11px] text-sub">หน่วยจะถูกเติมท้ายอัตโนมัติเมื่อพิมพ์ค่าในฟอร์มสินค้า เช่น พิมพ์ “330” → บันทึกเป็น “330 {wU || "g"}” · เว้นหน่วยว่าง = ไม่เติม</p>
+      </div>
+    </section>
   );
 }
 

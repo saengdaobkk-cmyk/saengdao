@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { useAdminBooks, useSaveBook, useDeleteBook, uploadImage, uploadImages, uploadPdf, backfillBookSlugs, backfillImportedDates } from "../../api/admin";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories, useTermList } from "../../api/books";
+import { useSettings } from "../../api/settings";
 import { formatPrice } from "../../lib/format";
 import { priceInfo } from "../../lib/pricing";
 import ImportBooks from "./ImportBooks";
@@ -329,9 +330,36 @@ function toLocalInput(iso) {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
+// อ่านตัวเลือก (JSON array) จาก setting → array ของ string ที่ไม่ว่าง
+function parseOpts(raw) {
+  try {
+    const a = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(a) ? a.map((x) => String(x).trim()).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+// เติมหน่วยท้ายค่า (ตัดหน่วยเดิมที่ท้ายออกก่อน กันซ้ำ) — ว่าง = คงว่าง
+function applyUnit(value, unit) {
+  const u = (unit || "").trim();
+  let v = String(value || "").trim();
+  if (!v) return "";
+  if (u) {
+    const esc = u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    v = v.replace(new RegExp("\\s*" + esc + "\\s*$", "i"), "").trim();
+    return v ? `${v} ${u}` : "";
+  }
+  return v;
+}
+
 /* ============ ฟอร์มเต็มหน้า ============ */
 function BookForm({ book, categories, onClose }) {
   const save = useSaveBook();
+  const s = useSettings();
+  const coverOpts = parseOpts(s.coverTypeOptions);
+  const paperOpts = parseOpts(s.paperTypeOptions);
+  const dimUnit = s.dimensionUnit ?? "cm.";
+  const wUnit = s.weightUnit ?? "g";
   const pubs = useTermList("PUBLISHER").data || [];
   const authors = useTermList("AUTHOR").data || [];
   const translators = useTermList("TRANSLATOR").data || [];
@@ -381,6 +409,8 @@ function BookForm({ book, categories, onClose }) {
     // แปลงเวลา Hot Deal (local input) → ISO ก่อนส่ง
     const payload = {
       ...form,
+      dimensions: applyUnit(form.dimensions, dimUnit),
+      weight: applyUnit(form.weight, wUnit),
       hotDealStart: form.hotDealStart ? new Date(form.hotDealStart).toISOString() : null,
       hotDealEnd: form.hotDealEnd ? new Date(form.hotDealEnd).toISOString() : null,
     };
@@ -393,6 +423,8 @@ function BookForm({ book, categories, onClose }) {
       <datalist id="dl-publisher">{pubs.map((n) => <option key={n} value={n} />)}</datalist>
       <datalist id="dl-author">{authors.map((n) => <option key={n} value={n} />)}</datalist>
       <datalist id="dl-translator">{translators.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="dl-cover">{coverOpts.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="dl-paper">{paperOpts.map((n) => <option key={n} value={n} />)}</datalist>
 
       <h2 className="mb-6 text-2xl font-semibold tracking-tightest text-ink">{book.id ? "แก้ไขหนังสือ" : "เพิ่มหนังสือ"}</h2>
 
@@ -438,10 +470,14 @@ function BookForm({ book, categories, onClose }) {
               <F label="สำนักพิมพ์"><Inp value={form.publisher} onChange={set("publisher")} list="dl-publisher" /></F>
               <F label="พิมพ์ครั้งที่"><Inp value={form.edition} onChange={set("edition")} /></F>
               <F label="จำนวนหน้า"><Inp type="number" value={form.pageCount ?? ""} onChange={set("pageCount")} /></F>
-              <F label="ขนาด"><Inp value={form.dimensions} onChange={set("dimensions")} placeholder="14.5 × 21 cm." /></F>
-              <F label="น้ำหนัก"><Inp value={form.weight} onChange={set("weight")} placeholder="330 g" /></F>
-              <F label="กระดาษเนื้อใน"><Inp value={form.paperType} onChange={set("paperType")} /></F>
-              <F label="ปก"><Inp value={form.coverType} onChange={set("coverType")} placeholder="ปกอ่อน / ปกแข็ง" /></F>
+              <F label={`ขนาด${dimUnit ? ` (เติม "${dimUnit}" อัตโนมัติ)` : ""}`}>
+                <Inp value={form.dimensions} onChange={set("dimensions")} onBlur={() => setForm((f) => ({ ...f, dimensions: applyUnit(f.dimensions, dimUnit) }))} placeholder={`14.5 × 21 × 1.8`} />
+              </F>
+              <F label={`น้ำหนัก${wUnit ? ` (เติม "${wUnit}" อัตโนมัติ)` : ""}`}>
+                <Inp value={form.weight} onChange={set("weight")} onBlur={() => setForm((f) => ({ ...f, weight: applyUnit(f.weight, wUnit) }))} placeholder="330" />
+              </F>
+              <F label="กระดาษเนื้อใน"><Inp value={form.paperType} onChange={set("paperType")} list="dl-paper" placeholder="เลือกหรือพิมพ์" /></F>
+              <F label="ปก"><Inp value={form.coverType} onChange={set("coverType")} list="dl-cover" placeholder="เลือกหรือพิมพ์" /></F>
             </div>
           </Card>
 

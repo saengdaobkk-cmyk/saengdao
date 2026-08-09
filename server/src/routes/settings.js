@@ -21,6 +21,10 @@ const STRING_KEYS = [
   "homeRows", // ตั้งค่าแถวหนังสือหน้าแรก: หัวข้อ/คำโปรย/โหมดอัตโนมัติ-เลือกเอง (JSON)
   "homeCustomRows", // แถวหนังสือที่แอดมินสร้างเอง (JSON array)
   "homeBanner", // แบนเนอร์ภาพตรึง parallax หน้าแรก (JSON เดี่ยว)
+  "coverTypeOptions", // ตัวเลือกประเภทปก (JSON array)
+  "paperTypeOptions", // ตัวเลือกกระดาษเนื้อใน (JSON array)
+  "dimensionUnit", // หน่วยขนาด (เติมท้ายอัตโนมัติ) เช่น "cm."
+  "weightUnit", // หน่วยน้ำหนัก (เติมท้ายอัตโนมัติ) เช่น "g"
   "promptpayId", // เบอร์/เลขบัตร ปชช. พร้อมเพย์
   "promptpayName", // ชื่อบัญชีพร้อมเพย์
   "bankName", // ธนาคาร
@@ -78,6 +82,10 @@ const DEFAULTS = {
     { label: "เกี่ยวกับเรา", url: "/about" },
     { label: "ติดต่อ", url: "/contact" },
   ]),
+  coverTypeOptions: JSON.stringify(["ปกอ่อน", "ปกแข็ง"]),
+  paperTypeOptions: JSON.stringify(["กระดาษถนอมสายตา", "กระดาษปอนด์", "กระดาษอาร์ตมัน"]),
+  dimensionUnit: "cm.",
+  weightUnit: "g",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด
