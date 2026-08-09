@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { useBooks } from "../api/books";
+import { useSettings } from "../api/settings";
 import BookCard from "../components/BookCard";
 
 const TYPE_LABEL = { PUBLISHER: "สำนักพิมพ์", AUTHOR: "ผู้เขียน", TRANSLATOR: "ผู้แปล" };
@@ -10,6 +11,7 @@ const TYPE_PARAM = { PUBLISHER: "publisher", AUTHOR: "author", TRANSLATOR: "tran
 
 export default function TermCollection({ type }) {
   const { slug } = useParams();
+  const { showCollectionCount } = useSettings();
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
 
@@ -48,7 +50,7 @@ export default function TermCollection({ type }) {
         <div>
           <p className="text-[13px] font-medium tracking-tight text-sub">{TYPE_LABEL[type]}</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
-          {data && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+          {data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
         </div>
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
           className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
