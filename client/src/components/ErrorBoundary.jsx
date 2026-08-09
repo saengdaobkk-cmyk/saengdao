@@ -18,8 +18,6 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (!this.state.error) return this.props.children;
-    const err = this.state.error;
-    const stack = String(err?.stack || err?.message || err || "");
     return (
       <div className="mx-auto max-w-page px-5 py-24 text-center">
         <h1 className="text-2xl font-semibold text-ink">เกิดข้อผิดพลาดชั่วคราว</h1>
@@ -30,10 +28,6 @@ export default class ErrorBoundary extends Component {
         >
           รีเฟรชหน้า
         </button>
-        {/* รายละเอียดสำหรับ debug — เก็บชั่วคราวเพื่อดู stack จริงบน production */}
-        <pre className="mx-auto mt-8 max-w-2xl overflow-x-auto whitespace-pre-wrap rounded-xl bg-mist p-4 text-left text-[11px] leading-relaxed text-sub">
-          {stack.slice(0, 1500)}
-        </pre>
       </div>
     );
   }
