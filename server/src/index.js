@@ -48,6 +48,9 @@ app.use("/uploads", express.static(UPLOAD_DIR));
 // — เคยแคช response ที่ถูกตัดจน frontend อ่าน items ไม่ได้แล้วหน้าขาว
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store");
+  // LiteSpeed มี namespace แคชของตัวเอง (ไม่สน Cache-Control ปกติ) → สั่งไม่แคช/ไม่บีบอัดตรงๆ
+  res.set("X-LiteSpeed-Cache-Control", "no-cache");
+  res.set("X-LiteSpeed-Cache", "no-cache");
   next();
 });
 

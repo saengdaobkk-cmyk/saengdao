@@ -14,3 +14,17 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+// กัน LiteSpeed (Hostinger) cache API response เพี้ยน/ตัดขาด → axios parse JSON ไม่ได้ คืนเป็น string
+// ตรวจเจอ → ยิงซ้ำครั้งเดียวด้วย cache-buster เพื่อข้าม cache ที่เสีย แล้วได้ข้อมูลครบ
+api.interceptors.response.use((res) => {
+  const ct = res.headers?.["content-type"] || "";
+  const isJsonEndpoint = ct.includes("application/json");
+  const method = (res.config?.method || "get").toLowerCase();
+  if (isJsonEndpoint && typeof res.data === "string" && method === "get" && !res.config.__cbRetried) {
+    const cfg = { ...res.config, __cbRetried: true };
+    cfg.params = { ...(cfg.params || {}), _cb: Date.now() };
+    return api.request(cfg); // ยิงใหม่แบบ cache miss → JSON ครบ
+  }
+  return res;
+});
