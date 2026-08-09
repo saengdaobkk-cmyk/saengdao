@@ -1,90 +1,49 @@
-import { useState } from "react";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
-import { api } from "../lib/api";
 
-// ส่วนติดต่อเรา (ข้อมูลติดต่อ + ฟอร์มส่งข้อความ) — ใช้ในหน้า About
+// ส่วนติดต่อเรา — ข้อมูลติดต่ออย่างเดียว (ไม่มีฟอร์ม) ใช้ในหน้า About
 export default function ContactSection({ id = "contact" }) {
   const s = useSettings();
   const { t } = useContent();
-  const CONTACT = {
-    phone: s.contactPhone,
-    email: s.contactEmail,
-    line: s.contactLine,
-    address: s.contactAddress,
-    hours: s.contactHours,
-  };
-  const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [err, setErr] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setSending(true);
-    setErr("");
-    try {
-      await api.post("/contact", form);
-      setSent(true);
-      setForm({ name: "", email: "", message: "" });
-    } catch (e) {
-      setErr(e.response?.data?.error || "ส่งข้อความไม่สำเร็จ ลองใหม่อีกครั้ง");
-    } finally {
-      setSending(false);
-    }
-  };
+  const items = [
+    s.contactPhone && { icon: <PhoneIcon />, label: "โทรศัพท์", value: s.contactPhone, href: `tel:${s.contactPhone}` },
+    s.contactEmail && { icon: <MailIcon />, label: "อีเมล", value: s.contactEmail, href: `mailto:${s.contactEmail}` },
+    s.contactLine && { icon: <ChatIcon />, label: "LINE", value: s.contactLine, href: s.socialLine || undefined },
+    s.contactAddress && { icon: <PinIcon />, label: "ที่อยู่", value: s.contactAddress },
+    s.contactHours && { icon: <ClockIcon />, label: "เวลาทำการ", value: s.contactHours },
+  ].filter(Boolean);
+  const hasSocial = s.socialFacebook || s.socialInstagram || s.socialLine;
 
   return (
-    <section id={id} className="mt-16 scroll-mt-24 border-t border-line pt-14">
-      <p className="text-[13px] font-medium tracking-tight text-accent">{t("contact.eyebrow", "ติดต่อเรา")}</p>
-      <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink">{t("contact.heading", "ยินดีให้บริการ")}</h2>
-      <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-sub">
-        {t("contact.subtitle", "มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ")}
-      </p>
+    <section id={id} className="scroll-mt-24 border-t border-line">
+      <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
+        <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
+          <span aria-hidden>✦</span> {t("contact.eyebrow", "ติดต่อเรา")}
+        </p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tightest text-ink sm:text-[2.5rem] sm:leading-[1.1]">
+          {t("contact.heading", "ยินดีให้บริการ")}
+        </h2>
+        <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-sub">
+          {t("contact.subtitle", "มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ")}
+        </p>
 
-      <div className="mt-10 grid overflow-hidden rounded-3xl border border-line shadow-sm lg:grid-cols-[0.95fr_1.05fr]">
-        {/* ซ้าย: ข้อมูลติดต่อ */}
-        <div className="bg-mist/60 p-8 sm:p-10">
-          <div className="space-y-6">
-            {CONTACT.phone && <Info icon={<PhoneIcon />} label="โทรศัพท์" value={CONTACT.phone} href={`tel:${CONTACT.phone}`} />}
-            {CONTACT.email && <Info icon={<MailIcon />} label="อีเมล" value={CONTACT.email} href={`mailto:${CONTACT.email}`} />}
-            {CONTACT.line && <Info icon={<ChatIcon />} label="LINE" value={CONTACT.line} href={s.socialLine || undefined} />}
-            {CONTACT.address && <Info icon={<PinIcon />} label="ที่อยู่" value={CONTACT.address} />}
-            {CONTACT.hours && <Info icon={<ClockIcon />} label="เวลาทำการ" value={CONTACT.hours} />}
-            {!CONTACT.phone && !CONTACT.email && !CONTACT.address && (
-              <p className="text-[14px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
-            )}
+        {items.length > 0 ? (
+          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((it, i) => (
+              <Info key={i} {...it} />
+            ))}
           </div>
+        ) : (
+          <p className="mt-8 text-[14px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
+        )}
 
-          {(s.socialFacebook || s.socialInstagram || s.socialLine) && (
-            <div className="mt-8 flex gap-3 border-t border-line pt-6">
-              {s.socialFacebook && <Social href={s.socialFacebook} label="Facebook"><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
-              {s.socialInstagram && <Social href={s.socialInstagram} label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
-              {s.socialLine && <Social href={s.socialLine} label="LINE"><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
-            </div>
-          )}
-        </div>
-
-        {/* ขวา: ฟอร์ม */}
-        <div className="bg-white p-8 sm:p-10">
-          <h3 className="text-[18px] font-semibold text-ink">{t("contact.form_heading", "ส่งข้อความถึงเรา")}</h3>
-          <p className="mt-1 text-[13px] text-sub">{t("contact.form_desc", "กรอกข้อความ เดี๋ยวเราติดต่อกลับโดยเร็ว")}</p>
-          <form onSubmit={submit} className="mt-6 space-y-4">
-            <Field label={t("contact.form_name", "ชื่อ")} value={form.name} onChange={set("name")} />
-            <Field label={t("contact.form_email", "อีเมล")} type="email" value={form.email} onChange={set("email")} />
-            <label className="block">
-              <span className="mb-1.5 block text-[13px] font-medium text-ink">{t("contact.form_message", "ข้อความ")}</span>
-              <textarea value={form.message} onChange={set("message")} rows={5} required
-                className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30" />
-            </label>
-            <button type="submit" disabled={sending} className="w-full rounded-full bg-accent px-7 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.99] disabled:opacity-50">
-              {sending ? "กำลังส่ง…" : t("contact.form_submit", "ส่งข้อความ")}
-            </button>
-            {sent && <p className="text-[13px] text-emerald-600">ส่งข้อความเรียบร้อยแล้ว ขอบคุณค่ะ 🙏 เราจะติดต่อกลับโดยเร็ว</p>}
-            {err && <p className="text-[13px] text-red-600">{err}</p>}
-          </form>
-        </div>
+        {hasSocial && (
+          <div className="mt-8 flex gap-3">
+            {s.socialFacebook && <Social href={s.socialFacebook} label="Facebook"><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
+            {s.socialInstagram && <Social href={s.socialInstagram} label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
+            {s.socialLine && <Social href={s.socialLine} label="LINE"><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -93,36 +52,27 @@ export default function ContactSection({ id = "contact" }) {
 function Info({ icon, label, value, href }) {
   const inner = (
     <>
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-accent shadow-sm ring-1 ring-line">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mist text-accent">
         {icon}
       </span>
       <span className="min-w-0">
         <span className="block text-[12px] tracking-wide text-sub">{label}</span>
-        <span className="text-[15px] text-ink">{value}</span>
+        <span className="text-[15px] leading-snug text-ink">{value}</span>
       </span>
     </>
   );
+  const cls = "flex items-start gap-4 bg-white p-7";
   return href ? (
-    <a href={href} className="flex items-start gap-4 transition hover:opacity-70">{inner}</a>
+    <a href={href} className={`${cls} transition-colors hover:bg-mist/40`}>{inner}</a>
   ) : (
-    <div className="flex items-start gap-4">{inner}</div>
-  );
-}
-
-function Field({ label, type = "text", value, onChange }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[13px] font-medium text-ink">{label}</span>
-      <input type={type} value={value} onChange={onChange} required
-        className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] text-ink outline-none transition focus:border-ink/30" />
-    </label>
+    <div className={cls}>{inner}</div>
   );
 }
 
 function Social({ href, label, children }) {
   return (
     <a href={href} target="_blank" rel="noreferrer" aria-label={label}
-      className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sub shadow-sm ring-1 ring-line transition hover:text-ink">
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-sub transition hover:border-ink/30 hover:text-ink">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
     </a>
   );
