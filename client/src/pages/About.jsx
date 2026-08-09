@@ -57,6 +57,22 @@ export default function About() {
         </section>
       )}
 
+      {/* ── จุดยืน / สิ่งที่เราเชื่อ (manifesto) ── */}
+      {(t("about.manifesto_heading", "") || t("about.manifesto_body", "")) && (
+        <section className="border-b border-line bg-mist/40">
+          <div className="mx-auto max-w-page px-5 py-20 sm:py-28">
+            {t("about.manifesto_heading", "") && (
+              <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
+                <Star /> {t("about.manifesto_heading", "")}
+              </p>
+            )}
+            <p className="mt-6 max-w-3xl whitespace-pre-line text-[22px] font-medium leading-[1.65] tracking-tight text-ink sm:text-[27px] sm:leading-[1.55]">
+              {t("about.manifesto_body", "")}
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ── เรื่องราว: 2 คอลัมน์ ── */}
       {(t("about.story_heading", "") || t("about.story_body", "")) && (
         <section className="mx-auto max-w-page px-5 py-20 sm:py-28">
