@@ -28,7 +28,7 @@ export default function ContactSection({ id = "contact" }) {
         </p>
 
         {items.length > 0 ? (
-          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((it, i) => (
               <Info key={i} {...it} />
             ))}
@@ -61,9 +61,9 @@ function Info({ icon, label, value, href }) {
       </span>
     </>
   );
-  const cls = "flex items-start gap-4 bg-white p-7";
+  const cls = "flex items-start gap-4 rounded-2xl border border-line bg-white p-7";
   return href ? (
-    <a href={href} className={`${cls} transition-colors hover:bg-mist/40`}>{inner}</a>
+    <a href={href} className={`${cls} transition-colors hover:border-ink/20 hover:bg-mist/40`}>{inner}</a>
   ) : (
     <div className={cls}>{inner}</div>
   );
