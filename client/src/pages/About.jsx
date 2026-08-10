@@ -65,9 +65,7 @@ export default function About() {
 
       {/* ── เรื่องราวของแสงดาว (long-form) ── */}
       {(t("about.story_heading", "") || t("about.story_body", "")) && (
-        <section className="relative overflow-hidden border-t border-line">
-          {/* ลายน้ำสัญลักษณ์หนังสือจางๆ ด้านหลัง */}
-          <BookMark className="pointer-events-none absolute -right-14 top-10 hidden w-[420px] text-ink/[0.045] lg:block" />
+        <section className="border-t border-line">
           <div className="relative mx-auto max-w-page px-5 py-20 sm:py-28">
             <div className="mx-auto max-w-2xl">
               {/* มาสต์เฮด: สัญลักษณ์หนังสือแสงดาว */}
