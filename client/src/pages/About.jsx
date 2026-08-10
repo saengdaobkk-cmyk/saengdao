@@ -11,7 +11,6 @@ export default function About() {
   const { t } = useContent();
   const s = useSettings();
   const brandLogo = s.footerLogoUrl || s.headerLogoOnLight || s.logoUrl || ""; // โลโก้พื้นสว่าง
-  const brandLogoDark = s.headerLogoOnDark || ""; // โลโก้พื้นเข้ม (ไว้ทำลายน้ำบนแถบดำ)
 
   const stats = [
     { n: t("about.stat1_num", ""), l: t("about.stat1_label", "") },
@@ -138,15 +137,6 @@ export default function About() {
       {/* ── ปิดท้าย: แถบท้องฟ้ายามค่ำ + แสงดาว + ลายน้ำโลโก้ ── */}
       {t("about.closing", "") && (
         <section className="relative overflow-hidden bg-ink">
-          {/* ลายน้ำโลโก้ (เวอร์ชันพื้นเข้ม) */}
-          {brandLogoDark && (
-            <img
-              src={img(brandLogoDark, 600)}
-              alt=""
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 w-[380px] max-w-[74%] -translate-x-1/2 -translate-y-1/2 opacity-[0.07]"
-            />
-          )}
           {/* ดาวจางๆ */}
           <div aria-hidden className="pointer-events-none absolute inset-0 text-white/25">
             <span className="absolute left-[12%] top-[22%] text-[10px]">✦</span>
