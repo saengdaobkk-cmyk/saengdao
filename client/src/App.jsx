@@ -213,13 +213,12 @@ function parseFooterNav(raw) {
     { label: "เกี่ยวกับเรา", url: "/about" },
     { label: "ติดต่อ", url: "/contact" },
   ];
+  // ยังไม่เคยตั้งค่า (null/ว่าง) → ใช้ค่าเริ่มต้น; ตั้งค่าแล้ว (รวมถึงตั้งเป็นว่าง) → เคารพค่านั้น
+  if (raw == null || raw === "") return DEF;
   try {
     const p = typeof raw === "string" ? JSON.parse(raw) : raw;
-    if (Array.isArray(p)) {
-      const clean = p.filter((x) => x && x.label && x.url);
-      if (clean.length) return clean;
-    }
-  } catch { /* ใช้ค่าเริ่มต้น */ }
+    if (Array.isArray(p)) return p.filter((x) => x && x.label && x.url);
+  } catch { /* ผิดรูป → ใช้ค่าเริ่มต้น */ }
   return DEF;
 }
 
