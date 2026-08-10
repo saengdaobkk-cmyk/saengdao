@@ -2,10 +2,11 @@ import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 
 // ส่วนติดต่อเรา — ข้อมูลติดต่ออย่างเดียว (ไม่มีฟอร์ม) ใช้ในหน้า About
+// ดีไซน์ editorial 2 คอลัมน์: ซ้าย = หัวข้อ+โซเชียล, ขวา = ช่องทางติดต่อเป็นลิสต์มีเส้นคั่น
 export default function ContactSection({ id = "contact" }) {
   const s = useSettings();
   const { t } = useContent();
-  const items = [
+  const rows = [
     s.contactPhone && { icon: <PhoneIcon />, label: "โทรศัพท์", value: s.contactPhone, href: `tel:${s.contactPhone}` },
     s.contactEmail && { icon: <MailIcon />, label: "อีเมล", value: s.contactEmail, href: `mailto:${s.contactEmail}` },
     s.contactLine && { icon: <ChatIcon />, label: "LINE", value: s.contactLine, href: s.socialLine || undefined },
@@ -17,53 +18,64 @@ export default function ContactSection({ id = "contact" }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-line">
       <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
-        <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
-          <span aria-hidden>✦</span> {t("contact.eyebrow", "ติดต่อเรา")}
-        </p>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tightest text-ink sm:text-[2.5rem] sm:leading-[1.1]">
-          {t("contact.heading", "ยินดีให้บริการ")}
-        </h2>
-        <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-sub">
-          {t("contact.subtitle", "มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ")}
-        </p>
+        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          {/* ซ้าย: หัวข้อ + โซเชียล */}
+          <div>
+            <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
+              <span aria-hidden>✦</span> {t("contact.eyebrow", "ติดต่อเรา")}
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tightest text-ink sm:text-[2.5rem] sm:leading-[1.08]">
+              {t("contact.heading", "ยินดีให้บริการ")}
+            </h2>
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-sub">
+              {t("contact.subtitle", "มีคำถามเรื่องหนังสือ คำสั่งซื้อ หรือการจัดส่ง? ทักมาได้เลย เราตอบทุกข้อความ")}
+            </p>
 
-        {items.length > 0 ? (
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((it, i) => (
-              <Info key={i} {...it} />
-            ))}
+            {hasSocial && (
+              <div className="mt-8 flex gap-3">
+                {s.socialFacebook && <Social href={s.socialFacebook} label="Facebook"><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
+                {s.socialInstagram && <Social href={s.socialInstagram} label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
+                {s.socialLine && <Social href={s.socialLine} label="LINE"><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
+              </div>
+            )}
           </div>
-        ) : (
-          <p className="mt-8 text-[14px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
-        )}
 
-        {hasSocial && (
-          <div className="mt-8 flex gap-3">
-            {s.socialFacebook && <Social href={s.socialFacebook} label="Facebook"><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
-            {s.socialInstagram && <Social href={s.socialInstagram} label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
-            {s.socialLine && <Social href={s.socialLine} label="LINE"><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
-          </div>
-        )}
+          {/* ขวา: ช่องทางติดต่อเป็นลิสต์มีเส้นคั่น */}
+          {rows.length > 0 ? (
+            <div className="lg:pt-1.5">
+              {rows.map((r, i) => (
+                <Row key={i} {...r} first={i === 0} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-[14px] text-sub">ยังไม่ได้ตั้งค่าข้อมูลติดต่อ — เพิ่มได้ที่ จัดการร้าน → ตั้งค่า</p>
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
-function Info({ icon, label, value, href }) {
+function Row({ icon, label, value, href, first }) {
   const inner = (
     <>
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mist text-accent">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mist text-accent transition-colors group-hover:bg-accent group-hover:text-white">
         {icon}
       </span>
-      <span className="min-w-0">
+      <span className="min-w-0 flex-1">
         <span className="block text-[12px] tracking-wide text-sub">{label}</span>
-        <span className="text-[15px] leading-snug text-ink">{value}</span>
+        <span className="mt-0.5 block text-[16px] leading-snug text-ink">{value}</span>
       </span>
+      {href && (
+        <svg className="mt-1 shrink-0 text-sub opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      )}
     </>
   );
-  const cls = "flex items-start gap-4 rounded-2xl border border-line bg-white p-7";
+  const cls = `group flex items-start gap-5 py-6 ${first ? "" : "border-t border-line"}`;
   return href ? (
-    <a href={href} className={`${cls} transition-colors hover:border-ink/20 hover:bg-mist/40`}>{inner}</a>
+    <a href={href} className={cls}>{inner}</a>
   ) : (
     <div className={cls}>{inner}</div>
   );
