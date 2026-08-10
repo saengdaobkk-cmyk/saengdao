@@ -255,6 +255,16 @@ export async function sendContactMessage({ name, email, phone, message }) {
 }
 
 // ทดสอบระบบ
+// อีเมลยืนยันการสมัคร — ลิงก์ชี้ไปหน้าเว็บ /verify-email?token=...
+export async function sendEmailVerification({ to, toName, token }) {
+  const url = `${SITE}/verify-email?token=${encodeURIComponent(token)}`;
+  const body = `<p style="margin:0 0 6px;font-size:15px;line-height:1.7;color:#515154;text-align:center">ขอบคุณที่สมัครสมาชิกกับสำนักพิมพ์แสงดาว<br>กดปุ่มด้านล่างเพื่อยืนยันอีเมลและเริ่มใช้งานบัญชีของคุณ</p>
+    ${button(url, "ยืนยันอีเมล")}
+    <p style="margin:18px 0 0;font-size:12.5px;line-height:1.7;color:#a1a1a6;text-align:center">ลิงก์นี้ใช้ได้ภายใน 24 ชั่วโมง · หากคุณไม่ได้สมัคร ข้ามอีเมลนี้ได้เลย</p>
+    <p style="margin:10px 0 0;font-size:11.5px;line-height:1.6;color:#c7c7cc;text-align:center;word-break:break-all">ถ้าปุ่มกดไม่ได้ คัดลอกลิงก์นี้: ${url}</p>`;
+  return send({ to, toName, subject: "ยืนยันอีเมล — SAENGDAO", html: layout("ยืนยันอีเมลของคุณ", body, { eyebrow: "ยืนยันการสมัคร", icon: { color: "#0071e3", glyph: "✓" } }) });
+}
+
 export async function sendTestEmail(to) {
   return send({ to, subject: "SAENGDAO · ทดสอบระบบอีเมล", html: layout("ระบบอีเมลพร้อมใช้งาน", `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154;text-align:center">ยินดีด้วยค่ะ — ระบบอีเมลผ่าน Brevo ทำงานปกติแล้ว<br>อีเมลยืนยันคำสั่งซื้อ ชำระเงิน จัดส่ง และฟอร์มติดต่อ จะส่งอัตโนมัติจากนี้ไป</p>`, { eyebrow: "ทดสอบ", icon: { color: "#1d9e75", glyph: "✓" } }) });
 }

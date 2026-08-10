@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { messageFor } from "../lib/validation";
 
 export default function Login() {
-  const { login, verify2fa, user } = useAuth();
+  const { login, verify2fa, resendVerification, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
@@ -15,20 +15,28 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(null);
   const [code, setCode] = useState("");
+  const [needVerify, setNeedVerify] = useState(false); // ยังไม่ยืนยันอีเมล
+  const [resent, setResent] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    setNeedVerify(false);
     setBusy(true);
     try {
       const r = await login(email, password);
       if (r.twoFactorRequired) setPending(r.pendingToken);
       else navigate(from, { replace: true });
     } catch (err) {
+      if (err.response?.data?.verificationRequired) setNeedVerify(true);
       setError(err.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ");
     } finally {
       setBusy(false);
     }
+  };
+
+  const resend = async () => {
+    try { await resendVerification(email); setResent(true); } catch { /* เงียบไว้ */ }
   };
 
   const submitCode = async (e) => {
@@ -81,6 +89,17 @@ export default function Login() {
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="current-password" />
 
         {error && <p className="text-[13px] text-red-600">{error}</p>}
+
+        {needVerify && (
+          <button
+            type="button"
+            onClick={resend}
+            disabled={resent}
+            className="w-full rounded-full border border-line py-2.5 text-[13px] font-medium text-ink transition hover:bg-mist disabled:opacity-50"
+          >
+            {resent ? "ส่งลิงก์ยืนยันใหม่แล้ว ✓ เช็กอีเมล" : "ส่งลิงก์ยืนยันอีเมลอีกครั้ง"}
+          </button>
+        )}
 
         <button
           type="submit"

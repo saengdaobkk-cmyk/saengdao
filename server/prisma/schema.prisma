@@ -46,28 +46,28 @@ model Content {
 
 // สไลด์ hero หน้าแรก (จัดการจากหลังบ้าน)
 model Slide {
-  id        String   @id @default(uuid())
-  eyebrow   String? // ข้อความเล็กด้านบน
-  title     String // หัวข้อใหญ่ (ขึ้นบรรทัดใหม่ได้)
-  subtitle  String?
-  ctaText   String? // ข้อความปุ่ม
-  ctaLink   String   @default("#catalog")
-  image     String? // URL รูปพื้นหลัง
-  bgColor   String? // สีพื้นหลัง (ถ้าไม่มีรูป) เช่น #1d1d1f
-  dark      Boolean  @default(true) // true = ตัวหนังสือสีขาว
-  align     String   @default("center") // แนวนอน: left|center|right
-  valign    String   @default("center") // แนวตั้ง: top|center|bottom
-  overlay   Int      @default(0) // ความเข้มแผ่นแรเงาบนรูป 0-100 (0=เห็นรูปชัด)
-  overlayGradient Boolean @default(false) // แรเงาไล่ระดับจากล่าง (อ่านง่ายบนรูป)
+  id              String   @id @default(uuid())
+  eyebrow         String? // ข้อความเล็กด้านบน
+  title           String // หัวข้อใหญ่ (ขึ้นบรรทัดใหม่ได้)
+  subtitle        String?
+  ctaText         String? // ข้อความปุ่ม
+  ctaLink         String   @default("#catalog")
+  image           String? // URL รูปพื้นหลัง
+  bgColor         String? // สีพื้นหลัง (ถ้าไม่มีรูป) เช่น #1d1d1f
+  dark            Boolean  @default(true) // true = ตัวหนังสือสีขาว
+  align           String   @default("center") // แนวนอน: left|center|right
+  valign          String   @default("center") // แนวตั้ง: top|center|bottom
+  overlay         Int      @default(0) // ความเข้มแผ่นแรเงาบนรูป 0-100 (0=เห็นรูปชัด)
+  overlayGradient Boolean  @default(false) // แรเงาไล่ระดับจากล่าง (อ่านง่ายบนรูป)
   titleSize       String   @default("md") // ขนาดหัวข้อ: sm|md|lg
   imagePosition   String   @default("center") // โฟกัสรูป: top|center|bottom
   linkUrl         String? // คลิกที่รูป banner ไปที่ URL นี้
   textColor       String? // สีตัวอักษร (override dark)
   buttonColor     String? // สีพื้นปุ่ม CTA
   buttonTextColor String? // สีตัวอักษรปุ่ม
-  order     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  order           Int      @default(0)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
 }
 
 enum DiscountType {
@@ -108,29 +108,33 @@ model Coupon {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  phone     String?
-  address   String? // ที่อยู่จัดส่ง
+  id                 String         @id @default(uuid())
+  email              String         @unique
+  password           String
+  name               String?
+  phone              String?
+  address            String? // ที่อยู่จัดส่ง
   // ข้อมูลออกใบเสร็จที่บันทึกไว้
-  receiptName    String?
-  receiptTaxId   String?
-  receiptAddress String?
-  role      Role     @default(USER)
+  receiptName        String?
+  receiptTaxId       String?
+  receiptAddress     String?
+  role               Role           @default(USER)
+  // ยืนยันอีเมล — default true เพื่อ grandfather ผู้ใช้เดิม (สมัครใหม่จะตั้ง false)
+  emailVerified      Boolean        @default(true)
+  emailVerifyToken   String?
+  emailVerifyExpires DateTime?
   // ยืนยันตัวตน 2 ชั้น (TOTP) — สำหรับเจ้าหน้าที่/แอดมิน
-  totpSecret  String? // 🔒 secret สำหรับสร้างรหัส 6 หลัก (base32)
-  totpEnabled Boolean @default(false)
+  totpSecret         String? // 🔒 secret สำหรับสร้างรหัส 6 หลัก (base32)
+  totpEnabled        Boolean        @default(false)
   // CRM
-  tags      String[]       @default([]) // แท็ก/กลุ่มลูกค้า เช่น VIP, ขายส่ง
-  points    Int            @default(0)  // ยอดแต้มสะสมคงเหลือ (สรุปจาก PointEntry)
-  orders    Order[]
-  crmNotes  CustomerNote[]
-  pointLogs PointEntry[]
-  reviews   Review[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tags               String[]       @default([]) // แท็ก/กลุ่มลูกค้า เช่น VIP, ขายส่ง
+  points             Int            @default(0) // ยอดแต้มสะสมคงเหลือ (สรุปจาก PointEntry)
+  orders             Order[]
+  crmNotes           CustomerNote[]
+  pointLogs          PointEntry[]
+  reviews            Review[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 }
 
 // รีวิว/คอมเมนต์สินค้า (1 รีวิว/คน/เล่ม)
@@ -152,29 +156,29 @@ model Review {
 
 // โน้ต / ประวัติการติดตามลูกค้า (CRM timeline)
 model CustomerNote {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   body       String
-  kind       String   @default("NOTE") // NOTE | CALL | FOLLOWUP
-  done       Boolean  @default(false) // สำหรับ FOLLOWUP: ทำแล้วหรือยัง
+  kind       String    @default("NOTE") // NOTE | CALL | FOLLOWUP
+  done       Boolean   @default(false) // สำหรับ FOLLOWUP: ทำแล้วหรือยัง
   dueAt      DateTime? // กำหนดวันติดตาม (FOLLOWUP)
   authorName String? // แอดมินที่บันทึก
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([userId])
 }
 
 // รายการเดินแต้มสะสม (ledger) — ยอดคงเหลืออยู่ที่ User.points
 model PointEntry {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  delta     Int // + ได้แต้ม / - ใช้แต้ม
-  reason    String
-  orderId   String? // อ้างอิงออเดอร์ (ถ้าได้จากการซื้อ)
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta      Int // + ได้แต้ม / - ใช้แต้ม
+  reason     String
+  orderId    String? // อ้างอิงออเดอร์ (ถ้าได้จากการซื้อ)
   authorName String? // แอดมินที่ปรับ (ถ้าปรับมือ)
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   @@index([userId])
 }
@@ -188,47 +192,47 @@ model Category {
 }
 
 model Book {
-  id            String      @id @default(uuid())
-  title         String
-  author        String // ผู้เขียน (หลายชื่อคั่นด้วย ,)
-  translator    String? // ผู้แปล
-  isbn          String?     @unique
-  description   String?
-  price         Decimal     @db.Decimal(10, 2)
-  discountPrice Decimal?    @db.Decimal(10, 2) // ราคาลด
-  hotDealPrice  Decimal?    @db.Decimal(10, 2) // ราคา Hot Deal (พิเศษตามช่วงเวลา)
-  hotDealStart  DateTime? // เริ่มโปร (เว้นว่าง = เริ่มทันที)
-  hotDealEnd    DateTime? // สิ้นสุดโปร (เว้นว่าง = ไม่หมดอายุ)
-  stock         Int         @default(0)
-  soldCount     Int         @default(0)
-  active        Boolean     @default(true) // เปิดขาย (false = ซ่อนจากหน้าร้าน)
-  featured      Boolean     @default(false) // แนะนำหน้าแรก
-  tags          String[]    @default([]) // แท็ก เช่น ขายดี/ใหม่/แนะนำ
-  coverImage    String?
-  backCoverImage String? // ปกหลัง
-  galleryImages String[]   @default([]) // รูปแกลเลอรี
-  previewPdf    String? // ไฟล์ตัวอย่าง PDF (flip book)
-  categoryId    String?
-  category      Category?   @relation(fields: [categoryId], references: [id])
+  id              String      @id @default(uuid())
+  title           String
+  author          String // ผู้เขียน (หลายชื่อคั่นด้วย ,)
+  translator      String? // ผู้แปล
+  isbn            String?     @unique
+  description     String?
+  price           Decimal     @db.Decimal(10, 2)
+  discountPrice   Decimal?    @db.Decimal(10, 2) // ราคาลด
+  hotDealPrice    Decimal?    @db.Decimal(10, 2) // ราคา Hot Deal (พิเศษตามช่วงเวลา)
+  hotDealStart    DateTime? // เริ่มโปร (เว้นว่าง = เริ่มทันที)
+  hotDealEnd      DateTime? // สิ้นสุดโปร (เว้นว่าง = ไม่หมดอายุ)
+  stock           Int         @default(0)
+  soldCount       Int         @default(0)
+  active          Boolean     @default(true) // เปิดขาย (false = ซ่อนจากหน้าร้าน)
+  featured        Boolean     @default(false) // แนะนำหน้าแรก
+  tags            String[]    @default([]) // แท็ก เช่น ขายดี/ใหม่/แนะนำ
+  coverImage      String?
+  backCoverImage  String? // ปกหลัง
+  galleryImages   String[]    @default([]) // รูปแกลเลอรี
+  previewPdf      String? // ไฟล์ตัวอย่าง PDF (flip book)
+  categoryId      String?
+  category        Category?   @relation(fields: [categoryId], references: [id])
   // ข้อมูลจำเพาะ (Meta)
-  publisher     String? // สำนักพิมพ์
-  edition       String? // พิมพ์ครั้งที่
-  pageCount     Int?
-  dimensions    String?
-  weight        String?
-  paperType     String? // กระดาษเนื้อใน
-  coverType     String? // ปกอ่อน/ปกแข็ง
+  publisher       String? // สำนักพิมพ์
+  edition         String? // พิมพ์ครั้งที่
+  pageCount       Int?
+  dimensions      String?
+  weight          String?
+  paperType       String? // กระดาษเนื้อใน
+  coverType       String? // ปกอ่อน/ปกแข็ง
   // รหัส & SEO
-  sku           String?
-  metaTitle     String?
+  sku             String?
+  metaTitle       String?
   metaDescription String?
-  slug          String?    @unique
-  importedAt    DateTime? // วันที่นำเข้า (จัดลำดับ collection)
-  variants      Variant[]
-  orderItems    OrderItem[]
-  reviews       Review[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  slug            String?     @unique
+  importedAt      DateTime? // วันที่นำเข้า (จัดลำดับ collection)
+  variants        Variant[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@index([categoryId])
   @@index([title])
@@ -236,17 +240,17 @@ model Book {
 
 // ตัวเลือกสินค้า เช่น ปกอ่อน/ปกแข็ง/Boxset — แต่ละแบบมีราคา+สต็อกของตัวเอง
 model Variant {
-  id            String   @id @default(uuid())
-  bookId        String
-  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  name          String
-  isbn          String? // ISBN/บาร์โค้ดของตัวเลือกนี้
+  id             String   @id @default(uuid())
+  bookId         String
+  book           Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  name           String
+  isbn           String? // ISBN/บาร์โค้ดของตัวเลือกนี้
   coverImage     String? // ปกหน้าเฉพาะตัวเลือกนี้ (เผื่อปกไม่เหมือนกัน)
   backCoverImage String? // ปกหลังเฉพาะตัวเลือกนี้
-  price         Decimal  @db.Decimal(10, 2)
-  discountPrice Decimal? @db.Decimal(10, 2)
-  stock         Int      @default(0)
-  order         Int      @default(0)
+  price          Decimal  @db.Decimal(10, 2)
+  discountPrice  Decimal? @db.Decimal(10, 2)
+  stock          Int      @default(0)
+  order          Int      @default(0)
 
   @@index([bookId])
 }
@@ -273,66 +277,66 @@ enum PaymentStatus {
 }
 
 model Order {
-  id              String        @id @default(uuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  items           OrderItem[]
-  total           Decimal       @db.Decimal(10, 2)
-  shippingMethod  String? // ชื่อช่องทางจัดส่ง ณ ตอนสั่ง
-  shippingFee     Decimal       @default(0) @db.Decimal(10, 2)
-  status          OrderStatus   @default(PENDING)
+  id                 String        @id @default(uuid())
+  userId             String
+  user               User          @relation(fields: [userId], references: [id])
+  items              OrderItem[]
+  total              Decimal       @db.Decimal(10, 2)
+  shippingMethod     String? // ชื่อช่องทางจัดส่ง ณ ตอนสั่ง
+  shippingFee        Decimal       @default(0) @db.Decimal(10, 2)
+  status             OrderStatus   @default(PENDING)
   // ที่อยู่จัดส่ง / ติดต่อ
-  shipName        String
-  shipPhone       String
-  shipAddress     String
-  email           String? // อีเมลสำหรับส่งใบยืนยัน
+  shipName           String
+  shipPhone          String
+  shipAddress        String
+  email              String? // อีเมลสำหรับส่งใบยืนยัน
   // ใบเสร็จรับเงิน / ใบกำกับภาษี
-  needReceipt     Boolean       @default(false)
-  receiptName     String?
-  receiptTaxId    String?
-  receiptAddress  String?
+  needReceipt        Boolean       @default(false)
+  receiptName        String?
+  receiptTaxId       String?
+  receiptAddress     String?
   // หมายเหตุ + ส่วนลด
-  note            String?
-  discountCode    String?
-  discount        Decimal       @default(0) @db.Decimal(10, 2)
-  ruleDiscount    Decimal       @default(0) @db.Decimal(10, 2) // ส่วนลดอัตโนมัติจาก Discount Rules
-  ruleName        String? // ชื่อกฎส่วนลดที่ใช้ ณ ตอนสั่ง
-  pointsUsed      Int           @default(0) // แต้มที่ลูกค้าใช้แลกส่วนลด
-  pointsDiscount  Decimal       @default(0) @db.Decimal(10, 2) // มูลค่าส่วนลดจากแต้ม (บาท)
-  cancelledBy     String? // ADMIN | CUSTOMER | SYSTEM (เมื่อ status = CANCELLED)
-  cancelledAt     DateTime?
-  zortOrderId     String? // id ออเดอร์ใน ZORT หลัง sync
+  note               String?
+  discountCode       String?
+  discount           Decimal       @default(0) @db.Decimal(10, 2)
+  ruleDiscount       Decimal       @default(0) @db.Decimal(10, 2) // ส่วนลดอัตโนมัติจาก Discount Rules
+  ruleName           String? // ชื่อกฎส่วนลดที่ใช้ ณ ตอนสั่ง
+  pointsUsed         Int           @default(0) // แต้มที่ลูกค้าใช้แลกส่วนลด
+  pointsDiscount     Decimal       @default(0) @db.Decimal(10, 2) // มูลค่าส่วนลดจากแต้ม (บาท)
+  cancelledBy        String? // ADMIN | CUSTOMER | SYSTEM (เมื่อ status = CANCELLED)
+  cancelledAt        DateTime?
+  zortOrderId        String? // id ออเดอร์ใน ZORT หลัง sync
   // การชำระเงิน
-  paymentMethod   PaymentMethod
-  paymentStatus   PaymentStatus @default(UNPAID)
-  slipImage       String? // URL รูปสลิป (PromptPay/โอนเงิน)
-  paidAt          DateTime? // วัน-เวลาที่ชำระเงินจริง (ตามสลิป) — แอดมินกรอกตอนอนุมัติ
-  omiseChargeId   String? // สำหรับบัตรเครดิต
+  paymentMethod      PaymentMethod
+  paymentStatus      PaymentStatus @default(UNPAID)
+  slipImage          String? // URL รูปสลิป (PromptPay/โอนเงิน)
+  paidAt             DateTime? // วัน-เวลาที่ชำระเงินจริง (ตามสลิป) — แอดมินกรอกตอนอนุมัติ
+  omiseChargeId      String? // สำหรับบัตรเครดิต
   // ติดตามพัสดุ (ไปรษณีย์ไทย Track & Trace)
-  trackingNumber    String? // barcode ไปรษณีย์ เช่น EF667142218TH
-  trackingStatus    String? // คำอธิบายสถานะล่าสุด (ไทย)
+  trackingNumber     String? // barcode ไปรษณีย์ เช่น EF667142218TH
+  trackingStatus     String? // คำอธิบายสถานะล่าสุด (ไทย)
   trackingStatusDate DateTime? // เวลาของสถานะล่าสุด
-  trackingUpdatedAt DateTime? // ครั้งล่าสุดที่ดึงสถานะจาก API
-  trackingHistory   Json? // ประวัติสถานะทั้งหมด
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  trackingUpdatedAt  DateTime? // ครั้งล่าสุดที่ดึงสถานะจาก API
+  trackingHistory    Json? // ประวัติสถานะทั้งหมด
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@index([userId])
   @@index([status])
 }
 
 model OrderItem {
-  id          String  @id @default(uuid())
-  orderId     String
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  bookId      String
-  book        Book    @relation(fields: [bookId], references: [id])
-  variantId   String? // ตัวเลือกที่เลือก (ถ้ามี)
-  variantName String? // ชื่อ variant ณ ตอนซื้อ (เก็บไว้เผื่อ variant ถูกลบ)
-  quantity    Int
-  price       Decimal @db.Decimal(10, 2) // ราคาสุทธิต่อหน่วย (หลังหักส่วนลดแล้ว) = ที่คิดเงินจริง
-  listPrice   Decimal @default(0) @db.Decimal(10, 2) // ราคาเต็มต่อหน่วย (ก่อนลด)
-  discountPercent Int  @default(0) // ส่วนลด (%) เทียบราคาเต็ม — โชว์/แอดมินปรับได้
+  id              String  @id @default(uuid())
+  orderId         String
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId          String
+  book            Book    @relation(fields: [bookId], references: [id])
+  variantId       String? // ตัวเลือกที่เลือก (ถ้ามี)
+  variantName     String? // ชื่อ variant ณ ตอนซื้อ (เก็บไว้เผื่อ variant ถูกลบ)
+  quantity        Int
+  price           Decimal @db.Decimal(10, 2) // ราคาสุทธิต่อหน่วย (หลังหักส่วนลดแล้ว) = ที่คิดเงินจริง
+  listPrice       Decimal @default(0) @db.Decimal(10, 2) // ราคาเต็มต่อหน่วย (ก่อนลด)
+  discountPercent Int     @default(0) // ส่วนลด (%) เทียบราคาเต็ม — โชว์/แอดมินปรับได้
 
   @@index([orderId])
 }

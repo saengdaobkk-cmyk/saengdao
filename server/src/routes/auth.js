@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { authenticator } from "otplib";
@@ -6,6 +7,10 @@ import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
 import { signToken, signPendingToken, authenticate } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
+import { sendEmailVerification } from "../lib/email.js";
+
+const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // ลิงก์ยืนยันอีเมลอายุ 24 ชม.
+const newVerifyToken = () => ({ emailVerifyToken: crypto.randomBytes(32).toString("hex"), emailVerifyExpires: new Date(Date.now() + VERIFY_TTL_MS) });
 
 const router = Router();
 
@@ -15,6 +20,7 @@ const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "สมัครสมาชิกบ่อยเกินไป กรุณาลองใหม่ในอีก 1 ชั่วโมง" });
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
 const twofaLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, message: "ยืนยันรหัสบ่อยเกินไป กรุณารอสักครู่" });
+const resendLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 4, message: "ขอลิงก์ยืนยันบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
 
 // ส่งข้อมูล user ที่ปลอดภัย (ไม่มี password)
 const publicUser = (u) => ({
@@ -44,15 +50,61 @@ router.post("/register", registerLimiter, async (req, res, next) => {
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
 
+    const { emailVerifyToken, emailVerifyExpires } = newVerifyToken();
     const user = await prisma.user.create({
       data: {
         email,
         password: await bcrypt.hash(password, 10),
         name: name?.trim() || null,
+        emailVerified: false,
+        emailVerifyToken,
+        emailVerifyExpires,
       },
     });
 
-    res.status(201).json({ token: signToken(user), user: publicUser(user) });
+    // ส่งอีเมลยืนยัน (best-effort — ไม่บล็อกการตอบกลับ)
+    sendEmailVerification({ to: user.email, toName: user.name, token: emailVerifyToken }).catch(() => {});
+    // ยังไม่ออก token — ต้องยืนยันอีเมลก่อนถึงเข้าใช้ได้
+    res.status(201).json({ pendingVerification: true, email: user.email });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/verify-email — ยืนยันอีเมลจากลิงก์ แล้วเข้าสู่ระบบให้เลย
+router.post("/verify-email", async (req, res, next) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    if (!token) return res.status(400).json({ error: "ลิงก์ยืนยันไม่ถูกต้อง" });
+    const user = await prisma.user.findFirst({ where: { emailVerifyToken: token } });
+    if (!user) return res.status(400).json({ error: "ลิงก์ไม่ถูกต้องหรือถูกใช้ไปแล้ว" });
+    if (user.emailVerifyExpires && user.emailVerifyExpires < new Date())
+      return res.status(400).json({ error: "ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ยืนยันใหม่", expired: true, email: user.email });
+
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: true, emailVerifyToken: null, emailVerifyExpires: null },
+    });
+    if (updated.totpEnabled) return res.json({ twoFactorRequired: true, pendingToken: signPendingToken(updated.id) });
+    res.json({ token: signToken(updated), user: publicUser(updated) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/resend-verification — ขอลิงก์ยืนยันใหม่ (ตอบเหมือนกันเสมอ กันเดาว่าอีเมลมีในระบบ)
+router.post("/resend-verification", resendLimiter, async (req, res, next) => {
+  try {
+    const email = String(req.body?.email || "").trim();
+    if (email && emailRe.test(email)) {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user && !user.emailVerified) {
+        const t = newVerifyToken();
+        await prisma.user.update({ where: { id: user.id }, data: t });
+        sendEmailVerification({ to: user.email, toName: user.name, token: t.emailVerifyToken }).catch(() => {});
+      }
+    }
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }
@@ -69,6 +121,10 @@ router.post("/login", loginLimiter, async (req, res, next) => {
     // ข้อความเดียวกันทั้งกรณีไม่มี user / รหัสผิด — กันการเดาบัญชี
     const ok = user && (await bcrypt.compare(password, user.password));
     if (!ok) return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+
+    // ยังไม่ยืนยันอีเมล → ยังเข้าใช้ไม่ได้
+    if (!user.emailVerified)
+      return res.status(403).json({ error: "กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ — เช็กกล่องจดหมาย (รวมถึง Junk/Spam)", verificationRequired: true, email: user.email });
 
     // เปิด 2FA อยู่ → ยังไม่ออก token เต็ม ให้ไปกรอกรหัส 6 หลักก่อน
     if (user.totpEnabled) return res.json({ twoFactorRequired: true, pendingToken: signPendingToken(user.id) });

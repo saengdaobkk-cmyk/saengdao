@@ -40,9 +40,23 @@ export function AuthProvider({ children }) {
     return res.data.user;
   };
 
+  // สมัคร → ยังไม่ล็อกอิน ต้องยืนยันอีเมลก่อน (คืน { pendingVerification, email })
   const register = async (email, password, name) => {
     const res = await api.post("/auth/register", { email, password, name });
+    if (res.data?.token) saveSession(res.data); // เผื่อกรณีอนาคตที่ไม่บังคับยืนยัน
+    return res.data;
+  };
+
+  // ยืนยันอีเมลจากลิงก์ → เข้าสู่ระบบให้เลย (หรือถ้าเปิด 2FA ให้ไปกรอกรหัสต่อ)
+  const verifyEmail = async (token) => {
+    const res = await api.post("/auth/verify-email", { token });
+    if (res.data.twoFactorRequired) return { twoFactorRequired: true, pendingToken: res.data.pendingToken };
     saveSession(res.data);
+    return { user: res.data.user };
+  };
+
+  const resendVerification = async (email) => {
+    await api.post("/auth/resend-verification", { email });
   };
 
   const logout = () => {
@@ -55,7 +69,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, verify2fa, register, logout, updateUser: setUser, isAdmin, isStaff }}
+      value={{ user, loading, login, verify2fa, register, verifyEmail, resendVerification, logout, updateUser: setUser, isAdmin, isStaff }}
     >
       {children}
     </AuthContext.Provider>
