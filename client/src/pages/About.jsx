@@ -1,16 +1,24 @@
 import { Link } from "react-router-dom";
 import { useContent } from "../api/content";
-import { useSettings } from "../api/settings";
-import { img } from "../lib/img";
 import ContactSection from "../components/ContactSection";
 
 // ดาว ✦ — signature ของหน้า (สื่อ "แสงดาว")
 const Star = ({ className = "" }) => <span className={`text-accent ${className}`} aria-hidden>✦</span>;
 
+// สัญลักษณ์หนังสือแสงดาว (isometric) — ใช้ currentColor ปรับสี/ขนาดได้
+const BookMark = ({ className = "" }) => (
+  <svg viewBox="0 0 150 205" fill="none" className={className} aria-hidden="true">
+    <g stroke="currentColor" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M60 14 L129 53 L88 76 L18 37 Z" />
+      <path d="M60 14 L129 53 L129 170 L60 130 Z" />
+      <path d="M60 14 L18 37 L18 154 L60 130 Z" />
+      <path d="M40 25 L108 64" />
+    </g>
+  </svg>
+);
+
 export default function About() {
   const { t } = useContent();
-  const s = useSettings();
-  const brandLogo = s.footerLogoUrl || s.headerLogoOnLight || s.logoUrl || ""; // โลโก้พื้นสว่าง
 
   const stats = [
     { n: t("about.stat1_num", ""), l: t("about.stat1_label", "") },
@@ -23,8 +31,10 @@ export default function About() {
   return (
     <div>
       {/* ── Hero: คติเป็นประโยคเด่น ── */}
-      <section className="mx-auto max-w-page px-5 pb-16 pt-16 sm:pb-24 sm:pt-24">
-        <div className="max-w-4xl">
+      <section className="overflow-hidden">
+        <div className="relative mx-auto max-w-page px-5 pb-16 pt-16 sm:pb-24 sm:pt-24">
+          <BookMark className="pointer-events-none absolute right-2 top-10 hidden w-[260px] text-ink/[0.06] lg:block xl:right-6 xl:w-[300px]" />
+          <div className="relative max-w-4xl">
           <p className="flex items-center gap-2.5 text-[13.5px] font-semibold tracking-[0.03em] text-accent">
             <Star /> {t("about.eyebrow", "เกี่ยวกับเรา")}
           </p>
@@ -40,6 +50,7 @@ export default function About() {
           {t("about.title", "") && (
             <p className="mt-7 text-[14px] font-medium tracking-[0.02em] text-sub">— {t("about.title", "")}</p>
           )}
+          </div>
         </div>
       </section>
 
@@ -60,23 +71,12 @@ export default function About() {
       {/* ── เรื่องราวของแสงดาว (long-form) ── */}
       {(t("about.story_heading", "") || t("about.story_body", "")) && (
         <section className="relative overflow-hidden border-t border-line">
-          {/* ลายน้ำโลโก้จางๆ ด้านหลัง */}
-          {brandLogo && (
-            <img
-              src={img(brandLogo, 700)}
-              alt=""
-              aria-hidden
-              className="pointer-events-none absolute -right-24 top-8 hidden w-[520px] opacity-[0.035] lg:block"
-            />
-          )}
+          {/* ลายน้ำสัญลักษณ์หนังสือจางๆ ด้านหลัง */}
+          <BookMark className="pointer-events-none absolute -right-14 top-10 hidden w-[420px] text-ink/[0.045] lg:block" />
           <div className="relative mx-auto max-w-page px-5 py-20 sm:py-28">
             <div className="mx-auto max-w-2xl">
-              {/* มาสต์เฮด: โลโก้จริง (ไม่มีก็ใช้ดาว) */}
-              {brandLogo ? (
-                <img src={img(brandLogo, 320)} alt="แสงดาว" className="mb-8 h-12 w-auto object-contain sm:h-14" />
-              ) : (
-                <Star className="text-2xl" />
-              )}
+              {/* มาสต์เฮด: สัญลักษณ์หนังสือแสงดาว */}
+              <BookMark className="mb-7 w-11 text-ink sm:w-[52px]" />
 
               <h2 className="text-3xl font-semibold tracking-tightest text-ink sm:text-[2.5rem] sm:leading-[1.1]">
                 {t("about.story_heading", "เรื่องราวของแสงดาว")}
