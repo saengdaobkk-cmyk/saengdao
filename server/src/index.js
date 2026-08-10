@@ -25,6 +25,9 @@ import { syncStockFromZort } from "./lib/zort.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// อยู่หลัง proxy ของโฮสต์ (Hostinger LiteSpeed) — เชื่อ X-Forwarded-For เพื่อให้ req.ip เป็น IP จริงของผู้ใช้ (ใช้กับ rate limit)
+app.set("trust proxy", 1);
+
 // CLIENT_URL รับได้หลายค่า คั่นด้วย , (prod + preview domain) · เว้นว่าง = อนุญาตทุก origin
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")

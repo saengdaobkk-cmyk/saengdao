@@ -5,10 +5,16 @@ import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
 import { signToken, signPendingToken, authenticate } from "../middleware/auth.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = Router();
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// จำกัดคำขอต่อ IP — กัน spam/บอทกดรัวๆ และเดารหัสผ่าน
+const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "สมัครสมาชิกบ่อยเกินไป กรุณาลองใหม่ในอีก 1 ชั่วโมง" });
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
+const twofaLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, message: "ยืนยันรหัสบ่อยเกินไป กรุณารอสักครู่" });
 
 // ส่งข้อมูล user ที่ปลอดภัย (ไม่มี password)
 const publicUser = (u) => ({
@@ -26,7 +32,7 @@ const publicUser = (u) => ({
 });
 
 // POST /api/auth/register
-router.post("/register", async (req, res, next) => {
+router.post("/register", registerLimiter, async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
 
@@ -53,7 +59,7 @@ router.post("/register", async (req, res, next) => {
 });
 
 // POST /api/auth/login
-router.post("/login", async (req, res, next) => {
+router.post("/login", loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
@@ -148,7 +154,7 @@ authenticator.options = { window: 1 }; // เผื่อคลาดเวล�
 const TOTP_ISSUER = "SAENGDAO Admin";
 
 // ยืนยันรหัส 6 หลักตอนล็อกอิน (ใช้ pendingToken จาก /login)
-router.post("/2fa/verify", async (req, res, next) => {
+router.post("/2fa/verify", twofaLimiter, async (req, res, next) => {
   try {
     const { pendingToken, code } = req.body || {};
     let payload;
