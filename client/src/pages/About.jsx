@@ -25,7 +25,7 @@ export default function About() {
       {/* ── Hero: คติเป็นประโยคเด่น ── */}
       <section className="mx-auto max-w-page px-5 pb-16 pt-16 sm:pb-24 sm:pt-24">
         <div className="max-w-4xl">
-          <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.22em] text-accent">
+          <p className="flex items-center gap-2.5 text-[13.5px] font-semibold tracking-[0.03em] text-accent">
             <Star /> {t("about.eyebrow", "เกี่ยวกับเรา")}
           </p>
           <h1 className="mt-7 text-[2.5rem] font-semibold leading-[1.08] tracking-tightest text-ink sm:text-6xl">
@@ -38,7 +38,7 @@ export default function About() {
             <p className="mt-9 max-w-2xl whitespace-pre-line text-[17px] leading-relaxed text-ink/70">{t("about.intro", "")}</p>
           )}
           {t("about.title", "") && (
-            <p className="mt-7 text-[13px] font-medium tracking-[0.16em] text-sub">— {t("about.title", "")}</p>
+            <p className="mt-7 text-[14px] font-medium tracking-[0.02em] text-sub">— {t("about.title", "")}</p>
           )}
         </div>
       </section>
@@ -62,7 +62,7 @@ export default function About() {
         <section className="border-b border-line bg-mist/40">
           <div className="mx-auto max-w-page px-5 py-20 sm:py-28">
             {t("about.manifesto_heading", "") && (
-              <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
+              <p className="flex items-center gap-2.5 text-[13.5px] font-semibold tracking-[0.03em] text-accent">
                 <Star /> {t("about.manifesto_heading", "")}
               </p>
             )}
@@ -94,7 +94,7 @@ export default function About() {
       {features.length > 0 && (
         <section className="border-t border-line">
           <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
-            <p className="text-[13px] font-medium tracking-[0.2em] text-sub">{t("about.values_heading", "สิ่งที่เรายึดถือ")}</p>
+            <p className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[0.01em] text-ink"><Star className="text-[13px]" /> {t("about.values_heading", "สิ่งที่เรายึดถือ")}</p>
             <div className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
               {features.map((x, i) => (
                 <div key={i} className="bg-white p-8 transition-colors hover:bg-mist/40">

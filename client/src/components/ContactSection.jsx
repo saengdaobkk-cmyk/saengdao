@@ -21,7 +21,7 @@ export default function ContactSection({ id = "contact" }) {
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           {/* ซ้าย: หัวข้อ + โซเชียล */}
           <div>
-            <p className="flex items-center gap-2.5 text-[13px] font-medium tracking-[0.2em] text-accent">
+            <p className="flex items-center gap-2.5 text-[13.5px] font-semibold tracking-[0.03em] text-accent">
               <span aria-hidden>✦</span> {t("contact.eyebrow", "ติดต่อเรา")}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tightest text-ink sm:text-[2.5rem] sm:leading-[1.08]">
