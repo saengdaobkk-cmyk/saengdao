@@ -14,12 +14,6 @@ export default function About() {
     { n: t("about.stat3_num", ""), l: t("about.stat3_label", "") },
   ].filter((s) => s.n || s.l);
 
-  const features = [
-    { t: t("about.feature1_title", ""), d: t("about.feature1_desc", "") },
-    { t: t("about.feature2_title", ""), d: t("about.feature2_desc", "") },
-    { t: t("about.feature3_title", ""), d: t("about.feature3_desc", "") },
-  ].filter((x) => x.t || x.d);
-
   return (
     <div>
       {/* ── Hero: คติเป็นประโยคเด่น ── */}
@@ -85,24 +79,6 @@ export default function About() {
             </div>
             <div className="whitespace-pre-line text-[16px] leading-[1.95] text-ink/75">
               {t("about.story_body", "")}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── สิ่งที่เรายึดถือ ── */}
-      {features.length > 0 && (
-        <section className="border-t border-line">
-          <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
-            <p className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[0.01em] text-ink"><Star className="text-[13px]" /> {t("about.values_heading", "สิ่งที่เรายึดถือ")}</p>
-            <div className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-3">
-              {features.map((x, i) => (
-                <div key={i} className="bg-white p-8 transition-colors hover:bg-mist/40">
-                  <Star className="text-lg" />
-                  <p className="mt-5 text-[17px] font-semibold tracking-tight text-ink">{x.t}</p>
-                  <p className="mt-2 text-[14px] leading-relaxed text-sub">{x.d}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
