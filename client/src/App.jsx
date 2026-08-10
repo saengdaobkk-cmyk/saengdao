@@ -160,7 +160,7 @@ export default function App() {
       <CartDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      <footer className="mt-16 bg-ink text-white">
+      <footer className="bg-ink text-white">
         <div className="mx-auto max-w-page px-5">
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
