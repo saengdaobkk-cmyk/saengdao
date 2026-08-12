@@ -8,6 +8,7 @@ import { prisma } from "../lib/prisma.js";
 import { signToken, signPendingToken, authenticate } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { sendEmailVerification } from "../lib/email.js";
+import { verifyTurnstile } from "../lib/turnstile.js";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // ลิงก์ยืนยันอีเมลอายุ 24 ชม.
 const newVerifyToken = () => ({ emailVerifyToken: crypto.randomBytes(32).toString("hex"), emailVerifyExpires: new Date(Date.now() + VERIFY_TTL_MS) });
@@ -46,6 +47,10 @@ router.post("/register", registerLimiter, async (req, res, next) => {
       return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
     if (!password || password.length < 6)
       return res.status(400).json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+
+    // ตรวจ CAPTCHA (Turnstile) — ถ้ายังไม่ได้เปิดใช้ จะผ่านทันที
+    const ts = await verifyTurnstile(req.body?.turnstileToken, req.ip);
+    if (!ts.ok) return res.status(400).json({ error: ts.error });
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });

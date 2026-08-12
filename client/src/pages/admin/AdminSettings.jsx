@@ -85,6 +85,7 @@ export default function AdminSettings() {
       <LoyaltySettings settings={settings} save={update} />
       <OrderSettings settings={settings} save={update} />
       <ContactSettings settings={settings} save={update} />
+      <TurnstileSettings settings={settings} save={update} />
       <PaymentSettings settings={settings} save={update} />
     </div>
   );
@@ -646,6 +647,52 @@ function PaymentSettings({ settings, save }) {
           {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
         </div>
       </form>
+    </section>
+  );
+}
+
+// ป้องกันบอทหน้าสมัคร — Cloudflare Turnstile (Site Key = public, Secret Key = ลับ)
+function TurnstileSettings({ settings, save }) {
+  const [siteKey, setSiteKey] = useState("");
+  const [secret, setSecret] = useState("");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { setSiteKey(settings.turnstileSiteKey || ""); }, [settings.turnstileSiteKey]);
+
+  const saveAll = () => {
+    const payload = { turnstileSiteKey: siteKey.trim() };
+    if (secret.trim()) payload.turnstileSecretKey = secret.trim(); // เว้นว่าง = คงของเดิม
+    save.mutate(payload, { onSuccess: () => { setSaved(true); setSecret(""); } });
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ป้องกันบอทหน้าสมัคร (Cloudflare Turnstile)</h2>
+      <p className="mb-4 text-[12px] text-sub">CAPTCHA ฟรี · สร้าง widget ที่ dash.cloudflare.com → Turnstile (ใส่โดเมน saengdao.vercel.app)</p>
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+        <div className="flex items-center justify-between gap-6">
+          <div>
+            <p className="text-[14px] font-medium text-ink">เปิดใช้ CAPTCHA</p>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-sub">ต้องใส่ทั้ง Site Key + Secret Key ก่อนถึงจะบังคับใช้ · ปิดหรือใส่ไม่ครบ = สมัครได้ปกติ (ไม่พัง)</p>
+          </div>
+          <button
+            role="switch" aria-checked={settings.turnstileEnabled} aria-label="เปิดใช้ CAPTCHA" disabled={save.isPending}
+            onClick={() => save.mutate({ turnstileEnabled: !settings.turnstileEnabled })}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${settings.turnstileEnabled ? "bg-accent" : "bg-line"}`}
+          >
+            <span className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${settings.turnstileEnabled ? "translate-x-5" : "translate-x-0"}`} />
+          </button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="Site Key (public)" value={siteKey} onChange={(e) => { setSiteKey(e.target.value); setSaved(false); }} placeholder="0x4AAAAAAA..." />
+          <Input label="Secret Key (เว้นว่าง = คงของเดิม)" value={secret} onChange={(e) => { setSecret(e.target.value); setSaved(false); }} placeholder="ใส่เพื่อเปลี่ยน (ไม่แสดงของเดิม)" />
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={saveAll} disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึก"}
+          </button>
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+        </div>
+      </div>
     </section>
   );
 }

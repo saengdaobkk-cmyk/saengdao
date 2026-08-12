@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -46,6 +46,8 @@ const STRING_KEYS = [
   "footerLogoUrl", // โลโก้ที่ footer (รูปภาพ) — มีรูปใช้รูปก่อน
   "footerLogoSize", // ความสูงโลโก้รูปที่ footer (px)
   "footerNav", // เมนู footer (JSON array ของ { label, url })
+  "turnstileSiteKey", // Cloudflare Turnstile — Site Key (public)
+  "turnstileSecretKey", // 🔒 Secret Key — บันทึกได้ แต่ SECRET_KEY_RE กรองไม่ให้หลุด client
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -86,6 +88,8 @@ const DEFAULTS = {
   paperTypeOptions: JSON.stringify(["กระดาษถนอมสายตา", "กระดาษปอนด์", "กระดาษอาร์ตมัน"]),
   dimensionUnit: "cm.",
   weightUnit: "g",
+  turnstileEnabled: false,
+  turnstileSiteKey: "",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด

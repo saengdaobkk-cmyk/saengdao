@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { useSettings } from "../api/settings";
+import TurnstileWidget from "../components/TurnstileWidget";
 import { AuthShell, Field } from "./Login";
 
 export default function Register() {
   const { register, resendVerification, user } = useAuth();
+  const s = useSettings();
+  const captchaOn = s.turnstileEnabled && !!s.turnstileSiteKey;
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
@@ -16,6 +20,7 @@ export default function Register() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false); // สมัครเสร็จ รออีเมลยืนยัน
   const [resent, setResent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
@@ -24,9 +29,13 @@ export default function Register() {
       setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
       return;
     }
+    if (captchaOn && !captchaToken) {
+      setError("กรุณายืนยันว่าคุณไม่ใช่บอทก่อน");
+      return;
+    }
     setBusy(true);
     try {
-      const res = await register(email, password, name);
+      const res = await register(email, password, name, captchaToken);
       if (res?.pendingVerification) setSent(true);
       else navigate(from, { replace: true });
     } catch (err) {
@@ -69,6 +78,10 @@ export default function Register() {
         <Field label="ชื่อ" value={name} onChange={setName} autoComplete="name" />
         <Field label="อีเมล" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
+
+        {captchaOn && (
+          <TurnstileWidget siteKey={s.turnstileSiteKey} onToken={setCaptchaToken} />
+        )}
 
         {error && <p className="text-[13px] text-red-600">{error}</p>}
 

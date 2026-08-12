@@ -41,8 +41,8 @@ export function AuthProvider({ children }) {
   };
 
   // สมัคร → ยังไม่ล็อกอิน ต้องยืนยันอีเมลก่อน (คืน { pendingVerification, email })
-  const register = async (email, password, name) => {
-    const res = await api.post("/auth/register", { email, password, name });
+  const register = async (email, password, name, turnstileToken) => {
+    const res = await api.post("/auth/register", { email, password, name, turnstileToken });
     if (res.data?.token) saveSession(res.data); // เผื่อกรณีอนาคตที่ไม่บังคับยืนยัน
     return res.data;
   };
