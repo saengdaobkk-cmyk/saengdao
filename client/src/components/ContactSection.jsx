@@ -28,7 +28,7 @@ export default function ContactSection({ id = "contact" }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-line">
       <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
-        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+        <div className={`grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20 ${showMap ? "lg:items-center" : ""}`}>
           {/* ซ้าย: หัวข้อ + โซเชียล */}
           <div>
             <p className="flex items-center gap-2.5 text-[13.5px] font-semibold tracking-[0.03em] text-accent">
