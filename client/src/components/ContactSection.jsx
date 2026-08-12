@@ -15,11 +15,14 @@ export default function ContactSection({ id = "contact" }) {
   ].filter(Boolean);
   const hasSocial = s.socialFacebook || s.socialInstagram || s.socialLine;
 
-  // แผนที่: ใช้ลิงก์ที่แอดมินใส่ (รองรับทั้ง URL และโค้ด <iframe>) ไม่มีก็สร้างจากที่อยู่อัตโนมัติ
+  // แผนที่: รองรับทั้ง URL และโค้ด <iframe> ที่แอดมินวาง
   const rawMap = (s.contactMapUrl || "").trim();
   const mapFromIframe = rawMap.match(/src=["']([^"']+)["']/i);
-  const customMap = mapFromIframe ? mapFromIframe[1] : rawMap;
-  const mapSrc = customMap || (s.contactAddress ? `https://maps.google.com/maps?q=${encodeURIComponent(s.contactAddress)}&z=16&output=embed` : "");
+  const candidateMap = mapFromIframe ? mapFromIframe[1] : rawMap;
+  // ใช้ลิงก์ที่ใส่ได้เฉพาะที่ฝัง iframe ได้จริง (embed) — ลิงก์แชร์/สั้น (maps.app.goo.gl) ฝังไม่ได้
+  const customMap = /\/maps\/embed|output=embed/i.test(candidateMap) ? candidateMap : "";
+  const autoMap = s.contactAddress ? `https://maps.google.com/maps?q=${encodeURIComponent(s.contactAddress)}&z=16&output=embed` : "";
+  const mapSrc = customMap || autoMap; // ลิงก์ผิดประเภท → ตกไปใช้แผนที่จากที่อยู่
   const showMap = s.contactMapEnabled && mapSrc;
 
   return (
