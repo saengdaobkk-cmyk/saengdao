@@ -15,6 +15,13 @@ export default function ContactSection({ id = "contact" }) {
   ].filter(Boolean);
   const hasSocial = s.socialFacebook || s.socialInstagram || s.socialLine;
 
+  // แผนที่: ใช้ลิงก์ที่แอดมินใส่ (รองรับทั้ง URL และโค้ด <iframe>) ไม่มีก็สร้างจากที่อยู่อัตโนมัติ
+  const rawMap = (s.contactMapUrl || "").trim();
+  const mapFromIframe = rawMap.match(/src=["']([^"']+)["']/i);
+  const customMap = mapFromIframe ? mapFromIframe[1] : rawMap;
+  const mapSrc = customMap || (s.contactAddress ? `https://maps.google.com/maps?q=${encodeURIComponent(s.contactAddress)}&z=16&output=embed` : "");
+  const showMap = s.contactMapEnabled && mapSrc;
+
   return (
     <section id={id} className="scroll-mt-24 border-t border-line">
       <div className="mx-auto max-w-page px-5 py-20 sm:py-24">
@@ -36,6 +43,20 @@ export default function ContactSection({ id = "contact" }) {
                 {s.socialFacebook && <Social href={s.socialFacebook} label="Facebook"><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
                 {s.socialInstagram && <Social href={s.socialInstagram} label="Instagram"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
                 {s.socialLine && <Social href={s.socialLine} label="LINE"><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
+              </div>
+            )}
+
+            {showMap && (
+              <div className="mt-10 overflow-hidden rounded-2xl border border-line">
+                <iframe
+                  title="แผนที่ร้าน"
+                  src={mapSrc}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                  className="block h-64 w-full sm:h-72"
+                  style={{ border: 0 }}
+                />
               </div>
             )}
           </div>

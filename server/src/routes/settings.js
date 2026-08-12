@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -36,6 +36,7 @@ const STRING_KEYS = [
   "contactLine",
   "contactAddress",
   "contactHours",
+  "contactMapUrl", // แผนที่ร้าน — ลิงก์ Google Maps embed หรือโค้ด iframe (เว้นว่าง = สร้างจากที่อยู่อัตโนมัติ)
   "socialFacebook",
   "socialInstagram",
   "socialLine",
@@ -65,6 +66,8 @@ const DEFAULTS = {
   contactLine: "",
   contactAddress: "",
   contactHours: "",
+  contactMapEnabled: false,
+  contactMapUrl: "",
   socialFacebook: "",
   socialInstagram: "",
   socialLine: "",

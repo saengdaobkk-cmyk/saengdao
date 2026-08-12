@@ -542,7 +542,7 @@ function LogoSizeSlider({ settings, save, settingKey, label, def, min, max, type
 }
 
 function ContactSettings({ settings, save }) {
-  const keys = ["contactPhone", "contactEmail", "contactLine", "contactAddress", "contactHours", "socialFacebook", "socialInstagram", "socialLine"];
+  const keys = ["contactPhone", "contactEmail", "contactLine", "contactAddress", "contactHours", "socialFacebook", "socialInstagram", "socialLine", "contactMapUrl"];
   const [form, setForm] = useState({});
   const [saved, setSaved] = useState(false);
 
@@ -580,6 +580,20 @@ function ContactSettings({ settings, save }) {
             <Input label="Instagram (URL)" value={form.socialInstagram} onChange={set("socialInstagram")} placeholder="https://instagram.com/..." />
             <Input label="LINE (URL)" value={form.socialLine} onChange={set("socialLine")} placeholder="https://lin.ee/..." />
           </div>
+        </div>
+        <div>
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <p className="text-[13px] font-semibold text-ink">แผนที่ (หน้าติดต่อเรา)</p>
+            <button
+              type="button" role="switch" aria-checked={settings.contactMapEnabled} aria-label="แสดงแผนที่" disabled={save.isPending}
+              onClick={() => save.mutate({ contactMapEnabled: !settings.contactMapEnabled })}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${settings.contactMapEnabled ? "bg-accent" : "bg-line"}`}
+            >
+              <span className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${settings.contactMapEnabled ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+          <Input label="ลิงก์แผนที่ (เว้นว่าง = สร้างจากที่อยู่อัตโนมัติ)" value={form.contactMapUrl} onChange={set("contactMapUrl")} placeholder="วางลิงก์ Google Maps embed หรือโค้ด <iframe> ได้" />
+          <p className="mt-1.5 text-[11px] leading-relaxed text-sub/80">เปิดสวิตช์เพื่อแสดงแผนที่ · ปักหมุดแม่นยำ: Google Maps → Share → Embed a map → คัดลอกมาวางในช่องนี้</p>
         </div>
         <div className="flex items-center gap-4">
           <button type="submit" disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
