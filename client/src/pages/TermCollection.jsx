@@ -22,12 +22,15 @@ export default function TermCollection({ type }) {
     retry: false,
   });
 
-  const { data, isLoading } = useBooks({
-    [TYPE_PARAM[type]]: term?.name,
-    sort,
-    page,
-    limit: 16,
-  });
+  const { data, isLoading } = useBooks(
+    {
+      [TYPE_PARAM[type]]: term?.name,
+      sort,
+      page,
+      limit: 16,
+    },
+    { enabled: !!term?.name } // รอให้รู้ชื่อสำนักพิมพ์ก่อน ไม่งั้นจะดึงหนังสือทั้งหมดมาแว็บนึง
+  );
 
   if (loadingTerm) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (isError || !term)

@@ -2,11 +2,12 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 // รายการหนังสือ (ค้นหา/กรอง/แบ่งหน้า)
-export function useBooks(params) {
+export function useBooks(params, options = {}) {
   return useQuery({
     queryKey: ["books", params],
     queryFn: async () => (await api.get("/books", { params })).data,
     placeholderData: keepPreviousData, // ไม่กระพริบตอนเปลี่ยนหน้า/ค้นหา
+    ...options, // เช่น { enabled } — กันดึงก่อนพร้อม
   });
 }
 
