@@ -227,7 +227,7 @@ function parseFooterNav(raw) {
 // สไตล์ลิงก์เมนูบน (พื้นสว่าง/ทับสไลด์)
 const navLinkCls = (isActive, overHero) =>
   `text-[14px] tracking-tight transition-colors ${
-    overHero ? (isActive ? "text-white" : "text-white/80 hover:text-white") : isActive ? "text-ink" : "text-sub hover:text-ink"
+    overHero ? (isActive ? "text-white" : "text-white/80 hover:text-white") : isActive ? "text-ink" : "text-sub hover:text-accent"
   }`;
 
 // เมนูบนที่มี dropdown — กางเมื่อ hover/โฟกัส
@@ -241,7 +241,7 @@ function NavDropdown({ item, overHero }) {
       <div className="invisible absolute left-1/2 top-full z-50 min-w-[224px] -translate-x-1/2 pt-3 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
         <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line bg-white/95 py-2 shadow-xl backdrop-blur-xl">
           {item.dropdown.map((c, i) => (
-            <NavLink key={i} to={c.url} className={({ isActive }) => `block px-4 py-2 text-[14px] transition-colors ${isActive ? "bg-mist text-ink" : "text-sub hover:bg-mist hover:text-ink"}`}>
+            <NavLink key={i} to={c.url} className={({ isActive }) => `block px-4 py-2 text-[14px] transition-colors ${isActive ? "bg-mist text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
               {c.label}
             </NavLink>
           ))}
@@ -269,7 +269,7 @@ function MobileNavGroup({ item, onNavigate }) {
       {open && (
         <div className="mb-1 ml-3 border-l border-line pl-2">
           {item.dropdown.map((c, i) => (
-            <NavLink key={i} to={c.url} onClick={onNavigate} className="block rounded-lg px-4 py-2 text-[14px] text-sub transition hover:bg-mist hover:text-ink">
+            <NavLink key={i} to={c.url} onClick={onNavigate} className="block rounded-lg px-4 py-2 text-[14px] text-sub transition hover:bg-mist hover:text-accent">
               {c.label}
             </NavLink>
           ))}
