@@ -73,6 +73,14 @@ export function parseBanner(raw) {
   } catch { /* ใช้ค่าเริ่มต้น */ }
   const d = BANNER_DEFAULT;
   const str = (v, def) => (typeof v === "string" ? v : def);
+  // โฟกัสรูป: รับทั้งคำ preset และเปอร์เซ็นต์ "NN%" (0-100)
+  const focus = (v, allow, def) => {
+    if (typeof v === "string" && /^\d{1,3}%$/.test(v.trim())) {
+      const n = parseFloat(v);
+      if (n >= 0 && n <= 100) return `${Math.round(n)}%`;
+    }
+    return allow.includes(v) ? v : def;
+  };
   return {
     enabled: o.enabled !== false,
     image: str(o.image, d.image),
@@ -84,8 +92,8 @@ export function parseBanner(raw) {
     overlay: Math.min(60, Math.max(0, Math.round(Number(o.overlay)) || 0)),
     align: o.align === "left" || o.align === "right" ? o.align : "center",
     valign: o.valign === "top" || o.valign === "bottom" ? o.valign : "middle",
-    imageX: o.imageX === "left" || o.imageX === "right" ? o.imageX : "center",
-    imageY: o.imageY === "top" || o.imageY === "bottom" ? o.imageY : "center",
+    imageX: focus(o.imageX, ["left", "center", "right"], "center"),
+    imageY: focus(o.imageY, ["top", "center", "bottom"], "center"),
     parallax: Math.min(BANNER_PARALLAX_MAX, Math.max(0, o.parallax == null ? d.parallax : Math.round(Number(o.parallax)) || 0)),
   };
 }
