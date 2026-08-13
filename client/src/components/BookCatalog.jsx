@@ -23,11 +23,14 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
+  // sync จาก URL ทันทีในรอบ render (ไม่ผ่าน effect) — กันหนังสือชุดเก่าโผล่แว็บตอนเปลี่ยนหมวด/สำนักพิมพ์จากเมนู
+  const [seenUrl, setSeenUrl] = useState({ c: urlCategory, p: urlPublisher, q });
+  if (seenUrl.c !== urlCategory || seenUrl.p !== urlPublisher || seenUrl.q !== q) {
     setCategory(urlCategory);
     setPublisher(urlPublisher);
     setPage(1);
-  }, [urlCategory, urlPublisher, q]);
+    setSeenUrl({ c: urlCategory, p: urlPublisher, q });
+  }
 
   const clearSearch = () => {
     const next = new URLSearchParams(searchParams);
