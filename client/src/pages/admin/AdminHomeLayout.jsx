@@ -293,6 +293,16 @@ function RowEditor({ cfg, onSave, onReset, onDelete, saving, booksEditable = tru
   );
 }
 
+// แปลงค่าโฟกัสรูป (คำ preset หรือ "NN%") → ตัวเลข 0-100 สำหรับสไลเดอร์
+function toPct(v, axis) {
+  if (typeof v === "string" && v.trim().endsWith("%")) {
+    const n = parseFloat(v);
+    return isNaN(n) ? 50 : Math.max(0, Math.min(100, Math.round(n)));
+  }
+  const m = axis === "x" ? { left: 0, center: 50, right: 100 } : { top: 0, center: 50, bottom: 100 };
+  return m[v] ?? 50;
+}
+
 function BannerEditor({ cfg, onSave, onReset, saving }) {
   const [f, setF] = useState({ ...BANNER_DEFAULT, ...cfg });
   const [uploading, setUploading] = useState(false);
@@ -340,26 +350,38 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           </div>
         </div>
 
-        {f.image && (
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
-            <div>
-              <span className="mb-1.5 block text-[12px] text-sub">โฟกัสรูป — แนวนอน</span>
-              <div className="flex gap-2">
-                <ModeBtn active={f.imageX === "left"} onClick={() => setF((s) => ({ ...s, imageX: "left" }))}>ซ้าย</ModeBtn>
-                <ModeBtn active={f.imageX === "center"} onClick={() => setF((s) => ({ ...s, imageX: "center" }))}>กลาง</ModeBtn>
-                <ModeBtn active={f.imageX === "right"} onClick={() => setF((s) => ({ ...s, imageX: "right" }))}>ขวา</ModeBtn>
+        {f.image && (() => {
+          const fx = toPct(f.imageX, "x");
+          const fy = toPct(f.imageY, "y");
+          return (
+            <div className="mt-3">
+              <span className="mb-1.5 block text-[12px] text-sub">จุดโฟกัสรูป — ลากสไลเดอร์เลือกตำแหน่งที่จะโชว์เมื่อรูปถูกครอป (พรีวิวสัดส่วนใกล้เคียงแบนเนอร์จริง)</span>
+              {/* พรีวิวสด */}
+              <div className="overflow-hidden rounded-xl border border-line">
+                <img src={img(f.image, 900)} alt="" className="block aspect-[16/6] w-full object-cover" style={{ objectPosition: `${fx}% ${fy}%` }} />
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1 flex justify-between text-[12px] text-sub"><span>แนวนอน (ซ้าย → ขวา)</span><span className="tabular-nums text-ink">{fx}%</span></span>
+                  <input type="range" min="0" max="100" value={fx} onChange={(e) => setF((s) => ({ ...s, imageX: `${e.target.value}%` }))} className="w-full accent-accent" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 flex justify-between text-[12px] text-sub"><span>แนวตั้ง (บน → ล่าง)</span><span className="tabular-nums text-ink">{fy}%</span></span>
+                  <input type="range" min="0" max="100" value={fy} onChange={(e) => setF((s) => ({ ...s, imageY: `${e.target.value}%` }))} className="w-full accent-accent" />
+                </label>
+              </div>
+              {/* ปุ่มลัดตำแหน่งยอดนิยม */}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {[["บนซ้าย", 0, 0], ["บนกลาง", 50, 0], ["บนขวา", 100, 0], ["กึ่งกลาง", 50, 50], ["ล่างกลาง", 50, 100]].map(([lbl, x, y]) => (
+                  <button key={lbl} type="button" onClick={() => setF((s) => ({ ...s, imageX: `${x}%`, imageY: `${y}%` }))}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] transition ${fx === x && fy === y ? "border-accent bg-accent/10 text-accent" : "border-line text-sub hover:bg-mist hover:text-ink"}`}>
+                    {lbl}
+                  </button>
+                ))}
               </div>
             </div>
-            <div>
-              <span className="mb-1.5 block text-[12px] text-sub">โฟกัสรูป — แนวตั้ง</span>
-              <div className="flex gap-2">
-                <ModeBtn active={f.imageY === "top"} onClick={() => setF((s) => ({ ...s, imageY: "top" }))}>บน</ModeBtn>
-                <ModeBtn active={f.imageY === "center"} onClick={() => setF((s) => ({ ...s, imageY: "center" }))}>กลาง</ModeBtn>
-                <ModeBtn active={f.imageY === "bottom"} onClick={() => setF((s) => ({ ...s, imageY: "bottom" }))}>ล่าง</ModeBtn>
-              </div>
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
