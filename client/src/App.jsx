@@ -232,6 +232,8 @@ const navLinkCls = (isActive, overHero) =>
 
 // เมนูบนที่มี dropdown — กางเมื่อ hover/โฟกัส
 function NavDropdown({ item, overHero }) {
+  const { pathname, search } = useLocation();
+  const current = pathname + search; // เทียบรวม query เพื่อไม่ให้ /books?category=* active พร้อมกันหมด
   return (
     <div className="group relative">
       <NavLink to={item.url} end={item.url === "/"} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
@@ -240,11 +242,14 @@ function NavDropdown({ item, overHero }) {
       </NavLink>
       <div className="invisible absolute left-1/2 top-full z-50 min-w-[224px] -translate-x-1/2 pt-3 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
         <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line bg-white/95 py-2 shadow-xl backdrop-blur-xl">
-          {item.dropdown.map((c, i) => (
-            <NavLink key={i} to={c.url} className={({ isActive }) => `block px-4 py-2 text-[14px] transition-colors ${isActive ? "bg-mist text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
-              {c.label}
-            </NavLink>
-          ))}
+          {item.dropdown.map((c, i) => {
+            const active = c.url === current; // ตรงหน้าปัจจุบันเป๊ะ (รวม query)
+            return (
+              <Link key={i} to={c.url} className={`block px-4 py-2 text-[14px] transition-colors ${active ? "text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
+                {c.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
