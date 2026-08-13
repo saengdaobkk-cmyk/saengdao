@@ -234,18 +234,19 @@ const navLinkCls = (isActive, overHero) =>
 function NavDropdown({ item, overHero }) {
   const { pathname, search } = useLocation();
   const current = pathname + search; // เทียบรวม query เพื่อไม่ให้ /books?category=* active พร้อมกันหมด
+  const [closed, setClosed] = useState(false); // ปิดชั่วคราวหลังคลิก จนกว่าเมาส์จะออกแล้วชี้ใหม่
   return (
-    <div className="group relative">
-      <NavLink to={item.url} end={item.url === "/"} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
+    <div className="group relative" onMouseLeave={() => setClosed(false)}>
+      <NavLink to={item.url} end={item.url === "/"} onClick={() => setClosed(true)} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
         {item.label}
         <svg className="mt-px transition-transform duration-200 group-hover:rotate-180" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </NavLink>
-      <div className="invisible absolute left-1/2 top-full z-50 min-w-[224px] -translate-x-1/2 pt-3 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+      <div className={`absolute left-1/2 top-full z-50 min-w-[224px] -translate-x-1/2 pt-3 transition-all duration-150 ${closed ? "invisible opacity-0" : "invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"}`}>
         <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line bg-white/95 py-2 shadow-xl backdrop-blur-xl">
           {item.dropdown.map((c, i) => {
             const active = c.url === current; // ตรงหน้าปัจจุบันเป๊ะ (รวม query)
             return (
-              <Link key={i} to={c.url} className={`block px-4 py-2 text-[14px] transition-colors ${active ? "text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
+              <Link key={i} to={c.url} onClick={() => setClosed(true)} className={`block px-4 py-2 text-[14px] transition-colors ${active ? "text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
                 {c.label}
               </Link>
             );
