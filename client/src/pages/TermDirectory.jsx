@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
+import { useSettings } from "../api/settings";
+import { img } from "../lib/img";
 
 const META = {
   PUBLISHER: { label: "สำนักพิมพ์", path: "publisher", title: "สำนักพิมพ์ทั้งหมด", desc: "เลือกดูหนังสือตามสำนักพิมพ์" },
@@ -11,6 +13,7 @@ const META = {
 export default function TermDirectory({ type }) {
   const meta = META[type];
   const { data: items, isLoading } = useTermDirectory(type);
+  const { showCollectionCount } = useSettings();
   const [q, setQ] = useState("");
 
   // เรียงตามจำนวนเล่ม (มาก→น้อย) แล้วชื่อ · กรองด้วยคำค้น
@@ -35,7 +38,7 @@ export default function TermDirectory({ type }) {
         <div>
           <p className="text-[13px] font-medium tracking-tight text-sub">{meta.desc}</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{meta.title}</h1>
-          {items && <p className="mt-2 text-[13px] text-sub">{items.length} {meta.label}</p>}
+          {items && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{items.length} {meta.label}</p>}
         </div>
         <input
           value={q}
@@ -55,11 +58,18 @@ export default function TermDirectory({ type }) {
             <Link
               key={t.slug}
               to={`/${meta.path}/${t.slug}`}
-              className="group flex items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-ink/30 hover:shadow-sm"
+              className="group flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3.5 transition hover:border-ink/30 hover:shadow-sm"
             >
-              <span className="min-w-0">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-mist">
+                {t.image ? (
+                  <img src={img(t.image, 120)} alt="" className="h-full w-full object-contain" />
+                ) : (
+                  <span className="text-[15px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
+                )}
+              </span>
+              <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-medium text-ink transition-colors group-hover:text-accent">{t.name}</span>
-                <span className="text-[12px] text-sub">{t.count} เล่ม</span>
+                {showCollectionCount && <span className="text-[12px] text-sub">{t.count} เล่ม</span>}
               </span>
               <span className="text-sub transition-transform group-hover:translate-x-0.5">›</span>
             </Link>
