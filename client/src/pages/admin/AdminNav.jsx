@@ -4,6 +4,8 @@ import { useCategories } from "../../api/books";
 import { useAdminTerms } from "../../api/admin";
 import { useAdminNav, useSaveNavItem, useDeleteNavItem, useReorderNav } from "../../api/nav";
 
+const SOURCE_LABEL = { categories: "หมวดหมู่", publishers: "สำนักพิมพ์", authors: "ผู้เขียน", translators: "ผู้แปล" };
+
 // เพจสำเร็จรูปในเว็บ
 const STATIC_PAGES = [
   { label: "หน้าแรก", url: "/" },
@@ -23,8 +25,12 @@ export default function AdminNav() {
   const reorder = useReorderNav();
 
   const [form, setForm] = useState({ label: "", url: "" });
+  const [dropdownSource, setDropdownSource] = useState(""); // dropdown อัตโนมัติ
+  const [kids, setKids] = useState([]); // ลิงก์ย่อยใส่เอง [{label,url}]
   const [editing, setEditing] = useState(null);
   const [error, setError] = useState("");
+
+  const parseKids = (raw) => { try { const a = JSON.parse(raw || "[]"); return Array.isArray(a) ? a : []; } catch { return []; } };
 
   // แหล่งเพจ/collection ที่เลือกมาทำลิงก์ได้
   const cats = useCategories();
@@ -46,18 +52,27 @@ export default function AdminNav() {
     setForm((f) => ({ label: f.label.trim() ? f.label : found?.label || "", url }));
   };
 
+  const reset = () => { setForm({ label: "", url: "" }); setDropdownSource(""); setKids([]); setEditing(null); };
+
   const submit = (e) => {
     e.preventDefault();
     setError("");
     if (!form.label.trim() || !form.url.trim()) return setError("กรอกชื่อเมนูและเลือกหน้า/ลิงก์");
-    save.mutate(editing ? { id: editing.id, ...form } : form, {
-      onSuccess: () => { setForm({ label: "", url: "" }); setEditing(null); },
+    const cleanKids = kids.filter((k) => k.label.trim() && k.url.trim());
+    const payload = {
+      ...(editing ? { id: editing.id } : {}),
+      ...form,
+      dropdownSource: dropdownSource || null,
+      children: JSON.stringify(cleanKids),
+    };
+    save.mutate(payload, {
+      onSuccess: () => reset(),
       onError: (err) => setError(err.response?.data?.error || "บันทึกไม่สำเร็จ"),
     });
   };
 
-  const startEdit = (n) => { setEditing(n); setForm({ label: n.label, url: n.url }); setError(""); };
-  const cancel = () => { setEditing(null); setForm({ label: "", url: "" }); setError(""); };
+  const startEdit = (n) => { setEditing(n); setForm({ label: n.label, url: n.url }); setDropdownSource(n.dropdownSource || ""); setKids(parseKids(n.children)); setError(""); };
+  const cancel = () => { reset(); setError(""); };
 
   // เลื่อนขึ้น/ลง — ส่งลำดับ id ใหม่
   const move = (index, dir) => {
@@ -94,6 +109,11 @@ export default function AdminNav() {
               <div className="min-w-0 flex-1">
                 <p className={`truncate text-[14px] font-medium ${n.active ? "text-ink" : "text-sub line-through"}`}>{n.label}</p>
                 <p className="truncate text-[12px] text-sub">{n.url}</p>
+                {(n.dropdownSource || parseKids(n.children).length > 0) && (
+                  <p className="mt-0.5 truncate text-[11px] text-accent">
+                    ▾ เมนูย่อย{n.dropdownSource ? ` · ${SOURCE_LABEL[n.dropdownSource]}` : ""}{parseKids(n.children).length ? ` · ${parseKids(n.children).length} ลิงก์เอง` : ""}
+                  </p>
+                )}
               </div>
               <Link to={n.url} target="_blank" className="text-[13px] text-sub hover:text-ink">ดู ↗</Link>
               <button onClick={() => toggleActive(n)} className={`text-[13px] ${n.active ? "text-sub hover:text-ink" : "text-accent"}`}>
@@ -133,6 +153,45 @@ export default function AdminNav() {
             <label className="mb-1 block text-[12px] text-sub">ลิงก์ (URL)</label>
             <input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="/books?category=fiction หรือ https://..." className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
           </div>
+        </div>
+
+        {/* เมนูย่อย (dropdown) — ไม่บังคับ */}
+        <div className="mt-4 rounded-xl border border-line bg-mist/40 p-4">
+          <p className="mb-2 text-[13px] font-semibold text-ink">เมนูย่อย (dropdown) — ไม่บังคับ</p>
+
+          <label className="mb-1 block text-[12px] text-sub">ดึงรายการอัตโนมัติจาก</label>
+          <select value={dropdownSource} onChange={(e) => setDropdownSource(e.target.value)}
+            className="mb-3 w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30">
+            <option value="">— ไม่ดึงอัตโนมัติ —</option>
+            <option value="categories">หมวดหมู่ทั้งหมด</option>
+            <option value="publishers">สำนักพิมพ์ทั้งหมด</option>
+            <option value="authors">ผู้เขียนทั้งหมด</option>
+            <option value="translators">ผู้แปลทั้งหมด</option>
+          </select>
+
+          <label className="mb-1 block text-[12px] text-sub">ลิงก์ย่อยใส่เอง (แสดงก่อนรายการอัตโนมัติ)</label>
+          <select value="" onChange={(e) => { const o = groups.flatMap((g) => g.options).find((x) => x.url === e.target.value); if (o) setKids((k) => [...k, { label: o.label, url: o.url }]); }}
+            className="mb-2 w-full rounded-lg border border-line bg-white px-3 py-2 text-[13px] outline-none focus:border-ink/30">
+            <option value="">+ เพิ่มจากหน้า / collection...</option>
+            {groups.map((g) => g.options.length > 0 && (
+              <optgroup key={g.label} label={g.label}>
+                {g.options.map((o) => <option key={o.url} value={o.url}>{o.label}</option>)}
+              </optgroup>
+            ))}
+          </select>
+
+          {kids.length > 0 && (
+            <ul className="mb-2 space-y-2">
+              {kids.map((k, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <input value={k.label} onChange={(e) => setKids((ks) => ks.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} placeholder="ชื่อ" className="w-1/3 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-ink/30" />
+                  <input value={k.url} onChange={(e) => setKids((ks) => ks.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))} placeholder="/ลิงก์" className="min-w-0 flex-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-ink/30" />
+                  <button type="button" onClick={() => setKids((ks) => ks.filter((_, j) => j !== i))} className="shrink-0 text-[13px] text-sub hover:text-red-600">ลบ</button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button type="button" onClick={() => setKids((k) => [...k, { label: "", url: "" }])} className="text-[13px] text-accent">+ เพิ่มลิงก์ย่อยเปล่า</button>
         </div>
 
         {error && <p className="mt-2 text-[12px] text-red-600">{error}</p>}

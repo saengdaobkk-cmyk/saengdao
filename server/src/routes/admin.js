@@ -514,6 +514,20 @@ router.get("/nav", async (req, res, next) => {
   }
 });
 
+const NAV_SOURCES = ["categories", "publishers", "authors", "translators"];
+const normNavSource = (v) => (NAV_SOURCES.includes(v) ? v : null);
+// children — รับได้ทั้ง array และ JSON string, คืน JSON string ที่สะอาด (หรือ null)
+function normNavChildren(raw) {
+  if (raw == null || raw === "") return null;
+  let arr = raw;
+  if (typeof raw === "string") { try { arr = JSON.parse(raw); } catch { return null; } }
+  if (!Array.isArray(arr)) return null;
+  const clean = arr
+    .map((x) => ({ label: String(x?.label || "").trim(), url: String(x?.url || "").trim() }))
+    .filter((x) => x.label && x.url);
+  return clean.length ? JSON.stringify(clean) : null;
+}
+
 router.post("/nav", async (req, res, next) => {
   try {
     const label = String(req.body.label || "").trim();
@@ -522,7 +536,13 @@ router.post("/nav", async (req, res, next) => {
     if (!url) return res.status(400).json({ error: "เลือกหน้า/ใส่ลิงก์" });
     const max = await prisma.navItem.aggregate({ _max: { order: true } });
     const item = await prisma.navItem.create({
-      data: { label, url, order: (max._max.order ?? -1) + 1 },
+      data: {
+        label,
+        url,
+        order: (max._max.order ?? -1) + 1,
+        dropdownSource: normNavSource(req.body.dropdownSource),
+        children: normNavChildren(req.body.children),
+      },
     });
     res.status(201).json(item);
   } catch (err) {
@@ -537,6 +557,8 @@ router.patch("/nav/:id", async (req, res, next) => {
     if (req.body.url !== undefined) data.url = String(req.body.url).trim();
     if (req.body.active !== undefined) data.active = !!req.body.active;
     if (req.body.order !== undefined) data.order = Number(req.body.order);
+    if (req.body.dropdownSource !== undefined) data.dropdownSource = normNavSource(req.body.dropdownSource);
+    if (req.body.children !== undefined) data.children = normNavChildren(req.body.children);
     const item = await prisma.navItem.update({ where: { id: req.params.id }, data });
     res.json(item);
   } catch (err) {

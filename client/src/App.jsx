@@ -77,22 +77,20 @@ export default function App() {
             </div>
 
             <nav className="hidden items-center gap-8 sm:flex">
-              {nav.map((n) => (
-                <NavLink
-                  key={n.id}
-                  to={n.url}
-                  end={n.url === "/"}
-                  className={({ isActive }) =>
-                    `text-[14px] tracking-tight transition-colors ${
-                      overHero
-                        ? isActive ? "text-white" : "text-white/80 hover:text-white"
-                        : isActive ? "text-ink" : "text-sub hover:text-ink"
-                    }`
-                  }
-                >
-                  {n.label}
-                </NavLink>
-              ))}
+              {nav.map((n) =>
+                n.dropdown?.length ? (
+                  <NavDropdown key={n.id} item={n} overHero={overHero} />
+                ) : (
+                  <NavLink
+                    key={n.id}
+                    to={n.url}
+                    end={n.url === "/"}
+                    className={({ isActive }) => navLinkCls(isActive, overHero)}
+                  >
+                    {n.label}
+                  </NavLink>
+                )
+              )}
             </nav>
 
             <div className="flex items-center gap-5">
@@ -133,19 +131,23 @@ export default function App() {
             </button>
           </div>
           <nav className="flex-1 overflow-y-auto p-3">
-            {nav.map((n) => (
-              <NavLink
-                key={n.id}
-                to={n.url}
-                end={n.url === "/"}
-                onClick={() => setMobileOpen(false)}
-                className={({ isActive }) =>
-                  `block rounded-xl px-4 py-3 text-[15px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`
-                }
-              >
-                {n.label}
-              </NavLink>
-            ))}
+            {nav.map((n) =>
+              n.dropdown?.length ? (
+                <MobileNavGroup key={n.id} item={n} onNavigate={() => setMobileOpen(false)} />
+              ) : (
+                <NavLink
+                  key={n.id}
+                  to={n.url}
+                  end={n.url === "/"}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `block rounded-xl px-4 py-3 text-[15px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`
+                  }
+                >
+                  {n.label}
+                </NavLink>
+              )
+            )}
           </nav>
           <div className="border-t border-line p-3">
             <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
@@ -220,6 +222,61 @@ function parseFooterNav(raw) {
     if (Array.isArray(p)) return p.filter((x) => x && x.label && x.url);
   } catch { /* ผิดรูป → ใช้ค่าเริ่มต้น */ }
   return DEF;
+}
+
+// สไตล์ลิงก์เมนูบน (พื้นสว่าง/ทับสไลด์)
+const navLinkCls = (isActive, overHero) =>
+  `text-[14px] tracking-tight transition-colors ${
+    overHero ? (isActive ? "text-white" : "text-white/80 hover:text-white") : isActive ? "text-ink" : "text-sub hover:text-ink"
+  }`;
+
+// เมนูบนที่มี dropdown — กางเมื่อ hover/โฟกัส
+function NavDropdown({ item, overHero }) {
+  return (
+    <div className="group relative">
+      <NavLink to={item.url} end={item.url === "/"} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
+        {item.label}
+        <svg className="mt-px transition-transform duration-200 group-hover:rotate-180" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </NavLink>
+      <div className="invisible absolute left-1/2 top-full z-50 min-w-[224px] -translate-x-1/2 pt-3 opacity-0 transition-all duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+        <div className="max-h-[70vh] overflow-auto rounded-2xl border border-line bg-white/95 py-2 shadow-xl backdrop-blur-xl">
+          {item.dropdown.map((c, i) => (
+            <NavLink key={i} to={c.url} className={({ isActive }) => `block px-4 py-2 text-[14px] transition-colors ${isActive ? "bg-mist text-ink" : "text-sub hover:bg-mist hover:text-ink"}`}>
+              {c.label}
+            </NavLink>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// เมนูมือถือที่มี dropdown — accordion กางลง
+function MobileNavGroup({ item, onNavigate }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <div className="flex items-center">
+        <NavLink to={item.url} end={item.url === "/"} onClick={onNavigate}
+          className={({ isActive }) => `flex-1 rounded-xl px-4 py-3 text-[15px] transition ${isActive ? "bg-ink text-white" : "text-ink hover:bg-mist"}`}>
+          {item.label}
+        </NavLink>
+        <button type="button" onClick={() => setOpen((v) => !v)} aria-label="เปิดเมนูย่อย" aria-expanded={open}
+          className="ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sub transition hover:bg-mist hover:text-ink">
+          <svg className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+      </div>
+      {open && (
+        <div className="mb-1 ml-3 border-l border-line pl-2">
+          {item.dropdown.map((c, i) => (
+            <NavLink key={i} to={c.url} onClick={onNavigate} className="block rounded-lg px-4 py-2 text-[14px] text-sub transition hover:bg-mist hover:text-ink">
+              {c.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function Social({ label, href, children }) {

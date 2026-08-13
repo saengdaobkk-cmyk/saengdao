@@ -25,12 +25,14 @@ model Setting {
 
 // เมนูนำทางบนหน้าร้าน (จัดการจากหลังบ้าน)
 model NavItem {
-  id        String   @id @default(uuid())
-  label     String
-  url       String
-  order     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  label          String
+  url            String
+  order          Int      @default(0)
+  active         Boolean  @default(true)
+  dropdownSource String? // dropdown อัตโนมัติ: categories | publishers | authors | translators
+  children       String? // ลิงก์ย่อยใส่เอง — JSON array ของ { label, url }
+  createdAt      DateTime @default(now())
 }
 
 // ข้อความในเว็บ (จัดการจากหลังบ้าน) — แยกตาม section
