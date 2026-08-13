@@ -53,25 +53,25 @@ export default function TermDirectory({ type }) {
       ) : list.length === 0 ? (
         <p className="py-20 text-center text-sub">{q ? "ไม่พบรายชื่อที่ค้นหา" : `ยังไม่มี${meta.label}`}</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((t) => (
             <Link
               key={t.slug}
               to={`/${meta.path}/${t.slug}`}
-              className="group flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3.5 transition hover:border-ink/30 hover:shadow-sm"
+              className="group flex items-center gap-4 rounded-2xl border border-line bg-white px-5 py-5 transition hover:border-ink/30 hover:shadow-md"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-mist">
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
                 {t.image ? (
-                  <img src={img(t.image, 120)} alt="" className="h-full w-full object-contain" />
+                  <img src={img(t.image, 200)} alt="" className="h-full w-full object-contain p-1.5" />
                 ) : (
-                  <span className="text-[15px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
+                  <span className="text-[20px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[15px] font-medium text-ink transition-colors group-hover:text-accent">{t.name}</span>
-                {showCollectionCount && <span className="text-[12px] text-sub">{t.count} เล่ม</span>}
+                <span className="block truncate text-[17px] font-semibold text-ink transition-colors group-hover:text-accent">{t.name}</span>
+                {showCollectionCount && <span className="mt-0.5 block text-[13px] text-sub">{t.count} เล่ม</span>}
               </span>
-              <span className="text-sub transition-transform group-hover:translate-x-0.5">›</span>
+              <span className="text-[18px] text-sub transition-transform group-hover:translate-x-0.5">›</span>
             </Link>
           ))}
         </div>
