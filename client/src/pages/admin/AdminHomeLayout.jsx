@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
 import { useBooks } from "../../api/books";
 import { uploadImage } from "../../api/admin";
@@ -303,6 +303,33 @@ function toPct(v, axis) {
   return m[v] ?? 50;
 }
 
+// พรีวิวลากจุดโฟกัส — คลิก/ลากบนรูปเพื่อตั้ง object-position (0-100%)
+function FocusPicker({ image, x, y, onChange }) {
+  const boxRef = useRef(null);
+  const dragging = useRef(false);
+  const apply = (e) => {
+    const r = boxRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const nx = Math.max(0, Math.min(100, Math.round(((e.clientX - r.left) / r.width) * 100)));
+    const ny = Math.max(0, Math.min(100, Math.round(((e.clientY - r.top) / r.height) * 100)));
+    onChange(nx, ny);
+  };
+  return (
+    <div
+      ref={boxRef}
+      onPointerDown={(e) => { dragging.current = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* noop */ } apply(e); }}
+      onPointerMove={(e) => { if (dragging.current) apply(e); }}
+      onPointerUp={(e) => { dragging.current = false; try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* noop */ } }}
+      className="relative aspect-[16/6] w-full cursor-crosshair touch-none select-none overflow-hidden rounded-xl border border-line"
+    >
+      <img src={img(image, 900)} alt="" draggable={false} className="pointer-events-none h-full w-full object-cover" style={{ objectPosition: `${x}% ${y}%` }} />
+      <span className="pointer-events-none absolute inset-y-0 w-px bg-white/40" style={{ left: `${x}%` }} />
+      <span className="pointer-events-none absolute inset-x-0 h-px bg-white/40" style={{ top: `${y}%` }} />
+      <span className="pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-accent/80 shadow-[0_0_0_2px_rgba(0,0,0,0.25)]" style={{ left: `${x}%`, top: `${y}%` }} />
+    </div>
+  );
+}
+
 function BannerEditor({ cfg, onSave, onReset, saving }) {
   const [f, setF] = useState({ ...BANNER_DEFAULT, ...cfg });
   const [uploading, setUploading] = useState(false);
@@ -355,11 +382,9 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
           const fy = toPct(f.imageY, "y");
           return (
             <div className="mt-3">
-              <span className="mb-1.5 block text-[12px] text-sub">จุดโฟกัสรูป — ลากสไลเดอร์เลือกตำแหน่งที่จะโชว์เมื่อรูปถูกครอป (พรีวิวสัดส่วนใกล้เคียงแบนเนอร์จริง)</span>
-              {/* พรีวิวสด */}
-              <div className="overflow-hidden rounded-xl border border-line">
-                <img src={img(f.image, 900)} alt="" className="block aspect-[16/6] w-full object-cover" style={{ objectPosition: `${fx}% ${fy}%` }} />
-              </div>
+              <span className="mb-1.5 block text-[12px] text-sub">จุดโฟกัสรูป — <b>ลากจุดบนรูปได้เลย</b> หรือปรับสไลเดอร์ (พรีวิวสัดส่วนใกล้เคียงแบนเนอร์จริง)</span>
+              {/* พรีวิว — ลากจุดโฟกัสได้ */}
+              <FocusPicker image={f.image} x={fx} y={fy} onChange={(nx, ny) => setF((s) => ({ ...s, imageX: `${nx}%`, imageY: `${ny}%` }))} />
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1 flex justify-between text-[12px] text-sub"><span>แนวนอน (ซ้าย → ขวา)</span><span className="tabular-nums text-ink">{fx}%</span></span>
