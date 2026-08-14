@@ -112,7 +112,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
             {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
             {!busy && items.length > 0 && (
               <>
-                <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {items.map((book, i) => <BookCard key={book.id} book={book} index={i} />)}
                 </div>
                 {totalPages > 1 && (

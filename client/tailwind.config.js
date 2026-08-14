@@ -19,7 +19,7 @@ export default {
         tightest: "-0.03em",
       },
       maxWidth: {
-        page: "1120px",
+        page: "1500px",
       },
       keyframes: {
         fadeUp: {

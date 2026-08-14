@@ -73,7 +73,7 @@ export default function TermCollection({ type }) {
         <p className="py-20 text-center text-sub">ยังไม่มีหนังสือ</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {data.items.map((b, i) => <BookCard key={b.id} book={b} index={i} />)}
           </div>
           {data.totalPages > 1 && (

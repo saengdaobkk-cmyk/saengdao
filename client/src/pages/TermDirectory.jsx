@@ -53,7 +53,7 @@ export default function TermDirectory({ type }) {
       ) : list.length === 0 ? (
         <p className="py-20 text-center text-sub">{q ? "ไม่พบรายชื่อที่ค้นหา" : `ยังไม่มี${meta.label}`}</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {list.map((t) => (
             <Link
               key={t.slug}
