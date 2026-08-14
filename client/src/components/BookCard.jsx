@@ -14,6 +14,7 @@ export default function BookCard({ book }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [added, setAdded] = useState(false);
+  const [coverLoaded, setCoverLoaded] = useState(false); // เฟดปกเข้าเมื่อโหลดเสร็จ
   const to = `/books/${book.slug || book.id}`; // ใช้ slug ถ้ามี ไม่งั้น id
 
   // โหลดข้อมูลเล่มล่วงหน้าตอนชี้เมาส์ → กดแล้วหน้าสินค้าขึ้นทันที (คีย์ให้ตรงกับ useBook ในหน้าสินค้า)
@@ -50,7 +51,9 @@ export default function BookCard({ book }) {
             alt={book.title}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            ref={(el) => { if (el && el.complete) setCoverLoaded(true); }} // ปกที่แคชไว้ (โหลดก่อน onLoad ผูก) → โชว์เลย
+            onLoad={() => setCoverLoaded(true)}
+            className={`h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.04] ${coverLoaded ? "opacity-100" : "opacity-0"}`}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
