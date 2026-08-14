@@ -22,7 +22,7 @@ export default function TermCollection({ type }) {
     retry: false,
   });
 
-  const { data, isLoading } = useBooks(
+  const { data, isLoading, isPlaceholderData } = useBooks(
     {
       [TYPE_PARAM[type]]: term?.name,
       sort,
@@ -31,6 +31,8 @@ export default function TermCollection({ type }) {
     },
     { enabled: !!term?.name } // รอให้รู้ชื่อสำนักพิมพ์ก่อน ไม่งั้นจะดึงหนังสือทั้งหมดมาแว็บนึง
   );
+  // isPlaceholderData = กำลังโหลดชุดใหม่แต่ยังถือข้อมูลเก่า (คนละหมวด/สำนักพิมพ์) → ถือเป็นกำลังโหลด ไม่โชว์ของเก่า
+  const booksLoading = isLoading || isPlaceholderData;
 
   if (loadingTerm) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
   if (isError || !term)
@@ -53,7 +55,7 @@ export default function TermCollection({ type }) {
         <div>
           <p className="text-[13px] font-medium tracking-tight text-sub">{TYPE_LABEL[type]}</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
-          {data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+          {data && !booksLoading && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
         </div>
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
           className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
@@ -64,7 +66,7 @@ export default function TermCollection({ type }) {
         </select>
       </div>
 
-      {isLoading ? (
+      {booksLoading ? (
         <p className="py-12 text-center text-sub">กำลังโหลด...</p>
       ) : data?.items.length === 0 ? (
         <p className="py-20 text-center text-sub">ยังไม่มีหนังสือ</p>

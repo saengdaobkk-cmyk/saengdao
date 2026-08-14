@@ -111,16 +111,14 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
       {(() => {
         const items = Array.isArray(data?.items) ? data.items : [];
         const totalPages = Number(data?.totalPages) || 1;
-        const hasItems = items.length > 0;
-        const refreshing = hasItems && busy; // มีของเดิมโชว์อยู่ กำลังโหลดชุดใหม่ → หรี่แทน ไม่ล้างเป็น skeleton
         return (
           <>
-            {!hasItems && skelVisible && <GridSkeleton n={limit} />}
-            {!busy && isError && !hasItems && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
-            {!busy && !isError && data && !hasItems && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
-            {hasItems && (
+            {skelVisible && <GridSkeleton n={limit} />}
+            {!busy && isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
+            {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
+            {!busy && items.length > 0 && (
               <>
-                <div className={`grid grid-cols-2 gap-x-5 gap-y-10 transition-opacity duration-200 sm:grid-cols-3 lg:grid-cols-4 ${refreshing ? "pointer-events-none opacity-40" : "opacity-100"}`}>
+                <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
                   {items.map((book) => <BookCard key={book.id} book={book} />)}
                 </div>
                 {totalPages > 1 && (
