@@ -58,16 +58,16 @@ export default function TermDirectory({ type }) {
             <Link
               key={t.slug}
               to={`/${meta.path}/${t.slug}`}
-              className="group flex flex-col items-center rounded-2xl border border-line bg-white px-4 py-7 text-center transition hover:border-ink/30 hover:shadow-md"
+              className="group flex flex-col items-center rounded-2xl border border-line bg-white px-4 py-8 text-center transition hover:border-ink/30 hover:shadow-md"
             >
-              <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+              <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
                 {t.image ? (
-                  <img src={img(t.image, 240)} alt="" className="h-full w-full object-contain p-2" />
+                  <img src={img(t.image, 360)} alt="" className="h-full w-full object-contain p-2.5" />
                 ) : (
-                  <span className="text-[24px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
+                  <span className="text-[32px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
                 )}
               </span>
-              <span className="mt-4 block w-full truncate text-[16px] font-semibold text-ink transition-colors group-hover:text-accent">{t.name}</span>
+              <span className="mt-5 block w-full truncate text-[16px] font-semibold text-ink transition-colors group-hover:text-accent">{t.name}</span>
               {showCollectionCount && <span className="mt-1 block text-[13px] text-sub">{t.count} เล่ม</span>}
             </Link>
           ))}
