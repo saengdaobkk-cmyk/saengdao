@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useBooks, useCategories } from "../api/books";
 import { useSettings } from "../api/settings";
 import BookCard from "./BookCard";
+import BookLoader from "./BookLoader";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "มาใหม่ล่าสุด" },
@@ -106,7 +107,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
         const totalPages = Number(data?.totalPages) || 1;
         return (
           <>
-            {busy && <p className="py-16 text-center text-sub">กำลังโหลด...</p>}
+            {busy && <BookLoader />}
             {!busy && isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
             {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
             {!busy && items.length > 0 && (

@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import { useBooks } from "../api/books";
 import { useSettings } from "../api/settings";
 import BookCard from "../components/BookCard";
+import BookLoader from "../components/BookLoader";
 
 const TYPE_LABEL = { PUBLISHER: "สำนักพิมพ์", AUTHOR: "ผู้เขียน", TRANSLATOR: "ผู้แปล" };
 const TYPE_PARAM = { PUBLISHER: "publisher", AUTHOR: "author", TRANSLATOR: "translator" };
@@ -34,7 +35,7 @@ export default function TermCollection({ type }) {
   // isPlaceholderData = กำลังโหลดชุดใหม่แต่ยังถือข้อมูลเก่า (คนละหมวด/สำนักพิมพ์) → ถือเป็นกำลังโหลด ไม่โชว์ของเก่า
   const booksLoading = isLoading || isPlaceholderData;
 
-  if (loadingTerm) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
+  if (loadingTerm) return <div className="py-24"><BookLoader /></div>;
   if (isError || !term)
     return (
       <div className="mx-auto max-w-page px-5 py-32 text-center">
@@ -67,7 +68,7 @@ export default function TermCollection({ type }) {
       </div>
 
       {booksLoading ? (
-        <p className="py-12 text-center text-sub">กำลังโหลด...</p>
+        <BookLoader />
       ) : data?.items.length === 0 ? (
         <p className="py-20 text-center text-sub">ยังไม่มีหนังสือ</p>
       ) : (

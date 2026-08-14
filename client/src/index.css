@@ -200,3 +200,64 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ── โหลดเดอร์: หนังสือกำลังพลิกหน้า ── */
+.sd-bk {
+  position: relative;
+  width: 62px;
+  height: 46px;
+}
+.sd-bk::before,
+.sd-bk::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  border: 2.5px solid #0071e3;
+  box-sizing: border-box;
+}
+.sd-bk::before {
+  left: 0;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+}
+.sd-bk::after {
+  right: 0;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+.sd-bk__pg {
+  position: absolute;
+  top: 3px;
+  left: 30px;
+  width: 27px;
+  height: 40px;
+  background: #0071e3;
+  border-radius: 0 3px 3px 0;
+  transform-origin: left center;
+  animation: sd-pgflip 1.5s infinite ease-in-out;
+  backface-visibility: hidden;
+}
+.sd-bk__pg:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.sd-bk__pg:nth-child(3) {
+  animation-delay: 0.5s;
+}
+@keyframes sd-pgflip {
+  0%,
+  15% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+  75% {
+    transform: rotateY(-176deg);
+    opacity: 1;
+  }
+  85%,
+  100% {
+    transform: rotateY(-176deg);
+    opacity: 0;
+  }
+}
