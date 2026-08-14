@@ -5,6 +5,7 @@ import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js"
 import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
+import { cacheClearPrefix } from "../lib/cache.js";
 import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort, syncOrdersFromZort } from "../lib/zort.js";
 import { TPK, getThaipostConfig, testThaipostConnection, updateOrderTracking, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
 import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, uniqueTermSlug } from "../lib/terms.js";
@@ -26,6 +27,14 @@ router.use(authenticate, requireStaff); // ต้องเป็นเจ้า�
 ["/coupons", "/slides", "/content", "/integrations", "/nav", "/nav-reorder", "/users", "/shipping", "/shipping-reorder", "/discount-rules", "/blog"].forEach((p) =>
   router.use(p, requireAdmin)
 );
+
+// หลังการเขียนใดๆ ในหลังบ้านสำเร็จ → ล้าง cache รายการหนังสือ (เห็นผลทันที ไม่ต้องรอ TTL)
+router.use((req, res, next) => {
+  if (req.method !== "GET") {
+    res.on("finish", () => { if (res.statusCode < 400) cacheClearPrefix("books:"); });
+  }
+  next();
+});
 
 const ORDER_STATUS = ["PENDING", "PAID", "SHIPPED", "COMPLETED", "CANCELLED"];
 const PAYMENT_STATUS = ["UNPAID", "PENDING_REVIEW", "PAID", "FAILED"];

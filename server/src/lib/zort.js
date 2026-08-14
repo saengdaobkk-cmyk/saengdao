@@ -1,5 +1,6 @@
 import { prisma } from "./prisma.js";
 import { sendShipped } from "./email.js";
+import { cacheClearPrefix } from "./cache.js";
 
 // keys ใน Setting สำหรับ ZORT
 export const ZK = {
@@ -306,6 +307,7 @@ export async function syncStockFromZort() {
 
     // ทยอยอัปเดตทีละชุด กันคำสั่งเยอะเกิน
     for (let i = 0; i < ops.length; i += 50) await prisma.$transaction(ops.slice(i, i + 50));
+    if (ops.length) cacheClearPrefix("books:"); // สต็อกเปลี่ยน → ล้าง cache รายการหนังสือ
 
     const now = new Date().toISOString();
     await prisma.setting.upsert({

@@ -3,8 +3,11 @@ import { prisma } from "../lib/prisma.js";
 import { splitNames } from "../lib/terms.js";
 import { hotDealWhere } from "../lib/pricing.js";
 import { authenticate } from "../middleware/auth.js";
+import { cacheGet, cacheSet } from "../lib/cache.js";
 
 const router = Router();
+
+const BOOKS_LIST_TTL = 45_000; // cache รายการหนังสือ 45 วินาที
 
 // หา bookId จาก id หรือ slug
 async function resolveBookId(key) {
@@ -19,6 +22,16 @@ router.get("/", async (req, res, next) => {
     const { q, category, publisher, sort } = req.query;
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(48, Math.max(1, parseInt(req.query.limit) || 12));
+
+    // cache เฉพาะรายการปกติ (ข้ามโหมด ids / สุ่ม ที่ผลไม่ตายตัว)
+    const cacheKey =
+      req.query.ids == null && sort !== "random"
+        ? "books:" + JSON.stringify({ q: q || "", category: category || "", publisher: publisher || "", author: req.query.author || "", translator: req.query.translator || "", sort: sort || "", page, limit })
+        : null;
+    if (cacheKey) {
+      const hit = cacheGet(cacheKey);
+      if (hit) return res.json(hit);
+    }
 
     // โหมดเลือกเอง: ?ids=a,b,c → คืนเฉพาะเล่มที่ระบุ เรียงตามลำดับที่ส่งมา (ไม่แบ่งหน้า)
     if (req.query.ids != null) {
@@ -96,13 +109,15 @@ router.get("/", async (req, res, next) => {
       prisma.book.count({ where }),
     ]);
 
-    res.json({
+    const payload = {
       items,
       total,
       page,
       pageSize: limit,
       totalPages: Math.ceil(total / limit),
-    });
+    };
+    if (cacheKey) cacheSet(cacheKey, payload, BOOKS_LIST_TTL);
+    res.json(payload);
   } catch (err) {
     next(err);
   }
