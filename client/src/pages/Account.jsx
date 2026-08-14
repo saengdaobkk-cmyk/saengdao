@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BookLoader from "../components/BookLoader";
 import { Navigate, Link } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useAuth } from "../auth/AuthContext";
@@ -29,7 +30,7 @@ function orderBadge(o) {
 export default function Account() {
   const { user, loading, updateUser, isStaff } = useAuth();
 
-  if (loading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
+  if (loading) return <BookLoader />;
   if (!user) return <Navigate to="/login" state={{ from: "/account" }} replace />;
 
   return (
@@ -391,7 +392,7 @@ function OrdersSection() {
         {data?.total > 0 && <span className="ml-2 text-[13px] font-normal text-sub">({data.total})</span>}
       </h2>
       {isLoading ? (
-        <p className="text-sub">กำลังโหลด...</p>
+        <BookLoader />
       ) : data?.total === 0 ? (
         <div className="rounded-2xl border border-line p-8 text-center">
           <p className="text-[14px] text-sub">ยังไม่มีคำสั่งซื้อ</p>

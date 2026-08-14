@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BookLoader from "../components/BookLoader";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
@@ -134,7 +135,7 @@ export default function OrderConfirm() {
     refetchOnWindowFocus: true,
   });
 
-  if (isLoading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
+  if (isLoading) return <BookLoader />;
   if (isError || !order)
     return (
       <div className="py-24 text-center">

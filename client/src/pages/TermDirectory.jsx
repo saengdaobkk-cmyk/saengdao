@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
 import { useSettings } from "../api/settings";
 import { img } from "../lib/img";
+import BookLoader from "../components/BookLoader";
 
 const META = {
   PUBLISHER: { label: "สำนักพิมพ์", path: "publisher", title: "สำนักพิมพ์ทั้งหมด", desc: "เลือกดูหนังสือตามสำนักพิมพ์" },
@@ -49,7 +50,7 @@ export default function TermDirectory({ type }) {
       </div>
 
       {isLoading ? (
-        <p className="py-16 text-center text-sub">กำลังโหลด...</p>
+        <BookLoader />
       ) : list.length === 0 ? (
         <p className="py-20 text-center text-sub">{q ? "ไม่พบรายชื่อที่ค้นหา" : `ยังไม่มี${meta.label}`}</p>
       ) : (

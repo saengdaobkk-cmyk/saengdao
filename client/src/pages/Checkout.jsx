@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import BookLoader from "../components/BookLoader";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
@@ -76,7 +77,7 @@ export default function Checkout() {
       setShippingMethodId(shippingMethods[0].id);
   }, [shippingMethods, shippingMethodId]);
 
-  if (loading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
+  if (loading) return <BookLoader />;
   if (!user) return <Navigate to="/login" state={{ from: "/checkout" }} replace />;
   if (items.length === 0 && !placedRef.current) return <Navigate to="/cart" replace />;
 

@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import BookLoader from "../components/BookLoader";
 import ReactMarkdown from "react-markdown";
 import { useBlogPost } from "../api/blog";
 import { useSettings } from "../api/settings";
@@ -37,7 +38,7 @@ export default function BlogPost() {
   const { data: post, isLoading, isError } = useBlogPost(slug);
   const { showBlogShare } = useSettings();
 
-  if (isLoading) return <div className="py-24 text-center text-sub">กำลังโหลด...</div>;
+  if (isLoading) return <BookLoader />;
   if (isError || !post)
     return (
       <div className="py-24 text-center">
