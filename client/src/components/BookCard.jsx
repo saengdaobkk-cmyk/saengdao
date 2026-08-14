@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
@@ -8,14 +8,28 @@ import { img } from "../lib/img";
 import { useSettings } from "../api/settings";
 import { useCart } from "../cart/CartContext";
 
-export default function BookCard({ book }) {
+export default function BookCard({ book, index = 0 }) {
   const { showCardCategory } = useSettings();
   const { add } = useCart();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [added, setAdded] = useState(false);
   const [coverLoaded, setCoverLoaded] = useState(false); // เฟดปกเข้าเมื่อโหลดเสร็จ
+  const [shown, setShown] = useState(false); // เฟดการ์ดขึ้นเมื่อเลื่อนถึง
+  const revealRef = useRef(null);
   const to = `/books/${book.slug || book.id}`; // ใช้ slug ถ้ามี ไม่งั้น id
+
+  // เฟดขึ้นตอนการ์ดเข้าจอ (ครั้งเดียว) — ไม่รองรับ IO ก็โชว์เลย
+  useEffect(() => {
+    const el = revealRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setShown(true); return; }
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } },
+      { rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // โหลดข้อมูลเล่มล่วงหน้าตอนชี้เมาส์ → กดแล้วหน้าสินค้าขึ้นทันที (คีย์ให้ตรงกับ useBook ในหน้าสินค้า)
   const prefetch = () =>
@@ -42,7 +56,14 @@ export default function BookCard({ book }) {
   };
 
   return (
-    <Link to={to} onMouseEnter={prefetch} onFocus={prefetch} className="group block">
+    <Link
+      ref={revealRef}
+      to={to}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      style={{ transitionDelay: `${(index % 10) * 45}ms` }}
+      className={`group block transition-all duration-500 ease-out ${shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
+    >
       {/* ปก */}
       <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
         {book.coverImage ? (
