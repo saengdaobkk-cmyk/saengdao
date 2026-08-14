@@ -4,6 +4,8 @@
 
 @layer base {
   html {
+    /* ขยายฐานฟอนต์ทั้งเว็บขึ้นเล็กน้อย (16px → 17px) */
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
