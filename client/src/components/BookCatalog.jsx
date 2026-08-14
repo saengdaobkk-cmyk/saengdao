@@ -48,15 +48,8 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     page,
     limit,
   });
-  // กำลังโหลดผลชุดใหม่ (รวมตอนแสดงข้อมูลเก่าค้างระหว่างค้นหา/กรอง) → โชว์ skeleton ไม่ให้เห็นผลเก่าแวบ
+  // กำลังโหลดผลชุดใหม่ (รวมตอนสลับหมวด/ค้นหา) → โชว์ "กำลังโหลด" แทน ไม่ให้เห็นผลเก่า
   const busy = isLoading || isPlaceholderData;
-  // หน่วงแสดง skeleton — ถ้าโหลดเร็วกว่านี้จะไม่เห็น skeleton แว็บ (เห็นเฉพาะตอนโหลดนานจริง)
-  const [skelVisible, setSkelVisible] = useState(false);
-  useEffect(() => {
-    if (!busy) { setSkelVisible(false); return; }
-    const t = setTimeout(() => setSkelVisible(true), 220);
-    return () => clearTimeout(t);
-  }, [busy]);
 
   const pickCategory = (slug) => {
     setCategory(slug);
@@ -113,7 +106,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
         const totalPages = Number(data?.totalPages) || 1;
         return (
           <>
-            {skelVisible && <GridSkeleton n={limit} />}
+            {busy && <p className="py-16 text-center text-sub">กำลังโหลด...</p>}
             {!busy && isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
             {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
             {!busy && items.length > 0 && (
