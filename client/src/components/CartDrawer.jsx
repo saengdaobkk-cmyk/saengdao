@@ -17,15 +17,28 @@ export default function CartDrawer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  // ปิดด้วย Esc + ล็อกการสกอลล์พื้นหลังตอนเปิด
+  // ปิดด้วย Esc + ล็อกการสกอลล์พื้นหลังตอนเปิด (position:fixed กัน iOS เลื่อนหน้าหลังทะลุ)
   useEffect(() => {
     if (!drawerOpen) return;
     const onKey = (e) => e.key === "Escape" && closeDrawer();
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    const b = document.body;
+    const scrollY = window.scrollY;
+    b.style.position = "fixed";
+    b.style.top = `-${scrollY}px`;
+    b.style.left = "0";
+    b.style.right = "0";
+    b.style.width = "100%";
+    b.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      b.style.position = "";
+      b.style.top = "";
+      b.style.left = "";
+      b.style.right = "";
+      b.style.width = "";
+      b.style.overflow = "";
+      window.scrollTo(0, scrollY); // คืนตำแหน่งสกอลล์เดิม
     };
   }, [drawerOpen, closeDrawer]);
 
@@ -91,7 +104,7 @@ export default function CartDrawer() {
           </div>
         ) : (
           <>
-            <ul className="flex-1 divide-y divide-line overflow-y-auto px-5">
+            <ul className="flex-1 divide-y divide-line overflow-y-auto overscroll-contain px-5" style={{ WebkitOverflowScrolling: "touch" }}>
               {items.map((item) => (
                 <li key={item.key} className="flex gap-4 py-5">
                   <Link
