@@ -404,6 +404,7 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
                   </button>
                 ))}
               </div>
+              <p className="mt-2 text-[11px] text-accent">⚠️ ปรับแล้วต้องกดปุ่ม “บันทึก” ท้ายกล่องนี้ ถึงจะมีผลกับหน้าแรกจริง</p>
             </div>
           );
         })()}
