@@ -94,7 +94,7 @@ export default function BookDetail() {
   if (isLoading)
     return (
       <div className="mx-auto max-w-6xl px-5 py-20">
-        <div className="grid animate-pulse gap-12 md:grid-cols-[minmax(0,380px)_1fr] lg:grid-cols-[minmax(0,540px)_1fr]">
+        <div className="grid animate-pulse gap-12 md:grid-cols-[minmax(0,360px)_1fr] lg:grid-cols-[minmax(0,480px)_1fr]">
           <div className="aspect-[145/210] rounded-3xl bg-mist" />
           <div className="space-y-4 pt-4">
             <div className="h-3 w-24 rounded bg-mist" />
@@ -141,7 +141,7 @@ export default function BookDetail() {
         {book.category && (<><span>›</span><Link to={`/books?category=${book.category.slug}`} className="hover:text-ink">{book.category.name}</Link></>)}
       </nav>
 
-      <div className="mt-6 grid gap-12 md:grid-cols-[minmax(0,380px)_1fr] md:gap-16 lg:grid-cols-[minmax(0,540px)_1fr]">
+      <div className="mt-6 grid gap-12 md:grid-cols-[minmax(0,360px)_1fr] md:gap-16 lg:grid-cols-[minmax(0,480px)_1fr]">
         {/* แกลเลอรี — ปกพลิกหน้า-หลัง */}
         <div className="md:sticky md:top-24 md:self-start">
           <div className={`relative aspect-[145/210] w-full ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
