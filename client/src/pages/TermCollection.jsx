@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { useBooks } from "../api/books";
 import { useSettings } from "../api/settings";
+import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import BookLoader from "../components/BookLoader";
 
@@ -13,6 +14,7 @@ const TYPE_PARAM = { PUBLISHER: "publisher", AUTHOR: "author", TRANSLATOR: "tran
 export default function TermCollection({ type }) {
   const { slug } = useParams();
   const { showCollectionCount } = useSettings();
+  const { t } = useContent();
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
 
@@ -47,8 +49,8 @@ export default function TermCollection({ type }) {
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
-        <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
-        <Link to="/books" className="hover:text-ink">ร้านหนังสือ</Link><span>›</span>
+        <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
+        <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link><span>›</span>
         <span className="text-ink">{TYPE_LABEL[type]}</span>
       </nav>
 

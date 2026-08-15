@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
 import { useSettings } from "../api/settings";
+import { useContent } from "../api/content";
 import { img } from "../lib/img";
 import BookLoader from "../components/BookLoader";
 
@@ -15,6 +16,7 @@ export default function TermDirectory({ type }) {
   const meta = META[type];
   const { data: items, isLoading } = useTermDirectory(type);
   const { showCollectionCount } = useSettings();
+  const { t } = useContent();
   const [q, setQ] = useState("");
 
   // เรียงตามจำนวนเล่ม (มาก→น้อย) แล้วชื่อ · กรองด้วยคำค้น
@@ -30,8 +32,8 @@ export default function TermDirectory({ type }) {
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
-        <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
-        <Link to="/books" className="hover:text-ink">ร้านหนังสือ</Link><span>›</span>
+        <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
+        <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link><span>›</span>
         <span className="text-ink">{meta.label}</span>
       </nav>
 
