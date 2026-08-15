@@ -93,7 +93,7 @@ export default function BookDetail() {
 
   if (isLoading)
     return (
-      <div className="mx-auto max-w-7xl px-5 py-20">
+      <div className="mx-auto max-w-6xl px-5 py-20">
         <div className="grid animate-pulse gap-12 md:grid-cols-[minmax(0,380px)_1fr] lg:grid-cols-[minmax(0,540px)_1fr]">
           <div className="aspect-[145/210] rounded-3xl bg-mist" />
           <div className="space-y-4 pt-4">
@@ -107,7 +107,7 @@ export default function BookDetail() {
 
   if (isError || !book)
     return (
-      <div className="mx-auto max-w-7xl px-5 py-32 text-center">
+      <div className="mx-auto max-w-6xl px-5 py-32 text-center">
         <p className="mb-4 text-sub">{t("product.not_found", "ไม่พบหนังสือเล่มนี้")}</p>
         <Link to="/books" className="text-[14px] text-accent">{t("product.back_to_shop", "กลับไปร้านหนังสือ")}</Link>
       </div>
@@ -133,7 +133,7 @@ export default function BookDetail() {
 
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-10 sm:py-14">
+    <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
       {/* breadcrumbs */}
       <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
         <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
