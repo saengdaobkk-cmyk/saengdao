@@ -62,11 +62,11 @@ export default function TermDirectory({ type }) {
               to={`/${meta.path}/${t.slug}`}
               className="group flex flex-col items-center rounded-2xl border border-line bg-white px-4 py-8 text-center transition hover:border-ink/30 hover:shadow-md"
             >
-              <span className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-line bg-mist">
+              <span className="flex h-40 w-40 items-center justify-center overflow-hidden">
                 {t.image ? (
-                  <img src={img(t.image, 360)} alt="" className="h-full w-full object-contain p-2.5" />
+                  <img src={img(t.image, 480)} alt="" className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-110" />
                 ) : (
-                  <span className="text-[32px] font-semibold text-sub">{(t.name || "?").slice(0, 1)}</span>
+                  <span className="text-[40px] font-semibold text-sub transition-transform duration-300 ease-out group-hover:scale-110">{(t.name || "?").slice(0, 1)}</span>
                 )}
               </span>
               <span className="mt-5 block w-full truncate text-[16px] font-semibold text-ink transition-colors group-hover:text-accent">{t.name}</span>
