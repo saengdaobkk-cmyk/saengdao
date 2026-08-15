@@ -31,7 +31,7 @@ export default function App() {
   // โลโก้รูปบนแถบเมนู — แยกพื้นสว่าง/พื้นเข้ม + ปรับขนาดได้ (ไม่มีรูป = ใช้ข้อความ SAENGDAO)
   const hdrLogoLight = s.headerLogoOnLight || ""; // ใช้บนพื้นสว่าง (แถบขาว)
   const hdrLogoDark = s.headerLogoOnDark || ""; // ใช้บนพื้นเข้ม (ทับสไลด์)
-  const hdrLogoSize = Number(s.headerLogoSize) || 28;
+  const hdrLogoSize = Number(s.headerLogoSize) || 32;
   const hdrLogo = overHero ? hdrLogoDark || hdrLogoLight : hdrLogoLight || hdrLogoDark;
 
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
@@ -48,14 +48,14 @@ export default function App() {
       {/* เมนูลอยติดบน — โปร่งใสทับสไลด์ตอนอยู่บนสุดหน้าแรก */}
       <header className="fixed inset-x-0 top-0 z-50">
         <div className={`transition-colors duration-300 ${overHero ? "" : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}>
-          <div className="mx-auto flex h-12 max-w-page items-center justify-between px-5">
+          <div className="mx-auto flex h-16 max-w-page items-center justify-between px-5">
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setMobileOpen(true)}
                 aria-label="เมนู"
                 className={`-ml-1 rounded-lg p-1 transition sm:hidden ${overHero ? "text-white hover:bg-white/15" : "text-ink hover:bg-mist"}`}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
                 </svg>
               </button>
@@ -69,7 +69,7 @@ export default function App() {
                 <Link
                   to="/"
                   className={`font-semibold tracking-[0.22em] transition-colors ${overHero ? "text-white" : "text-ink"}`}
-                  style={{ fontSize: `${Number(s.logoSizeHeader) || 16}px` }}
+                  style={{ fontSize: `${Number(s.logoSizeHeader) || 18}px` }}
                 >
                   SAENGDAO
                 </Link>
@@ -99,7 +99,7 @@ export default function App() {
                 aria-label="ค้นหา"
                 className={`group transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
               >
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
                   className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
                   <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
                 </svg>
@@ -155,7 +155,7 @@ export default function App() {
         </div>
       </div>
 
-      <main className={`flex-1 ${isHome && s.transparentHeader !== false ? "" : "pt-12"}`}>
+      <main className={`flex-1 ${isHome && s.transparentHeader !== false ? "" : "pt-16"}`}>
         <Outlet />
       </main>
 
@@ -226,7 +226,7 @@ function parseFooterNav(raw) {
 
 // สไตล์ลิงก์เมนูบน (พื้นสว่าง/ทับสไลด์)
 const navLinkCls = (isActive, overHero) =>
-  `text-[14px] tracking-tight transition-colors ${
+  `text-[15px] tracking-tight transition-colors ${
     overHero ? (isActive ? "text-white" : "text-white/80 hover:text-white") : isActive ? "text-ink" : "text-sub hover:text-accent"
   }`;
 
@@ -356,7 +356,7 @@ function AccountMenu({ overHero }) {
     return (
       <Link
         to="/login"
-        className={`text-[13px] tracking-tight transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
+        className={`text-[14px] tracking-tight transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
       >
         เข้าสู่ระบบ
       </Link>
@@ -400,7 +400,7 @@ function AccountMenu({ overHero }) {
 
 function UserIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" strokeLinecap="round" />
     </svg>
@@ -409,7 +409,7 @@ function UserIcon() {
 
 function BagIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6.33 8h11.34a2 2 0 0 1 1.977 2.304l-1.255 8.152A3 3 0 0 1 15.43 21H8.57a3 3 0 0 1-2.966-2.544l-1.255-8.152A2 2 0 0 1 6.33 8Z" />
       <path d="M9 11V6a3 3 0 0 1 6 0v5" />
     </svg>
