@@ -74,16 +74,17 @@ export default function ParallaxBanner({ banner }) {
       {/* ชั้นภาพพื้นหลัง — ใช้ <img> จริง (Safari จัดการ transform ได้ลื่นกว่า background-image)
           ภาพสูงเกินกรอบด้านละ overscan แล้วขยับด้วย transform (parallax) */}
       {image ? (
-        <img
+        <div
           ref={bgRef}
-          src={img(image, 1800, 72)}
-          alt=""
           aria-hidden
-          className={`pointer-events-none absolute inset-x-0 w-full object-cover will-change-transform ${useCss ? "sd-parallax-css" : ""}`}
+          className={`pointer-events-none absolute inset-x-0 w-full will-change-transform ${useCss ? "sd-parallax-css" : ""}`}
           style={{
             top: -overscan,
             height: `calc(100% + ${overscan * 2}px)`,
-            objectPosition,
+            backgroundImage: `url("${img(image, 1800, 72)}")`,
+            backgroundSize: "auto 125%", // สูงเกินกรอบ → ภาพล้นทั้งแนวตั้ง+แนวนอน จึงเลือกจุดโฟกัสได้ 2 แกน (แนะนำรูปแนวนอน)
+            backgroundPosition: objectPosition, // "x% y%" = จุดโฟกัส
+            backgroundRepeat: "no-repeat",
             WebkitBackfaceVisibility: "hidden",
             backfaceVisibility: "hidden",
             ...(useCss ? { "--sd-ov": overscan } : null),
