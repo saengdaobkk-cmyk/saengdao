@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
-import { useBooks } from "../../api/books";
+import { useBooks, useTermList } from "../../api/books";
 import { uploadImage } from "../../api/admin";
 import {
-  parseOrder, parseRows, parseCustomRows, parseBanner, newCustomRow, customKey, isCustomKey,
+  parseOrder, parseRows, parseCustomRows, parseBanner, parseAuthorSpotlight, newCustomRow, customKey, isCustomKey,
   SECTION_LABEL, ROW_SORTS, ROW_KEYS, ROW_DEFAULTS, BOOKS_EDITABLE_KEYS, ROW_LIMIT_MAX,
   BANNER_HEIGHTS, BANNER_DEFAULT, BANNER_PARALLAX_MAX,
+  AUTHOR_SPOTLIGHT_DEFAULT, AUTHOR_SPOTLIGHT_MAX,
 } from "../../lib/homeSections";
 import { img } from "../../lib/img";
 
@@ -27,6 +28,7 @@ export default function AdminHomeLayout() {
   const customBy = Object.fromEntries(custom.map((r) => [customKey(r.id), r]));
   const order = parseOrder(settings.homeSectionOrder, custom.map((r) => customKey(r.id)));
   const banner = parseBanner(settings.homeBanner);
+  const authorSpotlight = parseAuthorSpotlight(settings.homeAuthorSpotlight);
   const [editing, setEditing] = useState("");
 
   const move = (i, dir) => {
@@ -48,6 +50,10 @@ export default function AdminHomeLayout() {
   // บันทึกแบนเนอร์ parallax → homeBanner
   const saveBanner = (cfg) =>
     update.mutate({ homeBanner: JSON.stringify(cfg) }, { onSuccess: () => setEditing("") });
+
+  // บันทึกผู้เขียนประจำเดือน → homeAuthorSpotlight
+  const saveAuthor = (cfg) =>
+    update.mutate({ homeAuthorSpotlight: JSON.stringify(cfg) }, { onSuccess: () => setEditing("") });
 
   const addCustom = () => {
     const row = newCustomRow();
@@ -79,8 +85,9 @@ export default function AdminHomeLayout() {
           {order.map((key, i) => {
             const cust = isCustomKey(key);
             const isBanner = key === "banner";
-            const cfg = cust ? customBy[key] : isBanner ? banner : rows[key];
-            const editable = cust || ROW_KEYS.includes(key) || isBanner;
+            const isAuthor = key === "author";
+            const cfg = cust ? customBy[key] : isBanner ? banner : isAuthor ? authorSpotlight : rows[key];
+            const editable = cust || ROW_KEYS.includes(key) || isBanner || isAuthor;
             const booksEditable = cust || BOOKS_EDITABLE_KEYS.includes(key);
             const isOpen = editing === key;
             if (cust && !cfg) return null; // แถวถูกลบไปแล้ว
@@ -103,6 +110,10 @@ export default function AdminHomeLayout() {
                       <span className="ml-2 text-[12px] text-sub">
                         · {cfg.enabled ? (cfg.image ? "เปิด" : "เปิด (ยังไม่ใส่รูป)") : "ปิดอยู่"}{cfg.title ? ` · ${cfg.title}` : ""}
                       </span>
+                    ) : isAuthor ? (
+                      <span className="ml-2 text-[12px] text-sub">
+                        · {cfg.enabled ? (cfg.name ? "เปิด" : "เปิด (ยังไม่เลือกผู้เขียน)") : "ปิดอยู่"}{cfg.name ? ` · ${cfg.name}` : ""}
+                      </span>
                     ) : editable && (
                       <span className="ml-2 text-[12px] text-sub">
                         · {cfg.title} {!booksEditable ? "(อัตโนมัติ)" : cfg.mode === "manual" ? `(เลือกเอง ${cfg.bookIds.length} เล่ม)` : "(อัตโนมัติ)"}
@@ -122,6 +133,13 @@ export default function AdminHomeLayout() {
                     saving={update.isPending}
                     onSave={saveBanner}
                     onReset={() => saveBanner(BANNER_DEFAULT)}
+                  />
+                ) : isAuthor ? (
+                  <AuthorEditor
+                    cfg={cfg}
+                    saving={update.isPending}
+                    onSave={saveAuthor}
+                    onReset={() => saveAuthor(AUTHOR_SPOTLIGHT_DEFAULT)}
                   />
                 ) : (
                   <RowEditor
@@ -468,6 +486,209 @@ function BannerEditor({ cfg, onSave, onReset, saving }) {
         <input type="range" min={0} max={BANNER_PARALLAX_MAX} step={10} value={f.parallax} onChange={(e) => setF((s) => ({ ...s, parallax: Number(e.target.value) }))} className="w-full accent-accent" />
         <span className="mt-1 block text-[11px] text-sub">ยิ่งมาก ภาพยิ่งเลื่อนต่างจากเนื้อหาเวลา scroll · 0 = ปิดเอฟเฟกต์</span>
       </label>
+
+      <div className="flex items-center gap-3 border-t border-line pt-3">
+        <button onClick={() => onSave(f)} disabled={saving || uploading} className="rounded-full bg-accent px-6 py-2 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">บันทึก</button>
+        <button onClick={onReset} disabled={saving} className="text-[13px] text-sub hover:text-ink">คืนค่าเริ่มต้น</button>
+      </div>
+    </div>
+  );
+}
+
+// ค้นหาหนังสือ → คืน list ปุ่ม "เพิ่ม/เลือก"
+function BookSearch({ onPick, pickedIds = [], full = false }) {
+  const [q, setQ] = useState("");
+  const { data } = useBooks(q.trim() ? { q: q.trim(), limit: 8 } : { ids: "" });
+  const results = (q.trim() ? data?.items : []) || [];
+  return (
+    <div>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาหนังสือ (ชื่อ/ผู้แต่ง/ISBN)" className={inp} />
+      {results.length > 0 && (
+        <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto rounded-lg border border-line bg-white p-1">
+          {results.map((b) => {
+            const picked = pickedIds.includes(b.id);
+            return (
+              <li key={b.id} className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-mist">
+                <div className="h-10 w-7 shrink-0 overflow-hidden rounded bg-mist">
+                  {b.coverImage && <img src={img(b.coverImage, 120)} alt="" className="h-full w-full object-cover" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] text-ink">{b.title}</p>
+                  <p className="truncate text-[12px] text-sub">{b.author}</p>
+                </div>
+                <button onClick={() => { onPick(b.id); if (!full) setQ(""); }} disabled={picked} className="shrink-0 rounded-full border border-line px-3 py-1 text-[12px] font-medium text-ink transition hover:bg-mist disabled:opacity-40">
+                  {picked ? "เลือกแล้ว" : "เลือก"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function AuthorEditor({ cfg, onSave, onReset, saving }) {
+  const [f, setF] = useState({ ...AUTHOR_SPOTLIGHT_DEFAULT, ...cfg });
+  const [uploading, setUploading] = useState(false);
+  const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
+  const authors = useTermList("AUTHOR").data || [];
+
+  // ปกใหญ่ที่เลือก + หนังสือฝั่งขวาที่เลือก (โหมดเลือกเอง)
+  const { data: featData } = useBooks(f.featuredBookId ? { ids: f.featuredBookId } : { ids: "" });
+  const featured = featData?.items?.find((b) => b.id === f.featuredBookId);
+  const { data: selData } = useBooks(f.bookIds.length ? { ids: f.bookIds.join(",") } : { ids: "" });
+  const selBooks = f.bookIds.map((id) => selData?.items?.find((b) => b.id === id)).filter(Boolean);
+
+  const onPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setF((s) => ({ ...s, photo: url }));
+    } catch {
+      alert("อัปโหลดรูปไม่สำเร็จ");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const addBook = (id) => setF((s) => (s.bookIds.includes(id) || s.bookIds.length >= AUTHOR_SPOTLIGHT_MAX ? s : { ...s, bookIds: [...s.bookIds, id] }));
+  const removeBook = (id) => setF((s) => ({ ...s, bookIds: s.bookIds.filter((x) => x !== id) }));
+  const moveBook = (i, dir) => setF((s) => {
+    const t = i + dir;
+    if (t < 0 || t >= s.bookIds.length) return s;
+    const n = [...s.bookIds];
+    [n[i], n[t]] = [n[t], n[i]];
+    return { ...s, bookIds: n };
+  });
+
+  return (
+    <div className="mt-3 space-y-4 rounded-xl border border-line bg-mist/40 p-4">
+      <label className="flex items-center gap-2 text-[13px] font-medium text-ink">
+        <input type="checkbox" checked={f.enabled} onChange={(e) => setF((s) => ({ ...s, enabled: e.target.checked }))} className="h-4 w-4 accent-accent" />
+        แสดง section นี้บนหน้าแรก
+      </label>
+
+      {/* รูปผู้เขียน */}
+      <div>
+        <span className="mb-1.5 block text-[12px] text-sub">รูปผู้เขียน (วงกลม — แนะนำสี่เหลี่ยมจัตุรัส)</span>
+        <div className="flex items-center gap-3">
+          <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border border-line bg-white">
+            {f.photo ? (
+              <img src={img(f.photo, 200)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-[11px] text-sub">ไม่มีรูป</div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="cursor-pointer rounded-full border border-line bg-white px-4 py-1.5 text-center text-[13px] font-medium text-ink transition hover:bg-mist">
+              {uploading ? "กำลังอัปโหลด..." : f.photo ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+              <input type="file" accept="image/*" onChange={onPhoto} className="hidden" disabled={uploading} />
+            </label>
+            {f.photo && <button type="button" onClick={() => setF((s) => ({ ...s, photo: "" }))} className="text-[12px] text-sub hover:text-red-600">ลบรูป</button>}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">ป้ายเล็ก (เหนือชื่อ)</span>
+          <input value={f.eyebrow} onChange={set("eyebrow")} className={inp} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-[12px] text-sub">ชื่อผู้เขียน</span>
+          <input list="author-list" value={f.name} onChange={set("name")} placeholder="พิมพ์หรือเลือกจากรายชื่อ" className={inp} />
+          <datalist id="author-list">
+            {authors.map((a) => <option key={a} value={a} />)}
+          </datalist>
+        </label>
+      </div>
+
+      <label className="block">
+        <span className="mb-1 block text-[12px] text-sub">ประวัติย่อ</span>
+        <textarea value={f.bio} onChange={set("bio")} rows={3} className={`${inp} resize-y`} />
+      </label>
+
+      <label className="block max-w-xs">
+        <span className="mb-1 block text-[12px] text-sub">ข้อความปุ่ม (เว้นว่าง = ไม่แสดงปุ่ม)</span>
+        <input value={f.buttonText} onChange={set("buttonText")} className={inp} />
+        <span className="mt-1 block text-[11px] text-sub">ปุ่มจะลิงก์ไปหน้ารวมผลงานของผู้เขียนคนนี้อัตโนมัติ</span>
+      </label>
+
+      {/* ปกใหญ่ฝั่งซ้าย */}
+      <div>
+        <span className="mb-1.5 block text-[12px] text-sub">ปกเด่นฝั่งซ้าย (เลือกหนังสือ 1 เล่ม)</span>
+        {featured ? (
+          <div className="mb-2 flex items-center gap-3 rounded-lg border border-line bg-white px-2 py-2">
+            <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-mist">
+              {featured.coverImage && <img src={img(featured.coverImage, 120)} alt="" className="h-full w-full object-cover" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-medium text-ink">{featured.title}</p>
+              <p className="truncate text-[12px] text-sub">{featured.author}</p>
+            </div>
+            <button onClick={() => setF((s) => ({ ...s, featuredBookId: "" }))} className="shrink-0 text-[13px] text-sub hover:text-red-600">เอาออก</button>
+          </div>
+        ) : (
+          <p className="mb-2 rounded-lg border border-dashed border-line px-3 py-3 text-center text-[13px] text-sub">ยังไม่ได้เลือก — ค้นหาด้านล่าง</p>
+        )}
+        <BookSearch onPick={(id) => setF((s) => ({ ...s, featuredBookId: id }))} pickedIds={f.featuredBookId ? [f.featuredBookId] : []} />
+      </div>
+
+      {/* หนังสือฝั่งขวา */}
+      <div>
+        <span className="mb-1.5 block text-[12px] text-sub">หนังสือฝั่งขวา (แสดง 3 เล่ม)</span>
+        <div className="flex gap-2">
+          <ModeBtn active={f.mode === "auto"} onClick={() => setF((s) => ({ ...s, mode: "auto" }))}>อัตโนมัติ (ผลงานของผู้เขียน)</ModeBtn>
+          <ModeBtn active={f.mode === "manual"} onClick={() => setF((s) => ({ ...s, mode: "manual" }))}>เลือกเอง</ModeBtn>
+        </div>
+      </div>
+
+      {f.mode === "auto" ? (
+        <label className="block max-w-[200px]">
+          <span className="mb-1 block text-[12px] text-sub">จำนวนเล่ม (1–{AUTHOR_SPOTLIGHT_MAX})</span>
+          <input type="number" min={1} max={AUTHOR_SPOTLIGHT_MAX} value={f.limit}
+            onChange={(e) => setF((s) => ({ ...s, limit: e.target.value }))}
+            onBlur={(e) => setF((s) => ({ ...s, limit: Math.min(AUTHOR_SPOTLIGHT_MAX, Math.max(1, Math.round(Number(e.target.value)) || 3)) }))}
+            className={inp} />
+        </label>
+      ) : (
+        <div className="space-y-3">
+          <div>
+            <p className="mb-1.5 text-[12px] text-sub">เล่มที่เลือก ({f.bookIds.length}/{AUTHOR_SPOTLIGHT_MAX})</p>
+            {f.bookIds.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-[13px] text-sub">ยังไม่ได้เลือก — ค้นหาด้านล่างแล้วกด “เลือก”</p>
+            ) : (
+              <ul className="space-y-2">
+                {selBooks.map((b, i) => (
+                  <li key={b.id} className="flex items-center gap-3 rounded-lg border border-line bg-white px-2 py-2">
+                    <div className="flex flex-col gap-0.5">
+                      <button onClick={() => moveBook(i, -1)} disabled={i === 0} className="flex h-5 w-5 items-center justify-center rounded text-sub hover:bg-mist disabled:opacity-20" aria-label="ขึ้น">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 15l6-6 6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                      <button onClick={() => moveBook(i, 1)} disabled={i === selBooks.length - 1} className="flex h-5 w-5 items-center justify-center rounded text-sub hover:bg-mist disabled:opacity-20" aria-label="ลง">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      </button>
+                    </div>
+                    <div className="h-11 w-8 shrink-0 overflow-hidden rounded bg-mist">
+                      {b.coverImage && <img src={img(b.coverImage, 120)} alt="" className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium text-ink">{b.title}</p>
+                      <p className="truncate text-[12px] text-sub">{b.author}</p>
+                    </div>
+                    <button onClick={() => removeBook(b.id)} className="shrink-0 text-[13px] text-sub hover:text-red-600">ลบ</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <BookSearch onPick={addBook} pickedIds={f.bookIds} full />
+        </div>
+      )}
 
       <div className="flex items-center gap-3 border-t border-line pt-3">
         <button onClick={() => onSave(f)} disabled={saving || uploading} className="rounded-full bg-accent px-6 py-2 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">บันทึก</button>

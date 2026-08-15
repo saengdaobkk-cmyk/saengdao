@@ -21,6 +21,7 @@ const STRING_KEYS = [
   "homeRows", // ตั้งค่าแถวหนังสือหน้าแรก: หัวข้อ/คำโปรย/โหมดอัตโนมัติ-เลือกเอง (JSON)
   "homeCustomRows", // แถวหนังสือที่แอดมินสร้างเอง (JSON array)
   "homeBanner", // แบนเนอร์ภาพตรึง parallax หน้าแรก (JSON เดี่ยว)
+  "homeAuthorSpotlight", // ผู้เขียนประจำเดือน หน้าแรก (JSON เดี่ยว)
   "coverTypeOptions", // ตัวเลือกประเภทปก (JSON array)
   "paperTypeOptions", // ตัวเลือกกระดาษเนื้อใน (JSON array)
   "dimensionUnit", // หน่วยขนาด (เติมท้ายอัตโนมัติ) เช่น "cm."

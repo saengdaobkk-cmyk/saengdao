@@ -10,6 +10,7 @@ export const HOME_SECTIONS = [
   { key: "textmarquee", label: "แถบตัวอักษรเลื่อน" },
   { key: "ribbon", label: "แถบโปรโมชั่นเอียง" },
   { key: "brands", label: "สำนักพิมพ์" },
+  { key: "author", label: "ผู้เขียนประจำเดือน" },
   { key: "blog", label: "บทความ / บล็อก" },
 ];
 
@@ -97,6 +98,42 @@ export function parseBanner(raw) {
     parallax: Math.min(BANNER_PARALLAX_MAX, Math.max(0, o.parallax == null ? d.parallax : Math.round(Number(o.parallax)) || 0)),
   };
 }
+// ---- ผู้เขียนประจำเดือน (Author of the Month) — เก็บใน setting homeAuthorSpotlight (JSON เดี่ยว) ----
+export const AUTHOR_SPOTLIGHT_MAX = 6; // จำนวนหนังสือฝั่งขวาสูงสุด
+export const AUTHOR_SPOTLIGHT_DEFAULT = {
+  enabled: true,
+  eyebrow: "ผู้เขียนประจำเดือน",
+  name: "", // ชื่อผู้เขียน (ใช้ดึงหนังสือของเขาแบบอัตโนมัติด้วย)
+  bio: "", // ประวัติย่อ
+  photo: "", // รูปผู้เขียน (วงกลม)
+  buttonText: "ดูผลงานทั้งหมด",
+  featuredBookId: "", // ปกใหญ่ฝั่งซ้าย (เลือกหนังสือ 1 เล่ม)
+  mode: "auto", // auto = ดึงหนังสือของผู้เขียนนี้ | manual = เลือกเอง
+  bookIds: [], // หนังสือฝั่งขวา (โหมดเลือกเอง)
+  limit: 3, // จำนวนหนังสือฝั่งขวา (โหมดอัตโนมัติ)
+};
+export function parseAuthorSpotlight(raw) {
+  let o = {};
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (p && typeof p === "object") o = p;
+  } catch { /* ใช้ค่าเริ่มต้น */ }
+  const d = AUTHOR_SPOTLIGHT_DEFAULT;
+  const str = (v, def) => (typeof v === "string" ? v : def);
+  return {
+    enabled: o.enabled !== false,
+    eyebrow: str(o.eyebrow, d.eyebrow),
+    name: str(o.name, d.name),
+    bio: str(o.bio, d.bio),
+    photo: str(o.photo, d.photo),
+    buttonText: str(o.buttonText, d.buttonText),
+    featuredBookId: str(o.featuredBookId, d.featuredBookId),
+    mode: o.mode === "manual" ? "manual" : "auto",
+    bookIds: Array.isArray(o.bookIds) ? o.bookIds.filter((x) => typeof x === "string").slice(0, AUTHOR_SPOTLIGHT_MAX) : [],
+    limit: clampLimit(o.limit, d.limit) > AUTHOR_SPOTLIGHT_MAX ? AUTHOR_SPOTLIGHT_MAX : clampLimit(o.limit, d.limit),
+  };
+}
+
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)
 export const BOOKS_EDITABLE_KEYS = ["new", "bestseller", "recommend"];
 

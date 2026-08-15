@@ -9,8 +9,9 @@ import HotDealSection from "../components/HotDealSection";
 import BookGridSection from "../components/BookGridSection";
 import BlogSection from "../components/BlogSection";
 import ParallaxBanner from "../components/ParallaxBanner";
+import AuthorSpotlight from "../components/AuthorSpotlight";
 import { useSettings } from "../api/settings";
-import { parseOrder, parseRows, parseCustomRows, parseBanner, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
+import { parseOrder, parseRows, parseCustomRows, parseBanner, parseAuthorSpotlight, customKey, isCustomKey, customIdOf } from "../lib/homeSections";
 
 // แถวหนังสือ (มาใหม่/ขายดี/แถวที่สร้างเอง) — ครอบด้วยระยะห่างมาตรฐาน
 const Row = (cfg) => (
@@ -20,10 +21,11 @@ const Row = (cfg) => (
 );
 
 export default function Home() {
-  const { homeSectionOrder, homeRows, homeCustomRows, homeBanner } = useSettings();
+  const { homeSectionOrder, homeRows, homeCustomRows, homeBanner, homeAuthorSpotlight } = useSettings();
   const rows = parseRows(homeRows);
   const custom = parseCustomRows(homeCustomRows);
   const banner = parseBanner(homeBanner);
+  const authorSpotlight = parseAuthorSpotlight(homeAuthorSpotlight);
   const customBy = Object.fromEntries(custom.map((r) => [customKey(r.id), r]));
   const order = parseOrder(homeSectionOrder, custom.map((r) => customKey(r.id)));
 
@@ -42,6 +44,9 @@ export default function Home() {
     textmarquee: <TextMarquee />,
     ribbon: <PromoRibbon />,
     brands: <PublisherMarquee title={rows.brands.title} subtitle={rows.brands.subtitle} />,
+    author: authorSpotlight.enabled && authorSpotlight.name.trim()
+      ? <div className="pt-10 sm:pt-14"><AuthorSpotlight cfg={authorSpotlight} /></div>
+      : null,
     blog: (
       <div className="pt-10 sm:pt-14">
         <BlogSection title={rows.blog.title} subtitle={rows.blog.subtitle} />
