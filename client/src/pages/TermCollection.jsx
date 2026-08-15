@@ -50,8 +50,8 @@ export default function TermCollection({ type }) {
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
       <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
         <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
-        <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link><span>›</span>
-        <span className="text-ink">{TYPE_LABEL[type]}</span>
+        <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
+        <span className="text-ink">{term.name}</span>
       </nav>
 
       <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
