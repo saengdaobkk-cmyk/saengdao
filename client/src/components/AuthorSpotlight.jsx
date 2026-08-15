@@ -39,7 +39,7 @@ export default function AuthorSpotlight({ cfg }) {
 
   return (
     <section className="mx-auto max-w-page px-5 py-10">
-      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.85fr)_1fr] lg:gap-16">
+      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.85fr)_1px_1fr] lg:gap-x-14">
         {/* ปกใหญ่ฝั่งซ้าย */}
         {featured && featured.coverImage ? (
           <Link to={featTo} className="group block">
@@ -56,6 +56,9 @@ export default function AuthorSpotlight({ cfg }) {
             <span className="text-5xl opacity-25">𝐀</span>
           </div>
         )}
+
+        {/* เส้นแบ่งแนวตั้ง — เต็มความสูง (เฉพาะจอใหญ่) */}
+        <div className="hidden self-stretch bg-line lg:block" aria-hidden="true" />
 
         {/* โปรไฟล์ผู้เขียน + หนังสือ */}
         <div>
