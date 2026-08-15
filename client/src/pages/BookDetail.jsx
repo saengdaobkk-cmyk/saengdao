@@ -41,6 +41,20 @@ export default function BookDetail() {
   const [lbIndex, setLbIndex] = useState(null); // index รูปใน lightbox (null = ปิด)
   const [descOpen, setDescOpen] = useState(false);
   const [flipOpen, setFlipOpen] = useState(false); // เปิด flipbook ตัวอย่าง PDF
+  const descRef = useRef(null);
+  const [descOverflow, setDescOverflow] = useState(false); // รายละเอียดยาวจนถูกตัดจริงไหม (วัดจากความสูง)
+
+  // วัดจริงว่าข้อความล้นกรอบ 7 บรรทัดไหม → โชว์ปุ่ม "อ่านเพิ่ม" เฉพาะตอนถูกตัดจริง
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el) { setDescOverflow(false); return; }
+    const check = () => { if (!descOpen) setDescOverflow(el.scrollHeight > el.clientHeight + 2); };
+    check();
+    window.addEventListener("resize", check);
+    document.fonts?.ready?.then(check); // เผื่อฟอนต์ไทยโหลดเสร็จทีหลัง จำนวนบรรทัดเปลี่ยน
+    return () => window.removeEventListener("resize", check);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book?.description, descOpen]);
 
   const variant = book?.variants?.find((v) => v.id === variantId) || null;
   const hasVariants = book?.variants?.length > 0;
@@ -117,7 +131,6 @@ export default function BookDetail() {
     [t("product.spec_isbn", "ISBN"), variant?.isbn || book.isbn],
   ].filter(([, v]) => v);
 
-  const longDesc = (book.description || "").length > 220;
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-10 sm:py-14">
@@ -276,10 +289,10 @@ export default function BookDetail() {
           {book.description && (
             <div className="mt-8">
               <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>
-              <p className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen && longDesc ? "line-clamp-[7]" : ""}`}>
+              <p ref={descRef} className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen ? "line-clamp-[7]" : ""}`}>
                 {book.description}
               </p>
-              {longDesc && (
+              {descOverflow && (
                 <button onClick={() => setDescOpen((o) => !o)} className="mt-2 text-[14px] font-medium text-accent">
                   {descOpen ? `${t("product.read_less", "ย่อ")} ▴` : `${t("product.read_more", "อ่านเพิ่ม")} ▾`}
                 </button>
