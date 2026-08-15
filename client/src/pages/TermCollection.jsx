@@ -74,7 +74,7 @@ export default function TermCollection({ type }) {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {data.items.map((b, i) => <BookCard key={b.id} book={b} index={i} />)}
+            {data.items.map((b, i) => <BookCard key={b.id} book={b} index={i} reveal />)}
           </div>
           {data.totalPages > 1 && (
             <div className="mt-16 flex items-center justify-center gap-6">

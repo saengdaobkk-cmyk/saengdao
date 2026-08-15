@@ -113,7 +113,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
             {!busy && items.length > 0 && (
               <>
                 <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                  {items.map((book, i) => <BookCard key={book.id} book={book} index={i} />)}
+                  {items.map((book, i) => <BookCard key={book.id} book={book} index={i} reveal />)}
                 </div>
                 {totalPages > 1 && (
                   <div className="mt-16 flex items-center justify-center gap-6">
