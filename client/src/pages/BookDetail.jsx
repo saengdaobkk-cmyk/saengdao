@@ -16,7 +16,7 @@ export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { add, openDrawer } = useCart();
-  const { cartDrawerEnabled, showProductTrust } = useSettings();
+  const { cartDrawerEnabled, showProductTrust, productStickyCover } = useSettings();
   const { t } = useContent();
   const { data: book, isLoading, isError } = useBook(id);
   const { data: related } = useRelated(id);
@@ -143,7 +143,7 @@ export default function BookDetail() {
 
       <div className="mt-6 grid gap-12 md:grid-cols-[minmax(0,360px)_1fr] md:gap-16 lg:grid-cols-[minmax(0,480px)_1fr]">
         {/* แกลเลอรี — ปกพลิกหน้า-หลัง */}
-        <div className="md:self-start">
+        <div className={productStickyCover ? "md:sticky md:top-24 md:self-start" : "md:self-start"}>
           <div className={`relative aspect-[145/210] w-full ${back ? `flip-card ${flipped ? "flipped" : ""}` : "overflow-hidden rounded-3xl bg-mist ring-1 ring-line shadow-[0_18px_45px_-12px_rgba(0,0,0,0.3)]"}`}>
             {back ? (
               <div className="flip-inner" ref={flipInnerRef}>

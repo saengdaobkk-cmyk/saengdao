@@ -78,6 +78,13 @@ export default function AdminSettings() {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ transparentHeader: v })}
           />
+          <ToggleRow
+            title="ปกสินค้าค้างตอนเลื่อน (Sticky)"
+            desc="เปิด: รูปปกในหน้าสินค้าค้างอยู่กับที่ตอนเลื่อนอ่านรายละเอียด · ปิด: ปกเลื่อนไปตามหน้าปกติ"
+            checked={settings.productStickyCover}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ productStickyCover: v })}
+          />
         </div>
       </section>
 
