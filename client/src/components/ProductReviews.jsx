@@ -57,9 +57,9 @@ export default function ProductReviews({ bookId }) {
           <p className="text-[14px] font-medium text-emerald-600">
             ขอบคุณสำหรับรีวิว 🙏{gotPoint && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] text-emerald-700">+1 แต้ม</span>}
           </p>
-        ) : me === undefined ? (
+        ) : me == null ? (
           <p className="text-[14px] text-sub">กำลังโหลด...</p>
-        ) : me.reviewed ? (
+        ) : me.reviewed && me.review ? (
           <div>
             <p className="text-[14px] font-medium text-ink">คุณรีวิวสินค้านี้แล้ว</p>
             <Stars value={me.review.rating} size={18} className="mt-2" />
