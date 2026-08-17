@@ -10,7 +10,7 @@ export default function ProductReviews({ bookId }) {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const { data } = useBookReviews(bookId, page, 5);
-  const { data: me } = useMyReview(bookId, !!user);
+  const { data: me, isLoading: meLoading } = useMyReview(bookId, !!user);
   const submit = useSubmitReview(bookId);
 
   const [rating, setRating] = useState(0);
@@ -57,16 +57,16 @@ export default function ProductReviews({ bookId }) {
           <p className="text-[14px] font-medium text-emerald-600">
             ขอบคุณสำหรับรีวิว 🙏{gotPoint && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] text-emerald-700">+1 แต้ม</span>}
           </p>
-        ) : me == null ? (
+        ) : meLoading ? (
           <p className="text-[14px] text-sub">กำลังโหลด...</p>
-        ) : me.reviewed && me.review ? (
+        ) : me?.reviewed && me.review ? (
           <div>
             <p className="text-[14px] font-medium text-ink">คุณรีวิวสินค้านี้แล้ว</p>
             <Stars value={me.review.rating} size={18} className="mt-2" />
             {me.review.comment && <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{me.review.comment}</p>}
             <p className="mt-2 text-[12px] text-sub">รีวิวได้ครั้งเดียวต่อสินค้า</p>
           </div>
-        ) : !me.purchased ? (
+        ) : me && !me.purchased ? (
           <p className="text-[14px] text-sub">
             เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b> (ชำระเงินเรียบร้อย) เท่านั้นจึงจะรีวิวได้
           </p>
