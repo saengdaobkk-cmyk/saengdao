@@ -16,7 +16,8 @@ export default function ProductReviews({ bookId }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
-  const [done, setDone] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [flash, setFlash] = useState(""); // "created" | "updated" — ข้อความหลังบันทึกสำเร็จ
   const [gotPoint, setGotPoint] = useState(false);
 
   const items = data?.items || [];
@@ -24,13 +25,25 @@ export default function ProductReviews({ bookId }) {
   const count = data?.count || 0;
   const totalPages = data?.totalPages || 1;
 
+  // รีวิวเดิมที่จะโชว์ (จาก server หรือค่าที่เพิ่งส่งระหว่างรอ refetch)
+  const shown = me?.review || (flash ? { rating, comment } : null);
+
+  const startEdit = () => {
+    const r = me?.review || { rating, comment };
+    setRating(r.rating || 0);
+    setComment(r.comment || "");
+    setFlash("");
+    setError("");
+    setEditing(true);
+  };
+
   const onSubmit = (e) => {
     e.preventDefault();
     setError("");
     if (!rating) return setError("เลือกจำนวนดาว");
     if (!comment.trim()) return setError("กรอกความคิดเห็น");
     submit.mutate({ rating, comment }, {
-      onSuccess: (res) => { setDone(true); setGotPoint(!!res?.pointAwarded); },
+      onSuccess: (res) => { setEditing(false); setFlash(res?.updated ? "updated" : "created"); setGotPoint(!!res?.pointAwarded); },
       onError: (err) => setError(err.response?.data?.error || "ส่งรีวิวไม่สำเร็จ"),
     });
   };
@@ -47,28 +60,37 @@ export default function ProductReviews({ bookId }) {
         )}
       </div>
 
-      {/* ฟอร์มเขียนรีวิว — ต้องซื้อจริง + รีวิวได้ครั้งเดียว */}
+      {/* ฟอร์มเขียนรีวิว — ต้องซื้อจริง · 1 รีวิว/เล่ม แก้ไขได้ */}
       <div className="mt-6 rounded-2xl border border-line p-5">
         {!user ? (
           <p className="text-[14px] text-sub">
             <Link to="/login" state={{ from: window.location.pathname }} className="font-medium text-accent">เข้าสู่ระบบ</Link> เพื่อเขียนรีวิว
           </p>
-        ) : done ? (
-          <p className="text-[14px] font-medium text-emerald-600">
-            ขอบคุณสำหรับรีวิว 🙏{gotPoint && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] text-emerald-700">+1 แต้ม</span>}
-          </p>
-        ) : meLoading ? (
+        ) : meLoading && !flash ? (
           <p className="text-[14px] text-sub">กำลังโหลด...</p>
-        ) : me?.reviewed && me.review ? (
+        ) : (me?.reviewed || flash) && !editing ? (
           <div>
-            <p className="text-[14px] font-medium text-ink">คุณรีวิวสินค้านี้แล้ว</p>
-            <Stars value={me.review.rating} size={18} className="mt-2" />
-            {me.review.comment && <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{me.review.comment}</p>}
-            <p className="mt-2 text-[12px] text-sub">รีวิวได้ครั้งเดียวต่อสินค้า</p>
+            {flash && (
+              <p className="mb-3 text-[14px] font-medium text-emerald-600">
+                {flash === "updated"
+                  ? "อัปเดตรีวิวแล้ว ✓"
+                  : <>ขอบคุณสำหรับรีวิว 🙏{gotPoint && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] text-emerald-700">+1 แต้ม</span>}</>}
+              </p>
+            )}
+            <p className="text-[14px] font-medium text-ink">รีวิวของคุณ</p>
+            {shown && (
+              <>
+                <Stars value={shown.rating} size={18} className="mt-2" />
+                {shown.comment && <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{shown.comment}</p>}
+              </>
+            )}
+            <button onClick={startEdit} className="mt-3 rounded-full border border-line px-4 py-1.5 text-[13px] font-medium text-ink transition hover:bg-mist">
+              แก้ไขรีวิว
+            </button>
           </div>
         ) : me?.purchased ? (
           <form onSubmit={onSubmit} className="space-y-3">
-            <p className="text-[14px] font-medium text-ink">ให้คะแนนหนังสือเล่มนี้</p>
+            <p className="text-[14px] font-medium text-ink">{editing ? "แก้ไขรีวิวของคุณ" : "ให้คะแนนหนังสือเล่มนี้"}</p>
             <Stars value={rating} size={30} onChange={setRating} />
             <textarea
               value={comment}
@@ -78,10 +100,19 @@ export default function ProductReviews({ bookId }) {
               className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[14px] outline-none focus:border-ink/30"
             />
             {error && <p className="text-[13px] text-red-600">{error}</p>}
-            <p className="text-[12px] text-sub">รีวิวได้ครั้งเดียวและแก้ไขไม่ได้ · รับ 1 แต้มเมื่อรีวิว</p>
-            <button type="submit" disabled={submit.isPending} className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
-              {submit.isPending ? "กำลังส่ง..." : "ส่งรีวิว"}
-            </button>
+            <p className="text-[12px] text-sub">
+              {editing ? "แก้ไขได้ · แต้มได้เฉพาะรีวิวครั้งแรก" : "แก้ไขได้ภายหลัง · รับ 1 แต้มเมื่อรีวิวครั้งแรก"}
+            </p>
+            <div className="flex items-center gap-3">
+              <button type="submit" disabled={submit.isPending} className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+                {submit.isPending ? "กำลังบันทึก..." : editing ? "บันทึกการแก้ไข" : "ส่งรีวิว"}
+              </button>
+              {editing && (
+                <button type="button" onClick={() => { setEditing(false); setError(""); }} className="text-[13px] text-sub hover:text-ink">
+                  ยกเลิก
+                </button>
+              )}
+            </div>
           </form>
         ) : (
           <p className="text-[14px] text-sub">

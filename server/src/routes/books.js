@@ -270,7 +270,7 @@ router.get("/:id/reviews/mine", authenticate, async (req, res, next) => {
   }
 });
 
-// POST /api/books/:id/reviews — เขียนรีวิว (ล็อกอิน · ต้องซื้อจริง · รีวิวได้ครั้งเดียวถาวร · ได้ 1 แต้ม)
+// POST /api/books/:id/reviews — เขียน/แก้รีวิว (ล็อกอิน · ต้องซื้อจริง · 1 รีวิว/เล่ม แก้ได้ · ได้ 1 แต้มครั้งแรก)
 router.post("/:id/reviews", authenticate, async (req, res, next) => {
   try {
     const bookId = await resolveBookId(req.params.id);
@@ -280,30 +280,29 @@ router.post("/:id/reviews", authenticate, async (req, res, next) => {
     if (rating < 1 || rating > 5) return res.status(400).json({ error: "ให้คะแนน 1-5 ดาว" });
     if (!comment) return res.status(400).json({ error: "กรอกความคิดเห็น" });
 
-    // 1) ต้องซื้อสินค้านี้จริง (ชำระเงินแล้ว) ถึงจะรีวิวได้
+    // ต้องซื้อสินค้านี้จริง (ชำระเงินแล้ว) ถึงจะรีวิวได้
     if (!(await hasPurchased(req.user.id, bookId)))
       return res.status(403).json({ error: "เฉพาะลูกค้าที่สั่งซื้อสินค้านี้แล้วเท่านั้นจึงจะรีวิวได้" });
 
-    // 2) รีวิวได้ครั้งเดียวต่อสินค้า — แม้จะซื้อรายการเดิมซ้ำก็ตาม (ห้ามแก้/รีวิวใหม่)
-    const existing = await prisma.review.findUnique({ where: { bookId_userId: { bookId, userId: req.user.id } } });
-    if (existing) return res.status(409).json({ error: "คุณรีวิวสินค้านี้ไปแล้ว" });
-
-    // 3) สร้างรีวิว + ให้ 1 แต้ม (ถ้าเปิดระบบสะสมแต้ม) ในทรานแซกชันเดียว → ได้แต้มครั้งเดียว
+    // มีรีวิวอยู่แล้ว → แก้ไข (ไม่ให้แต้มซ้ำ) · ยังไม่มี → สร้างใหม่ + ให้ 1 แต้ม (ถ้าเปิดระบบสะสมแต้ม)
     const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.review.findUnique({ where: { bookId_userId: { bookId, userId: req.user.id } } });
+      if (existing) {
+        await tx.review.update({ where: { bookId_userId: { bookId, userId: req.user.id } }, data: { rating, comment } });
+        return { updated: true, pointAwarded: false };
+      }
       await tx.review.create({ data: { bookId, userId: req.user.id, rating, comment, verified: true } });
       const loyalty = await tx.setting.findUnique({ where: { key: "loyaltyEnabled" } });
       if (loyalty?.value === "true") {
         await tx.user.update({ where: { id: req.user.id }, data: { points: { increment: 1 } } });
         await tx.pointEntry.create({ data: { userId: req.user.id, delta: 1, reason: "รีวิวสินค้า" } });
-        return { pointAwarded: true };
+        return { updated: false, pointAwarded: true };
       }
-      return { pointAwarded: false };
+      return { updated: false, pointAwarded: false };
     });
 
-    res.status(201).json({ ok: true, pointAwarded: result.pointAwarded });
+    res.status(201).json({ ok: true, updated: result.updated, pointAwarded: result.pointAwarded });
   } catch (err) {
-    // กันชนกรณีแข่งกันสร้างพร้อมกัน (unique bookId+userId)
-    if (err?.code === "P2002") return res.status(409).json({ error: "คุณรีวิวสินค้านี้ไปแล้ว" });
     next(err);
   }
 });
