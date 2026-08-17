@@ -18,7 +18,7 @@ export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { add, openDrawer } = useCart();
-  const { cartDrawerEnabled, showProductTrust, productStickyCover } = useSettings();
+  const { cartDrawerEnabled, showProductTrust, productStickyCover, showRatingSummary } = useSettings();
   const { t } = useContent();
   const { data: book, isLoading, isError } = useBook(id);
   const { data: related } = useRelated(id);
@@ -217,8 +217,8 @@ export default function BookDetail() {
             </p>
           )}
 
-          {/* ดาวสรุป — กดแล้วเลื่อนไปที่รีวิว (โชว์เมื่อมีรีวิวแล้ว) */}
-          <RatingSummary bookId={book.id} />
+          {/* ดาวสรุป — กดแล้วเลื่อนไปที่รีวิว (โชว์เมื่อมีรีวิวแล้ว + เปิดใช้งาน) */}
+          {showRatingSummary !== false && <RatingSummary bookId={book.id} />}
 
           {/* buybox */}
           <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>

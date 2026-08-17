@@ -44,6 +44,13 @@ export default function AdminSettings() {
             onChange={(v) => update.mutate({ showProductTrust: v })}
           />
           <ToggleRow
+            title="ดาวสรุปใต้ชื่อหนังสือ"
+            desc="เปิด: โชว์ดาวเฉลี่ย + จำนวนรีวิว ใต้ชื่อหนังสือด้านบน (กดแล้วเลื่อนไปที่รีวิว) · ปิด: ซ่อน"
+            checked={settings.showRatingSummary}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showRatingSummary: v })}
+          />
+          <ToggleRow
             title="ปุ่มแชร์ในหน้าบทความ"
             desc="เปิด: โชว์ปุ่มแชร์ Facebook / LINE / X / คัดลอกลิงก์ ใต้หัวข้อบทความ · ปิด: ซ่อน"
             checked={settings.showBlogShare}
