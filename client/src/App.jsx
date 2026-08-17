@@ -151,6 +151,7 @@ export default function App() {
           </nav>
           <div className="border-t border-line p-3">
             <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
+            <Link to="/orders" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">ประวัติคำสั่งซื้อ</Link>
           </div>
         </div>
       </div>
@@ -384,6 +385,9 @@ function AccountMenu({ overHero }) {
           <div className="py-1.5 text-[14px]">
             <Link to="/account" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
               บัญชีของฉัน
+            </Link>
+            <Link to="/orders" onClick={() => setOpen(false)} className="block px-4 py-2 text-ink hover:bg-mist">
+              ประวัติคำสั่งซื้อ
             </Link>
             <button
               onClick={() => { setOpen(false); logout(); }}

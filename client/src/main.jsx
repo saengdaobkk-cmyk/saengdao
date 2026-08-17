@@ -21,6 +21,7 @@ import Checkout from "./pages/Checkout.jsx";
 import OrderConfirm from "./pages/OrderConfirm.jsx";
 import OrderTrack from "./pages/OrderTrack.jsx";
 import Account from "./pages/Account.jsx";
+import Orders from "./pages/Orders.jsx";
 import About from "./pages/About.jsx";
 import LegalPage from "./pages/LegalPage.jsx";
 import Blog from "./pages/Blog.jsx";
@@ -85,6 +86,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="verify-email" element={<VerifyEmail />} />
                 <Route path="cart" element={<Cart />} />
                 <Route path="checkout" element={<Checkout />} />
+                <Route path="orders" element={<Orders />} />
                 <Route path="orders/:id" element={<OrderConfirm />} />
                 <Route path="track" element={<OrderTrack />} />
               <Route path="account" element={<Account />} />
