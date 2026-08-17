@@ -66,11 +66,7 @@ export default function ProductReviews({ bookId }) {
             {me.review.comment && <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{me.review.comment}</p>}
             <p className="mt-2 text-[12px] text-sub">รีวิวได้ครั้งเดียวต่อสินค้า</p>
           </div>
-        ) : me && !me.purchased ? (
-          <p className="text-[14px] text-sub">
-            เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b> (ชำระเงินเรียบร้อย) เท่านั้นจึงจะรีวิวได้
-          </p>
-        ) : (
+        ) : me?.purchased ? (
           <form onSubmit={onSubmit} className="space-y-3">
             <p className="text-[14px] font-medium text-ink">ให้คะแนนหนังสือเล่มนี้</p>
             <Stars value={rating} size={30} onChange={setRating} />
@@ -87,6 +83,10 @@ export default function ProductReviews({ bookId }) {
               {submit.isPending ? "กำลังส่ง..." : "ส่งรีวิว"}
             </button>
           </form>
+        ) : (
+          <p className="text-[14px] text-sub">
+            เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b> (ชำระเงินเรียบร้อย) เท่านั้นจึงจะรีวิวได้
+          </p>
         )}
       </div>
 
