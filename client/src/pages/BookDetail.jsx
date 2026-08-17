@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useBook, useRelated } from "../api/books";
+import { useBookReviews } from "../api/reviews";
 import ProductReviews from "../components/ProductReviews";
+import Stars from "../components/Stars";
 import { useCart } from "../cart/CartContext";
 import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
@@ -215,6 +217,9 @@ export default function BookDetail() {
             </p>
           )}
 
+          {/* ดาวสรุป — กดแล้วเลื่อนไปที่รีวิว (โชว์เมื่อมีรีวิวแล้ว) */}
+          <RatingSummary bookId={book.id} />
+
           {/* buybox */}
           <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
             {isHot && (
@@ -375,6 +380,22 @@ export default function BookDetail() {
 }
 
 /* ---- ไอคอนเส้นบางสไตล์มินิมอล ---- */
+// ดาวสรุปใต้ชื่อหนังสือ — โชว์เมื่อมีรีวิว · กดแล้วเลื่อนลงไปที่ช่องรีวิว
+function RatingSummary({ bookId }) {
+  const { data } = useBookReviews(bookId, 1, 5);
+  if (!data || data.count === 0) return null;
+  const scrollToReviews = () => {
+    document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  return (
+    <button onClick={scrollToReviews} className="mt-3 flex items-center gap-2 text-left transition hover:opacity-80" aria-label="ดูรีวิว">
+      <Stars value={data.avg} size={17} />
+      <span className="text-[14px] text-ink"><b>{data.avg}</b></span>
+      <span className="text-[13px] text-sub underline-offset-2 hover:underline">({data.count} รีวิว)</span>
+    </button>
+  );
+}
+
 function BookOpenIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
