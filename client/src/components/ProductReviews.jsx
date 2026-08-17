@@ -36,7 +36,7 @@ export default function ProductReviews({ bookId }) {
   };
 
   return (
-    <section className="mt-16 border-t border-line pt-10">
+    <section id="reviews" className="mt-16 scroll-mt-24 border-t border-line pt-10">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <h2 className="text-2xl font-semibold tracking-tightest text-ink">รีวิวจากผู้ซื้อ</h2>
         {count > 0 && (

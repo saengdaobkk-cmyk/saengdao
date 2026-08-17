@@ -157,15 +157,24 @@ export default function OrderConfirm() {
       {/* รายละเอียด */}
       <div className="mt-10 rounded-2xl border border-line p-6">
         <ul className="space-y-3">
-          {order.items.map((it) => (
-            <li key={it.id} className="flex justify-between gap-3 text-[14px]">
-              <span className="text-ink">
-                {it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span>
-                {it.discountPercent > 0 && <span className="text-emerald-600"> (ลด {it.discountPercent}%)</span>}
-              </span>
-              <span className="shrink-0 text-ink">{formatPrice(Number(it.price) * it.quantity)}</span>
-            </li>
-          ))}
+          {order.items.map((it) => {
+            const canReview = order.paymentStatus === "PAID" && order.status !== "CANCELLED";
+            const to = it.book?.slug || it.book?.id;
+            return (
+              <li key={it.id} className="flex justify-between gap-3 text-[14px]">
+                <span className="min-w-0 text-ink">
+                  {it.book.title}{it.variantName && ` (${it.variantName})`} <span className="text-sub">× {it.quantity}</span>
+                  {it.discountPercent > 0 && <span className="text-emerald-600"> (ลด {it.discountPercent}%)</span>}
+                  {canReview && to && (
+                    <Link to={`/books/${to}#reviews`} className="mt-0.5 block text-[13px] font-medium text-accent hover:underline">
+                      เขียนรีวิวสินค้า →
+                    </Link>
+                  )}
+                </span>
+                <span className="shrink-0 text-ink">{formatPrice(Number(it.price) * it.quantity)}</span>
+              </li>
+            );
+          })}
         </ul>
 
         {(Number(order.discount) > 0 || Number(order.ruleDiscount) > 0 || Number(order.pointsDiscount) > 0 || Number(order.shippingFee) > 0) && (
