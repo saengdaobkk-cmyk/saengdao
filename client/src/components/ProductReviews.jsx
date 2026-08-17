@@ -85,7 +85,7 @@ export default function ProductReviews({ bookId }) {
           </form>
         ) : (
           <p className="text-[14px] text-sub">
-            เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b> (ชำระเงินเรียบร้อย) เท่านั้นจึงจะรีวิวได้
+            เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b>เท่านั้นจึงจะรีวิวได้
           </p>
         )}
       </div>
