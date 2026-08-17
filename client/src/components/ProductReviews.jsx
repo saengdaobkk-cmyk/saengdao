@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useBookReviews, useMyReview, useSubmitReview } from "../api/reviews";
@@ -10,17 +10,14 @@ export default function ProductReviews({ bookId }) {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const { data } = useBookReviews(bookId, page, 5);
-  const { data: mine } = useMyReview(bookId, !!user);
+  const { data: me } = useMyReview(bookId, !!user);
   const submit = useSubmitReview(bookId);
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-
-  useEffect(() => {
-    if (mine) { setRating(mine.rating); setComment(mine.comment); }
-  }, [mine]);
+  const [gotPoint, setGotPoint] = useState(false);
 
   const items = data?.items || [];
   const avg = data?.avg || 0;
@@ -33,7 +30,7 @@ export default function ProductReviews({ bookId }) {
     if (!rating) return setError("เลือกจำนวนดาว");
     if (!comment.trim()) return setError("กรอกความคิดเห็น");
     submit.mutate({ rating, comment }, {
-      onSuccess: () => setDone(true),
+      onSuccess: (res) => { setDone(true); setGotPoint(!!res?.pointAwarded); },
       onError: (err) => setError(err.response?.data?.error || "ส่งรีวิวไม่สำเร็จ"),
     });
   };
@@ -50,17 +47,32 @@ export default function ProductReviews({ bookId }) {
         )}
       </div>
 
-      {/* ฟอร์มเขียนรีวิว */}
+      {/* ฟอร์มเขียนรีวิว — ต้องซื้อจริง + รีวิวได้ครั้งเดียว */}
       <div className="mt-6 rounded-2xl border border-line p-5">
         {!user ? (
           <p className="text-[14px] text-sub">
             <Link to="/login" state={{ from: window.location.pathname }} className="font-medium text-accent">เข้าสู่ระบบ</Link> เพื่อเขียนรีวิว
           </p>
         ) : done ? (
-          <p className="text-[14px] font-medium text-emerald-600">ขอบคุณสำหรับรีวิว 🙏</p>
+          <p className="text-[14px] font-medium text-emerald-600">
+            ขอบคุณสำหรับรีวิว 🙏{gotPoint && <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[12px] text-emerald-700">+1 แต้ม</span>}
+          </p>
+        ) : me === undefined ? (
+          <p className="text-[14px] text-sub">กำลังโหลด...</p>
+        ) : me.reviewed ? (
+          <div>
+            <p className="text-[14px] font-medium text-ink">คุณรีวิวสินค้านี้แล้ว</p>
+            <Stars value={me.review.rating} size={18} className="mt-2" />
+            {me.review.comment && <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink/80">{me.review.comment}</p>}
+            <p className="mt-2 text-[12px] text-sub">รีวิวได้ครั้งเดียวต่อสินค้า</p>
+          </div>
+        ) : !me.purchased ? (
+          <p className="text-[14px] text-sub">
+            เฉพาะลูกค้าที่<b className="text-ink">สั่งซื้อสินค้านี้แล้ว</b> (ชำระเงินเรียบร้อย) เท่านั้นจึงจะรีวิวได้
+          </p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-3">
-            <p className="text-[14px] font-medium text-ink">{mine ? "แก้ไขรีวิวของคุณ" : "ให้คะแนนหนังสือเล่มนี้"}</p>
+            <p className="text-[14px] font-medium text-ink">ให้คะแนนหนังสือเล่มนี้</p>
             <Stars value={rating} size={30} onChange={setRating} />
             <textarea
               value={comment}
@@ -70,8 +82,9 @@ export default function ProductReviews({ bookId }) {
               className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[14px] outline-none focus:border-ink/30"
             />
             {error && <p className="text-[13px] text-red-600">{error}</p>}
+            <p className="text-[12px] text-sub">รีวิวได้ครั้งเดียวและแก้ไขไม่ได้ · รับ 1 แต้มเมื่อรีวิว</p>
             <button type="submit" disabled={submit.isPending} className="rounded-full bg-accent px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
-              {submit.isPending ? "กำลังส่ง..." : mine ? "อัปเดตรีวิว" : "ส่งรีวิว"}
+              {submit.isPending ? "กำลังส่ง..." : "ส่งรีวิว"}
             </button>
           </form>
         )}
