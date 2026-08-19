@@ -447,24 +447,17 @@ function PublisherCell({ b, editing, onEdit, onClose, save }) {
   );
 }
 
-// ราคา — แก้ด่วน (ราคาปกติ + ส่วนลด %) ในตาราง
+// ราคา — แก้ด่วน (ราคาปกติ + ราคาลด) ในตาราง
 function PriceCell({ b, editing, onEdit, onClose, save }) {
   const [price, setPrice] = useState(b.price ?? "");
-  const [pct, setPct] = useState("");
+  const [disc, setDisc] = useState(b.discountPrice ?? "");
   useEffect(() => {
-    if (editing) {
-      setPrice(b.price ?? "");
-      // มีราคาลดอยู่แล้ว → คำนวณกลับเป็น % โดยประมาณ
-      setPct(b.discountPrice != null && Number(b.price) ? String(Math.round((1 - Number(b.discountPrice) / Number(b.price)) * 100)) : "");
-    }
+    if (editing) { setPrice(b.price ?? ""); setDisc(b.discountPrice ?? ""); }
   }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (editing) {
-    const p = price === "" ? Number(b.price) : Number(price);
-    const pctN = pct === "" ? 0 : Math.max(0, Math.min(100, Number(pct)));
-    const previewDisc = pctN > 0 && p ? Math.ceil(p * (1 - pctN / 100)) : null; // ปัดขึ้นให้ตรงกับหน้าร้าน
     const submit = () => {
-      save.mutate({ ...b, price: p || b.price, discountPrice: previewDisc });
+      save.mutate({ ...b, price: price === "" ? b.price : Number(price), discountPrice: disc === "" ? null : Number(disc) });
       onClose();
     };
     return (
@@ -476,12 +469,11 @@ function PriceCell({ b, editing, onEdit, onClose, save }) {
             className="w-16 rounded-lg border border-accent px-1.5 py-1 text-[13px] outline-none" />
         </label>
         <label className="flex flex-col">
-          <span className="mb-0.5 text-[10px] text-sub">ลด %</span>
-          <input type="number" min="0" max="100" value={pct} onChange={(e) => setPct(e.target.value)} placeholder="ไม่ลด"
+          <span className="mb-0.5 text-[10px] text-sub">ราคาลด</span>
+          <input type="number" value={disc} onChange={(e) => setDisc(e.target.value)} placeholder="ไม่ลด"
             onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
-            className="w-14 rounded-lg border border-line px-1.5 py-1 text-[13px] outline-none" />
+            className="w-16 rounded-lg border border-line px-1.5 py-1 text-[13px] outline-none" />
         </label>
-        <span className="w-16 shrink-0 pb-1.5 text-[11px] text-emerald-600">{previewDisc != null ? `= ${formatPrice(previewDisc)}` : ""}</span>
         <button type="button" onClick={submit} title="บันทึก" className="pb-1.5 text-emerald-600 hover:text-emerald-700">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
         </button>
