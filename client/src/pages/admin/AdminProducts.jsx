@@ -32,7 +32,7 @@ const COLS = [
   { key: "category", label: "หมวดหมู่", w: 170 },
   { key: "price", label: "ราคา", w: 120 },
   { key: "stock", label: "สต็อก", w: 120 },
-  { key: "actions", label: "", w: 90 },
+  { key: "actions", label: "สถานะ", w: 90 },
 ];
 const CHECKBOX_W = 44; // คอลัมน์ติ๊กเลือก (ซ้ายสุด)
 
