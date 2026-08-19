@@ -245,11 +245,11 @@ export default function BookDetail() {
           {/* buybox */}
           <div className={`${canPreorder || isHot ? "mt-3" : "mt-6"} rounded-2xl border border-line p-5`}>
             <div className="flex items-end gap-3">
-              <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
+              <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : pi.preorder ? "text-indigo-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
               {showDiscount && (
                 <>
                   <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
-                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold text-white ${isHot ? "bg-orange-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
+                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold text-white ${isHot ? "bg-orange-500" : pi.preorder ? "bg-indigo-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
                 </>
               )}
             </div>
