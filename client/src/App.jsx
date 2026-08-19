@@ -238,7 +238,7 @@ function NavDropdown({ item, overHero }) {
   const [closed, setClosed] = useState(false); // ปิดชั่วคราวหลังคลิก จนกว่าเมาส์จะออกแล้วชี้ใหม่
   return (
     <div className="group relative" onMouseLeave={() => setClosed(false)}>
-      <NavLink to={item.url} end={item.url === "/"} onClick={() => setClosed(true)} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
+      <NavLink to={item.url} end={item.url === "/"} onClick={(e) => { setClosed(true); e.currentTarget.blur(); }} className={({ isActive }) => `flex items-center gap-1 ${navLinkCls(isActive, overHero)}`}>
         {item.label}
         <svg className="mt-px transition-transform duration-200 group-hover:rotate-180" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </NavLink>
@@ -247,7 +247,7 @@ function NavDropdown({ item, overHero }) {
           {item.dropdown.map((c, i) => {
             const active = c.url === current; // ตรงหน้าปัจจุบันเป๊ะ (รวม query)
             return (
-              <Link key={i} to={c.url} onClick={() => setClosed(true)} className={`block px-4 py-2 text-[14px] transition-colors ${active ? "text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
+              <Link key={i} to={c.url} onClick={(e) => { setClosed(true); e.currentTarget.blur(); }} className={`block px-4 py-2 text-[14px] transition-colors ${active ? "text-accent" : "text-sub hover:bg-mist hover:text-accent"}`}>
                 {c.label}
               </Link>
             );
