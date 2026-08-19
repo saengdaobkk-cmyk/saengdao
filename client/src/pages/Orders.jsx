@@ -22,6 +22,7 @@ const PAYMENT_STATUS_TH = {
 };
 
 function orderBadge(o) {
+  if (o.status === "CANCELLED") return ORDER_STATUS_TH.CANCELLED; // ยกเลิกแล้ว → โชว์ "ยกเลิก" เสมอ แม้ยังไม่จ่าย
   if (o.paymentStatus && o.paymentStatus !== "PAID")
     return PAYMENT_STATUS_TH[o.paymentStatus] || { label: o.paymentStatus, cls: "bg-gray-100 text-gray-600" };
   return ORDER_STATUS_TH[o.status] || ORDER_STATUS_TH.PENDING;
@@ -74,7 +75,7 @@ export default function Orders() {
           <div className={`space-y-3 transition-opacity ${isFetching ? "opacity-50" : ""}`}>
             {orders.map((o) => {
               const st = orderBadge(o);
-              const needPay = o.paymentStatus === "UNPAID";
+              const needPay = o.paymentStatus === "UNPAID" && o.status !== "CANCELLED";
               return (
                 <Link
                   key={o.id}
