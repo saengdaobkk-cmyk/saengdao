@@ -461,17 +461,23 @@ function PriceCell({ b, editing, onEdit, onClose, save }) {
       onClose();
     };
     return (
-      <div className="flex items-center gap-1">
-        <input autoFocus type="number" value={price} onChange={(e) => setPrice(e.target.value)} title="ราคาปกติ"
-          onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
-          className="w-16 rounded-lg border border-accent px-1.5 py-1 text-[13px] outline-none" />
-        <input type="number" value={disc} onChange={(e) => setDisc(e.target.value)} placeholder="ลด" title="ราคาลด (เว้นว่าง = ไม่ลด)"
-          onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
-          className="w-16 rounded-lg border border-line px-1.5 py-1 text-[13px] outline-none" />
-        <button type="button" onClick={submit} title="บันทึก" className="text-emerald-600 hover:text-emerald-700">
+      <div className="flex items-end gap-1">
+        <label className="flex flex-col">
+          <span className="mb-0.5 text-[10px] text-sub">ราคาปกติ</span>
+          <input autoFocus type="number" value={price} onChange={(e) => setPrice(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
+            className="w-16 rounded-lg border border-accent px-1.5 py-1 text-[13px] outline-none" />
+        </label>
+        <label className="flex flex-col">
+          <span className="mb-0.5 text-[10px] text-sub">ราคาลด</span>
+          <input type="number" value={disc} onChange={(e) => setDisc(e.target.value)} placeholder="ไม่ลด"
+            onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
+            className="w-16 rounded-lg border border-line px-1.5 py-1 text-[13px] outline-none" />
+        </label>
+        <button type="button" onClick={submit} title="บันทึก" className="pb-1.5 text-emerald-600 hover:text-emerald-700">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
         </button>
-        <button type="button" onClick={onClose} title="ยกเลิก" className="text-sub hover:text-ink">
+        <button type="button" onClick={onClose} title="ยกเลิก" className="pb-1.5 text-sub hover:text-ink">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </button>
       </div>
