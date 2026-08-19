@@ -208,6 +208,8 @@ model Book {
   stock           Int         @default(0)
   soldCount       Int         @default(0)
   active          Boolean     @default(true) // เปิดขาย (false = ซ่อนจากหน้าร้าน)
+  preorder        Boolean     @default(false) // พรีออเดอร์ — สั่งซื้อได้แม้สต็อกหมด
+  preorderNote    String? // ข้อความพรีออเดอร์ เช่น กำหนดจัดส่ง (แสดงหน้าสินค้า)
   featured        Boolean     @default(false) // แนะนำหน้าแรก
   tags            String[]    @default([]) // แท็ก เช่น ขายดี/ใหม่/แนะนำ
   coverImage      String?

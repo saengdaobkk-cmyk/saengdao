@@ -40,12 +40,15 @@ export function CartProvider({ children }) {
       variant ? Number(variant.discountPrice ?? variant.price) : priceInfo(book).price
     );
     const stock = variant ? variant.stock : book.stock;
+    // พรีออเดอร์ (เฉพาะซื้อทั้งเล่ม ไม่ใช่ variant) → สั่งได้ไม่จำกัดตามสต็อก
+    const preorder = !variant && !!book.preorder;
+    const cap = preorder ? Number.POSITIVE_INFINITY : stock;
 
     setItems((prev) => {
       const found = prev.find((i) => i.key === key);
       if (found) {
         return prev.map((i) =>
-          i.key === key ? { ...i, quantity: Math.min(i.quantity + qty, stock) } : i
+          i.key === key ? { ...i, quantity: Math.min(i.quantity + qty, cap) } : i
         );
       }
       return [
@@ -61,7 +64,8 @@ export function CartProvider({ children }) {
           price,
           coverImage: book.coverImage,
           stock,
-          quantity: Math.min(qty, stock),
+          preorder,
+          quantity: Math.min(qty, cap),
         },
       ];
     });
@@ -70,7 +74,7 @@ export function CartProvider({ children }) {
   const setQty = (key, qty) =>
     setItems((prev) =>
       prev.map((i) =>
-        i.key === key ? { ...i, quantity: Math.max(1, Math.min(qty, i.stock)) } : i
+        i.key === key ? { ...i, quantity: Math.max(1, Math.min(qty, i.preorder ? Number.POSITIVE_INFINITY : i.stock)) } : i
       )
     );
 

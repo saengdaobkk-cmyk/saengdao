@@ -20,7 +20,7 @@ const SORT_ACCESS = {
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
-  price: "", discountPrice: "", hotDealPrice: "", hotDealStart: "", hotDealEnd: "", stock: "", active: true, featured: false, coverImage: "", backCoverImage: "",
+  price: "", discountPrice: "", hotDealPrice: "", hotDealStart: "", hotDealEnd: "", stock: "", active: true, preorder: false, preorderNote: "", featured: false, coverImage: "", backCoverImage: "",
   galleryImages: [], previewPdf: "", publisher: "", edition: "", pageCount: "", dimensions: "",
   weight: "", paperType: "", coverType: "", isbn: "", sku: "", metaTitle: "", metaDescription: "",
   slug: "", importedAt: "", variants: [],
@@ -329,6 +329,7 @@ export default function AdminProducts() {
                         <p className={`truncate font-medium ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
                         <div className="mt-0.5 flex flex-wrap gap-1">
                           {b.active === false && <Tag color="gray">ปิดอยู่</Tag>}
+                          {b.preorder && <Tag color="violet">พรีออเดอร์</Tag>}
                           {b.featured && <Tag color="indigo">แนะนำ</Tag>}
                           {b.discountPrice != null && <Tag color="rose">ลดราคา</Tag>}
                           {(b.tags || []).map((t) => <Tag key={t} color="gray">{t}</Tag>)}
@@ -374,7 +375,7 @@ export default function AdminProducts() {
 }
 
 function Tag({ children, color }) {
-  const c = { indigo: "bg-indigo-50 text-indigo-600", rose: "bg-rose-50 text-rose-500", gray: "bg-gray-100 text-gray-500" }[color];
+  const c = { indigo: "bg-indigo-50 text-indigo-600", violet: "bg-violet-100 text-violet-600", rose: "bg-rose-50 text-rose-500", gray: "bg-gray-100 text-gray-500" }[color];
   return <span className={`rounded px-1.5 py-0.5 text-[10px] ${c}`}>{children}</span>;
 }
 
@@ -649,6 +650,18 @@ function BookForm({ book, categories, onClose }) {
               <F label="เริ่มโปร" hint="เว้นว่าง = เริ่มทันที"><Inp type="datetime-local" value={form.hotDealStart ?? ""} onChange={set("hotDealStart")} /></F>
               <F label="สิ้นสุดโปร" hint="เว้นว่าง = ไม่หมดอายุ"><Inp type="datetime-local" value={form.hotDealEnd ?? ""} onChange={set("hotDealEnd")} /></F>
             </div>
+          </Card>
+
+          <Card title="พรีออเดอร์ (Pre-order)" subtitle="เปิดให้ลูกค้าสั่งซื้อได้แม้สต็อกจะหมด — เหมาะกับหนังสือที่กำลังจะเข้า">
+            <label className="flex items-center gap-2 text-[14px] text-ink">
+              <input type="checkbox" checked={!!form.preorder} onChange={(e) => setForm((f) => ({ ...f, preorder: e.target.checked }))} className="h-4 w-4 accent-accent" />
+              เปิดพรีออเดอร์ (สั่งซื้อได้แม้สต็อก = 0)
+            </label>
+            {form.preorder && (
+              <F label="ข้อความพรีออเดอร์ (แสดงหน้าสินค้า)" hint='เช่น "จัดส่งประมาณ 15 มี.ค. 2569"'>
+                <Inp value={form.preorderNote} onChange={set("preorderNote")} placeholder="เช่น จัดส่งประมาณ..." />
+              </F>
+            )}
           </Card>
 
           <Card title="ข้อมูลจำเพาะ (Meta)">

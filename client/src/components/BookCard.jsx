@@ -44,12 +44,13 @@ export default function BookCard({ book, index = 0, reveal = false }) {
   const pi = priceInfo(book);
   const pct = pi.price < pi.original ? Math.round((1 - pi.price / pi.original) * 100) : 0;
   const hasVariants = book.variants?.length > 0;
-  const canQuickAdd = stock > 0 && !hasVariants;
+  const isPreorder = !!book.preorder && !hasVariants; // พรีออเดอร์ — สั่งได้แม้สต็อกหมด
+  const canQuickAdd = (stock > 0 || isPreorder) && !hasVariants;
 
   const onCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (stock <= 0) return;
+    if (stock <= 0 && !isPreorder) return;
     if (!canQuickAdd) { navigate(to); return; } // มีตัวเลือก → ไปเลือกที่หน้าสินค้า
     add(book, 1, null);
     setAdded(true);
@@ -83,9 +84,15 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           </div>
         )}
         {stock <= 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">
-            สินค้าหมด
-          </span>
+          isPreorder ? (
+            <span className="absolute left-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+              พรีออเดอร์
+            </span>
+          ) : (
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">
+              สินค้าหมด
+            </span>
+          )
         )}
         {/* ป้ายลดราคา / Hot Deal */}
         {pct > 0 && stock > 0 && (
@@ -95,7 +102,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         )}
 
         {/* ปุ่มหยิบใส่ตะกร้า — โผล่ตอน hover (จอใหญ่) / แสดงบนมือถือ · กดแล้วเด้ง+เปลี่ยนเป็นเครื่องหมายถูก */}
-        {stock > 0 && (
+        {(stock > 0 || isPreorder) && (
           <button
             type="button"
             onClick={onCart}

@@ -261,7 +261,8 @@ router.post("/", async (req, res, next) => {
           // ---- ซื้อทั้งเล่ม (ไม่มี variant) ----
           if (book.variants.length > 0)
             throw httpError(400, `กรุณาเลือกตัวเลือกของ "${book.title}" ก่อน`);
-          if (book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
+          // พรีออเดอร์ → สั่งได้แม้สต็อกไม่พอ (สต็อกติดลบ = จำนวนค้างส่ง)
+          if (!book.preorder && book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
 
           const price = Math.ceil(effectivePrice(book)); // Hot Deal (ถ้า active) > ลด > ปกติ
           const listPrice = Math.ceil(Number(book.price));

@@ -117,6 +117,8 @@ function bookData(body) {
     stock: int(body.stock) ?? 0,
     soldCount: int(body.soldCount) ?? 0,
     active: body.active === undefined ? true : !!body.active,
+    preorder: !!body.preorder,
+    preorderNote: str(body.preorderNote),
     featured: !!body.featured,
     tags: Array.isArray(body.tags) ? body.tags.map((t) => String(t).trim()).filter(Boolean) : [],
     coverImage: str(body.coverImage),
