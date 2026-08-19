@@ -222,24 +222,27 @@ export default function BookDetail() {
           {/* ดาวสรุป — กดแล้วเลื่อนไปที่รีวิว (โชว์เมื่อมีรีวิวแล้ว + เปิดใช้งาน) */}
           {showRatingSummary !== false && <RatingSummary bookId={book.id} />}
 
-          {/* ป้ายพรีออเดอร์ — เหนือการ์ดราคา แบบกะทัดรัด */}
-          {canPreorder && (
+          {/* ป้ายเหนือการ์ดราคา — พรีออเดอร์ / Hot Deal แบบกะทัดรัด */}
+          {(canPreorder || isHot) && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2.5 py-1 text-[12px] font-semibold tracking-wide text-white">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-                PRE-ORDER
-              </span>
-              {book.preorderNote && <span className="text-[12px] text-indigo-600">{book.preorderNote}</span>}
+              {canPreorder ? (
+                <>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2.5 py-1 text-[12px] font-semibold tracking-wide text-white">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                    PRE-ORDER
+                  </span>
+                  {book.preorderNote && <span className="text-[12px] text-indigo-600">{book.preorderNote}</span>}
+                </>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
+                  🔥 Hot Deal<HotDealCountdown end={book.hotDealEnd} />
+                </span>
+              )}
             </div>
           )}
 
           {/* buybox */}
-          <div className={`${canPreorder ? "mt-3" : "mt-6"} rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
-            {isHot && (
-              <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
-                🔥 Hot Deal<HotDealCountdown end={book.hotDealEnd} />
-              </p>
-            )}
+          <div className={`${canPreorder || isHot ? "mt-3" : "mt-6"} rounded-2xl border border-line p-5`}>
             <div className="flex items-end gap-3">
               <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
               {showDiscount && (
