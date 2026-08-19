@@ -13,7 +13,7 @@ export default function PreorderNotice({ items, className = "" }) {
         <p className="font-medium">มีสินค้าพรีออเดอร์ในคำสั่งซื้อ</p>
         <p className="mt-0.5 text-indigo-600/90">
           สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้าพรีออเดอร์พร้อมส่ง
-          {notes.length > 0 && <> · {notes.join(" · ")}</>}
+          {notes.map((n, i) => <span key={i}> · <span className="whitespace-nowrap">{n}</span></span>)}
         </p>
       </div>
     </div>
