@@ -85,7 +85,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         )}
         {stock <= 0 && (
           isPreorder ? (
-            <span className="absolute left-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
+            <span className="absolute right-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
               PRE-ORDER
             </span>
           ) : (
@@ -94,10 +94,10 @@ export default function BookCard({ book, index = 0, reveal = false }) {
             </span>
           )
         )}
-        {/* ป้ายลดราคา / Hot Deal */}
+        {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
         {pct > 0 && stock > 0 && (
           <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
-            {pi.hot && "🔥 "}-{pct}%
+            -{pct}%
           </span>
         )}
 
