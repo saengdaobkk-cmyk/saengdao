@@ -287,13 +287,14 @@ export default function BookDetail() {
 
             {/* qty + ปุ่ม */}
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <div className="flex items-center rounded-full border border-line">
+              {/* ช่องจำนวน + หยิบใส่ตะกร้า — ซ่อนบนมือถือ (ใช้แถบปุ่มล่างแทน) */}
+              <div className="hidden items-center rounded-full border border-line md:flex">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">−</button>
                 <span className="w-10 text-center text-[15px] tabular-nums">{qty}</span>
                 <button onClick={() => setQty((q) => (effStock != null && !canPreorder ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">+</button>
               </div>
               <button disabled={effStock != null && effStock <= 0 && !canPreorder} onClick={() => addToCart(false)}
-                className="flex-1 rounded-full bg-accent px-8 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40 sm:max-w-[360px]">
+                className="hidden flex-1 rounded-full bg-accent px-8 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40 md:block sm:max-w-[360px]">
                 {canPreorder && book.stock <= 0 ? "สั่งพรีออเดอร์" : t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
               {book.previewPdf && (
