@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
+import PreorderNotice from "../components/PreorderNotice";
 import { useAuth } from "../auth/AuthContext";
 import { useContent } from "../api/content";
 import { img } from "../lib/img";
@@ -102,6 +103,8 @@ export default function Cart() {
             <span>ยอดชำระ</span>
             <span>{formatPrice(subtotal)}</span>
           </div>
+
+          <PreorderNotice items={items} className="mt-4" />
 
           <button
             onClick={goCheckout}

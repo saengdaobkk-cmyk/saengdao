@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import BookLoader from "../components/BookLoader";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useCart } from "../cart/CartContext";
+import PreorderNotice from "../components/PreorderNotice";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
@@ -306,6 +307,8 @@ export default function Checkout() {
               </li>
             ))}
           </ul>
+
+          <PreorderNotice items={items} className="mt-4" />
 
           {/* โค้ดส่วนลด */}
           <div className="mt-5 border-t border-line pt-5">

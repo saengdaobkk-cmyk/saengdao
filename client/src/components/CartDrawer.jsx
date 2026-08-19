@@ -4,6 +4,7 @@ import { useCart } from "../cart/CartContext";
 import { useAuth } from "../auth/AuthContext";
 import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
+import PreorderNotice from "./PreorderNotice";
 
 export default function CartDrawer() {
   const { items, setQty, remove, subtotal, count, drawerOpen, closeDrawer } = useCart();
@@ -150,6 +151,7 @@ export default function CartDrawer() {
 
             {/* ท้าย */}
             <div className="border-t border-line">
+              <PreorderNotice items={items} className="mx-5 mt-4" />
               {/* ยอดรวม */}
               <div className="flex items-end justify-between gap-3 bg-mist/30 px-5 py-4">
                 <p className="max-w-[56%] text-[12px] leading-relaxed text-sub">ค่าจัดส่งคำนวณตอนชำระเงิน</p>

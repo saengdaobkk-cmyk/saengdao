@@ -389,7 +389,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { items: { include: { book: { select: { id: true, slug: true, title: true, author: true, price: true } } } } },
+      include: { items: { include: { book: { select: { id: true, slug: true, title: true, author: true, price: true, preorder: true, preorderNote: true } } } } },
     });
     if (!order || order.userId !== req.user.id)
       return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });

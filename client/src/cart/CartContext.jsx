@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { priceInfo } from "../lib/pricing";
+import { priceInfo, preorderActive } from "../lib/pricing";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "saengdao_cart";
@@ -40,8 +40,8 @@ export function CartProvider({ children }) {
       variant ? Number(variant.discountPrice ?? variant.price) : priceInfo(book).price
     );
     const stock = variant ? variant.stock : book.stock;
-    // พรีออเดอร์ (เฉพาะซื้อทั้งเล่ม ไม่ใช่ variant) → สั่งได้ไม่จำกัดตามสต็อก
-    const preorder = !variant && !!book.preorder;
+    // พรีออเดอร์ที่ยัง active (เฉพาะซื้อทั้งเล่ม ไม่ใช่ variant) → สั่งได้ไม่จำกัดตามสต็อก
+    const preorder = !variant && preorderActive(book);
     const cap = preorder ? Number.POSITIVE_INFINITY : stock;
 
     setItems((prev) => {
@@ -65,6 +65,7 @@ export function CartProvider({ children }) {
           coverImage: book.coverImage,
           stock,
           preorder,
+          preorderNote: preorder ? (book.preorderNote || "") : "",
           quantity: Math.min(qty, cap),
         },
       ];
