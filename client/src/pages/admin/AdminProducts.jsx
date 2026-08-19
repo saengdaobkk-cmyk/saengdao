@@ -260,14 +260,14 @@ export default function AdminProducts() {
             </colgroup>
             <thead className="border-b border-line bg-mist/50 text-[12px] text-sub">
               <tr>
-                <th className="px-3 py-3">
+                <th className="border-r border-line px-3 py-3">
                   <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer align-middle accent-accent" aria-label="เลือกทั้งหมด" />
                 </th>
                 {COLS.map((c, i) => {
                   const sortable = !!SORT_ACCESS[c.key];
                   const activeSort = sort.key === c.key;
                   return (
-                    <th key={c.key} className={`relative select-none px-4 py-3 font-medium ${c.key === "actions" ? "text-right" : ""}`}>
+                    <th key={c.key} className={`relative select-none px-4 py-3 font-medium ${i < COLS.length - 1 ? "border-r border-line" : ""} ${c.key === "actions" ? "text-right" : ""}`}>
                       {sortable ? (
                         <button
                           type="button"
