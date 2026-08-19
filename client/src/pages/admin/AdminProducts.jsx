@@ -114,6 +114,7 @@ export default function AdminProducts() {
     XLSX.writeFile(wb, `saengdao-books-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
   const [cat, setCat] = useState("");
+  const [pub, setPub] = useState("");
   const [status, setStatus] = useState("");
 
   // ความกว้างคอลัมน์ (ลากปรับได้)
@@ -147,13 +148,14 @@ export default function AdminProducts() {
       list = list.filter((b) => [b.title, b.isbn, b.author].some((x) => x?.toLowerCase().includes(s)));
     }
     if (cat) list = list.filter((b) => b.category?.name === cat || b.categoryId === cat);
+    if (pub) list = list.filter((b) => b.publisher === pub);
     if (status === "instock") list = list.filter((b) => b.stock > 0);
     if (status === "out") list = list.filter((b) => b.stock <= 0);
     if (status === "featured") list = list.filter((b) => b.featured);
     if (status === "active") list = list.filter((b) => b.active !== false);
     if (status === "inactive") list = list.filter((b) => b.active === false);
     return list;
-  }, [books, q, cat, status]);
+  }, [books, q, cat, pub, status]);
 
   // เรียงตามคอลัมน์ (คลิกหัวตาราง)
   // วน 3 สเต็ป: ปกติ → มาก(desc) → น้อย(asc) → ปกติ
@@ -214,6 +216,10 @@ export default function AdminProducts() {
         <select value={cat} onChange={(e) => setCat(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30">
           <option value="">ทุกหมวด</option>
           {categories?.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+        </select>
+        <select value={pub} onChange={(e) => setPub(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30">
+          <option value="">ทุกสำนักพิมพ์</option>
+          {publishers.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30">
           <option value="">ทุกสถานะ</option>
