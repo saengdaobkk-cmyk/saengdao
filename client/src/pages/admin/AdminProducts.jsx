@@ -253,7 +253,7 @@ export default function AdminProducts() {
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="table-fixed text-left text-[14px]" style={{ width: CHECKBOX_W + colW.reduce((a, b) => a + b, 0) }}>
+          <table className="w-full table-fixed text-left text-[14px]" style={{ minWidth: CHECKBOX_W + colW.reduce((a, b) => a + b, 0) }}>
             <colgroup>
               <col style={{ width: CHECKBOX_W }} />
               {COLS.map((c, i) => <col key={c.key} style={{ width: colW[i] }} />)}
