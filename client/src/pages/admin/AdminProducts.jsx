@@ -538,6 +538,7 @@ function BookForm({ book, categories, onClose }) {
   const translators = useTermList("TRANSLATOR").data || [];
   const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "", hotDealPrice: book.hotDealPrice ?? "", hotDealStart: toLocalInput(book.hotDealStart), hotDealEnd: toLocalInput(book.hotDealEnd) });
   const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState({});
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const setBusyFor = (k, v) => setBusy((b) => ({ ...b, [k]: v }));
@@ -587,7 +588,15 @@ function BookForm({ book, categories, onClose }) {
       hotDealStart: form.hotDealStart ? new Date(form.hotDealStart).toISOString() : null,
       hotDealEnd: form.hotDealEnd ? new Date(form.hotDealEnd).toISOString() : null,
     };
-    save.mutate(payload, { onSuccess: onClose, onError: (err) => setError(err.response?.data?.error || "บันทึกไม่สำเร็จ") });
+    save.mutate(payload, {
+      onSuccess: (data) => {
+        // ไม่ปิดหน้าแก้ไข — อัปเดต id/slug (เผื่อเพิ่งสร้างใหม่) แล้วโชว์ว่าบันทึกแล้ว
+        setForm((f) => ({ ...f, id: data?.id ?? f.id, slug: data?.slug ?? f.slug }));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      },
+      onError: (err) => setError(err.response?.data?.error || "บันทึกไม่สำเร็จ"),
+    });
   };
 
   return (
@@ -754,11 +763,19 @@ function BookForm({ book, categories, onClose }) {
           </Card>
 
           {error && <p className="text-[13px] text-red-600">{error}</p>}
+          {saved && <p className="text-center text-[13px] font-medium text-emerald-600">บันทึกแล้ว ✓</p>}
 
           <button type="submit" disabled={save.isPending} className="w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
             {save.isPending ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
           </button>
-          <button type="button" onClick={onClose} className="w-full rounded-full border border-line py-3 text-[15px] text-ink hover:bg-mist">ยกเลิก</button>
+          {form.id && (
+            <a href={`/books/${form.slug || form.id}`} target="_blank" rel="noreferrer"
+              className="flex w-full items-center justify-center gap-1.5 rounded-full border border-line py-3 text-[15px] font-medium text-ink transition hover:bg-mist">
+              ดูหน้าสินค้าจริง
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M7 17 17 7M9 7h8v8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </a>
+          )}
+          <button type="button" onClick={onClose} className="w-full rounded-full border border-line py-3 text-[15px] text-ink hover:bg-mist">กลับไปรายการสินค้า</button>
         </div>
       </div>
     </form>
