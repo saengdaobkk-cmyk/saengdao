@@ -32,8 +32,9 @@ const COLS = [
   { key: "category", label: "หมวดหมู่", w: 170 },
   { key: "price", label: "ราคา", w: 120 },
   { key: "stock", label: "สต็อก", w: 120 },
-  { key: "actions", label: "", w: 150 },
+  { key: "actions", label: "", w: 90 },
 ];
+const CHECKBOX_W = 44; // คอลัมน์ติ๊กเลือก (ซ้ายสุด)
 
 export default function AdminProducts() {
   const { data: books, isLoading } = useAdminBooks();
@@ -172,6 +173,27 @@ export default function AdminProducts() {
     });
   }, [filtered, sort]);
 
+  // เลือกหลายรายการ (bulk) — ติ๊ก checkbox ต่อแถว
+  const [selected, setSelected] = useState(() => new Set());
+  const toggleSelect = (id) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const visibleIds = sorted.map((b) => b.id);
+  const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  const someSelected = selected.size > 0;
+  const toggleSelectAll = () => setSelected((s) => {
+    if (visibleIds.every((id) => s.has(id))) { const n = new Set(s); visibleIds.forEach((id) => n.delete(id)); return n; }
+    return new Set([...s, ...visibleIds]);
+  });
+  const clearSel = () => setSelected(new Set());
+  const bulkSetActive = (active) => {
+    (books || []).filter((b) => selected.has(b.id)).forEach((b) => save.mutate({ ...b, active }));
+    clearSel();
+  };
+  const bulkDelete = () => {
+    if (!confirm(`ลบสินค้าที่เลือก ${selected.size} รายการ? การลบย้อนกลับไม่ได้`)) return;
+    [...selected].forEach((id) => del.mutate(id, { onError: (e) => alert(e.response?.data?.error || "ลบไม่สำเร็จ") }));
+    clearSel();
+  };
+
   if (editing) return <BookForm book={editing} categories={categories || []} onClose={() => setEditing(null)} />;
 
   return (
@@ -214,16 +236,33 @@ export default function AdminProducts() {
 
       {importing && <ImportBooks onClose={() => setImporting(false)} />}
 
+      {/* แถบจัดการเมื่อเลือกหลายรายการ */}
+      {someSelected && (
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-accent/30 bg-accent/5 px-4 py-2.5">
+          <span className="text-[13px] font-medium text-ink">เลือกแล้ว {selected.size} รายการ</span>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => bulkSetActive(true)} className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-ink transition hover:bg-mist">เปิดขาย</button>
+            <button onClick={() => bulkSetActive(false)} className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-ink transition hover:bg-mist">ปิดขาย</button>
+            <button onClick={bulkDelete} className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-red-600 transition hover:bg-red-50">ลบ</button>
+          </div>
+          <button onClick={clearSel} className="ml-auto text-[13px] text-sub transition hover:text-ink">ยกเลิกการเลือก</button>
+        </div>
+      )}
+
       {isLoading ? (
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="table-fixed text-left text-[14px]" style={{ width: colW.reduce((a, b) => a + b, 0) }}>
+          <table className="table-fixed text-left text-[14px]" style={{ width: CHECKBOX_W + colW.reduce((a, b) => a + b, 0) }}>
             <colgroup>
+              <col style={{ width: CHECKBOX_W }} />
               {COLS.map((c, i) => <col key={c.key} style={{ width: colW[i] }} />)}
             </colgroup>
             <thead className="border-b border-line bg-mist/50 text-[12px] text-sub">
               <tr>
+                <th className="px-3 py-3">
+                  <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 cursor-pointer align-middle accent-accent" aria-label="เลือกทั้งหมด" />
+                </th>
                 {COLS.map((c, i) => {
                   const sortable = !!SORT_ACCESS[c.key];
                   const activeSort = sort.key === c.key;
@@ -258,15 +297,18 @@ export default function AdminProducts() {
             </thead>
             <tbody className="divide-y divide-line">
               {sorted.map((b) => (
-                <tr key={b.id} className={`hover:bg-mist/30 ${b.active === false ? "bg-mist/20" : ""}`}>
+                <tr key={b.id} className={`${selected.has(b.id) ? "bg-accent/5" : b.active === false ? "bg-mist/20" : ""} hover:bg-mist/30`}>
+                  <td className="px-3 py-3 align-top">
+                    <input type="checkbox" checked={selected.has(b.id)} onChange={() => toggleSelect(b.id)} className="mt-1 h-4 w-4 cursor-pointer accent-accent" aria-label={`เลือก ${b.title}`} />
+                  </td>
                   <td className="px-4 py-3 text-[12px] text-sub">{b.isbn || "—"}</td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => setEditing(b)} className="group flex w-full items-center gap-3 text-left" title="คลิกเพื่อแก้ไข">
                       <div className={`flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-mist ${b.active === false ? "opacity-40" : ""}`}>
                         {b.coverImage ? <img src={b.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] opacity-30">𝐀</span>}
                       </div>
-                      <div>
-                        <p className={`font-medium ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
+                      <div className="min-w-0">
+                        <p className={`truncate font-medium transition-colors group-hover:text-accent ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
                         <div className="mt-0.5 flex flex-wrap gap-1">
                           {b.active === false && <Tag color="gray">ปิดอยู่</Tag>}
                           {b.featured && <Tag color="indigo">แนะนำ</Tag>}
@@ -274,7 +316,7 @@ export default function AdminProducts() {
                           {(b.tags || []).map((t) => <Tag key={t} color="gray">{t}</Tag>)}
                         </div>
                       </div>
-                    </div>
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-sub">{b.category?.name || "—"}</td>
                   <td className="px-4 py-3">
@@ -293,9 +335,6 @@ export default function AdminProducts() {
                   })()}
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <Toggle on={b.active !== false} onChange={() => save.mutate({ ...b, active: b.active === false })} title={b.active === false ? "เปิดขาย" : "ปิดขาย (ซ่อนจากหน้าร้าน)"} />
-                    <button onClick={() => setEditing(b)} className="ml-2 rounded-lg border border-line px-3 py-1 text-[12px] text-ink hover:bg-mist">แก้ไข</button>
-                    <button onClick={() => confirm(`ลบ "${b.title}"?`) && del.mutate(b.id, { onError: (e) => alert(e.response?.data?.error || "ลบไม่สำเร็จ") })}
-                      className="ml-2 rounded-lg border border-line px-3 py-1 text-[12px] text-sub hover:text-red-600">ลบ</button>
                   </td>
                 </tr>
               ))}
