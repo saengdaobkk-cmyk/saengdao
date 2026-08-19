@@ -11,10 +11,12 @@ export default function PreorderNotice({ items, className = "" }) {
       </svg>
       <div className="text-indigo-700" lang="th">
         <p className="font-medium">มีสินค้าพรีออเดอร์ในคำสั่งซื้อ</p>
-        <p className="mt-0.5 text-indigo-600/90">
-          สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้าพรีออเดอร์พร้อมส่ง
-          {notes.map((n, i) => <span key={i}> · <span className="whitespace-nowrap">{n}</span></span>)}
-        </p>
+        <p className="mt-0.5 text-indigo-600/90">สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้าพรีออเดอร์พร้อมส่ง</p>
+        {notes.length > 0 && (
+          <p className="mt-1 font-medium">
+            {notes.map((n, i) => <span key={i} className="whitespace-nowrap">{i > 0 ? " · " : ""}{n}</span>)}
+          </p>
+        )}
       </div>
     </div>
   );
