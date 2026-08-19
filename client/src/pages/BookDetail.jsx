@@ -398,6 +398,30 @@ export default function BookDetail() {
           )}
         </div>
       )}
+
+      {/* เว้นที่ให้แถบปุ่มล่าง (เฉพาะมือถือ) ไม่ให้บังเนื้อหาท้ายหน้า */}
+      <div className="h-20 md:hidden" aria-hidden="true" />
+
+      {/* แถบปุ่มสั่งซื้อตรึงล่าง — เฉพาะมือถือ */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 flex gap-2.5 border-t border-line bg-white/95 px-4 pt-3 backdrop-blur-xl md:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <button
+          onClick={() => addToCart(false)}
+          disabled={effStock != null && effStock <= 0 && !canPreorder}
+          className="flex-1 rounded-full border border-ink py-3 text-[15px] font-medium text-ink transition active:scale-[0.98] disabled:opacity-40"
+        >
+          ใส่ตะกร้า
+        </button>
+        <button
+          onClick={() => addToCart(true)}
+          disabled={effStock != null && effStock <= 0 && !canPreorder}
+          className="flex-1 rounded-full bg-accent py-3 text-[15px] font-medium text-white transition active:scale-[0.98] disabled:opacity-40"
+        >
+          {canPreorder ? "สั่งพรีออเดอร์" : "ซื้อเลย"}
+        </button>
+      </div>
     </div>
   );
 }
