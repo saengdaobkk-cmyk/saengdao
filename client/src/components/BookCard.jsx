@@ -85,8 +85,8 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         )}
         {stock <= 0 && (
           isPreorder ? (
-            <span className="absolute left-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
-              พรีออเดอร์
+            <span className="absolute left-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
+              PRE-ORDER
             </span>
           ) : (
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">

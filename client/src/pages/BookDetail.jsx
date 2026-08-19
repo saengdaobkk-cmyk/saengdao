@@ -223,11 +223,20 @@ export default function BookDetail() {
           {showRatingSummary !== false && <RatingSummary bookId={book.id} />}
 
           {/* buybox */}
-          <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : "border-line"}`}>
+          <div className={`mt-6 rounded-2xl border p-5 ${isHot ? "border-orange-200 bg-orange-50/50" : canPreorder ? "border-indigo-200 bg-indigo-50/50" : "border-line"}`}>
             {isHot && (
               <p className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-2.5 py-1 text-[12px] font-semibold text-white">
                 🔥 Hot Deal<HotDealCountdown end={book.hotDealEnd} />
               </p>
+            )}
+            {canPreorder && (
+              <div className="mb-3 flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2.5 text-white">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                <div className="leading-tight">
+                  <p className="text-[14px] font-semibold tracking-wide">PRE-ORDER</p>
+                  {book.preorderNote && <p className="text-[12px] text-white/85">{book.preorderNote}</p>}
+                </div>
+              </div>
             )}
             <div className="flex items-end gap-3">
               <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
@@ -238,17 +247,15 @@ export default function BookDetail() {
                 </>
               )}
             </div>
-            <p className="mt-1.5 text-[13px]">
-              {hasVariants
-                ? variant
-                  ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
-                  : <span className="text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
-                : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span>
-                  : canPreorder ? <span className="font-medium text-indigo-600">● พรีออเดอร์</span>
-                  : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
-            </p>
-            {canPreorder && book.stock <= 0 && book.preorderNote && (
-              <p className="mt-1 text-[13px] text-indigo-600">📦 {book.preorderNote}</p>
+            {!canPreorder && (
+              <p className="mt-1.5 text-[13px]">
+                {hasVariants
+                  ? variant
+                    ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
+                    : <span className="text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
+                  : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span>
+                    : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
+              </p>
             )}
 
             {/* variant */}
