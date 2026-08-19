@@ -267,7 +267,7 @@ export default function AdminProducts() {
                   const sortable = !!SORT_ACCESS[c.key];
                   const activeSort = sort.key === c.key;
                   return (
-                    <th key={c.key} className="relative select-none px-4 py-3 font-medium">
+                    <th key={c.key} className={`relative select-none px-4 py-3 font-medium ${c.key === "actions" ? "text-right" : ""}`}>
                       {sortable ? (
                         <button
                           type="button"
