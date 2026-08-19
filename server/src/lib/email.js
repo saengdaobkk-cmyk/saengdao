@@ -234,6 +234,24 @@ export async function sendPaymentReceived(orderId) {
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · ยืนยันการชำระเงิน #${orderNo(order.id)}`, html });
 }
 
+// 2.5) แจ้งยกเลิกคำสั่งซื้อ — ลูกค้ายกเลิกเอง / อัตโนมัติ (ไม่จ่ายตามกำหนด) / แอดมินยกเลิก
+export async function sendOrderCancelled(orderId) {
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });
+  if (!order?.email) return { skipped: true };
+  const reason = {
+    ADMIN: "คำสั่งซื้อนี้ถูกยกเลิกโดยทางร้าน — หากมีข้อสงสัยติดต่อเราได้เลยค่ะ",
+    CUSTOMER: "คำสั่งซื้อนี้ถูกยกเลิกตามที่คุณร้องขอ",
+    SYSTEM: "คำสั่งซื้อนี้ถูกยกเลิกอัตโนมัติ เนื่องจากไม่ได้ชำระเงินภายในกำหนด",
+  }[order.cancelledBy] || "คำสั่งซื้อนี้ถูกยกเลิกแล้ว";
+  const html = layout(`คำสั่งซื้อถูกยกเลิก #${orderNo(order.id)}`,
+    `<p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#515154;text-align:center">สวัสดีค่ะ คุณ${esc(order.shipName || "")}<br>${reason}</p>
+    ${itemsTable(order)}
+    <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:#86868b;text-align:center">หากต้องการสั่งซื้ออีกครั้ง สามารถสั่งใหม่ได้ที่หน้าร้านตลอดเวลาค่ะ</p>
+    ${button(`${SITE}`, "เลือกซื้อสินค้า")}`,
+    { eyebrow: "ยกเลิกคำสั่งซื้อ", icon: { color: "#e2483d", glyph: "✕" } });
+  return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · คำสั่งซื้อถูกยกเลิก #${orderNo(order.id)}`, html });
+}
+
 // 3) แจ้งจัดส่ง + เลข tracking
 export async function sendShipped(orderId) {
   const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_INCLUDE });

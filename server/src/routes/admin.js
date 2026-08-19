@@ -12,7 +12,7 @@ import { TERM_TYPES, syncTermsFromBook, listTermsWithCount, renameTermInBooks, u
 import { ensureNav } from "../lib/navDefaults.js";
 import { expireStaleOrders } from "../lib/orderExpiry.js";
 import { effectivePrice } from "../lib/pricing.js";
-import { EK, getEmailConfig, sendPaymentReceived, sendShipped, sendTestEmail } from "../lib/email.js";
+import { EK, getEmailConfig, sendPaymentReceived, sendShipped, sendOrderCancelled, sendTestEmail } from "../lib/email.js";
 import { AIK, getAiConfig, aiSlugBase, aiTest } from "../lib/ai.js";
 
 function httpError(status, message) {
@@ -863,6 +863,7 @@ router.patch("/orders/:id", async (req, res, next) => {
     // อีเมลแจ้งลูกค้า (best-effort ไม่บล็อก) — เฉพาะตอนเพิ่งเปลี่ยนสถานะ
     if (data.paymentStatus === "PAID" && prev?.paymentStatus !== "PAID") sendPaymentReceived(order.id).catch(() => {});
     if (data.status === "SHIPPED" && prev?.status !== "SHIPPED") sendShipped(order.id).catch(() => {});
+    if (data.status === "CANCELLED" && prev?.status !== "CANCELLED") sendOrderCancelled(order.id).catch(() => {});
 
     // ยืนยันชำระเงินแล้ว → สะสมแต้ม + ส่งออเดอร์ไป ZORT อัตโนมัติ (best-effort)
     if (data.paymentStatus === "PAID") {

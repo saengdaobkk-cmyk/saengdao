@@ -1,4 +1,5 @@
 import { prisma } from "./prisma.js";
+import { sendOrderCancelled } from "./email.js";
 
 // คืนแต้มที่ลูกค้าใช้แลกส่วนลด เมื่อออเดอร์ถูกยกเลิก (idempotent)
 export async function refundUsedPoints(order) {
@@ -37,6 +38,7 @@ export async function expireStaleOrders({ throttleMs = 5 * 60 * 1000, force = fa
       data: { status: "CANCELLED", cancelledBy: "SYSTEM", cancelledAt: new Date() },
     });
     await refundUsedPoints(o).catch(() => {});
+    sendOrderCancelled(o.id).catch(() => {}); // อีเมลแจ้งยกเลิกอัตโนมัติ → ลูกค้า
   }
   return { expired: stale.length };
 }
