@@ -13,6 +13,7 @@ const SORT_ACCESS = {
   isbn: (b) => b.isbn || "",
   title: (b) => b.title || "",
   category: (b) => b.category?.name || "",
+  publisher: (b) => b.publisher || "",
   price: (b) => Number(priceInfo(b).price) || 0,
   stock: (b) => Number(stockOf(b)) || 0,
 };
@@ -29,7 +30,8 @@ const EMPTY = {
 const COLS = [
   { key: "isbn", label: "รหัส (ISBN)", w: 150 },
   { key: "title", label: "ชื่อสินค้า", w: 380 },
-  { key: "category", label: "หมวดหมู่", w: 170 },
+  { key: "category", label: "หมวดหมู่", w: 160 },
+  { key: "publisher", label: "สำนักพิมพ์", w: 160 },
   { key: "price", label: "ราคา", w: 120 },
   { key: "stock", label: "สต็อก", w: 120 },
   { key: "actions", label: "สถานะ", w: 90 },
@@ -39,6 +41,7 @@ const CHECKBOX_W = 44; // คอลัมน์ติ๊กเลือก (ซ�
 export default function AdminProducts() {
   const { data: books, isLoading } = useAdminBooks();
   const { data: categories } = useCategories();
+  const publishers = useTermList("PUBLISHER").data || [];
   const del = useDeleteBook();
   const save = useSaveBook();
   const [editing, setEditing] = useState(null);
@@ -254,6 +257,9 @@ export default function AdminProducts() {
         </div>
       )}
 
+      {/* รายชื่อสำนักพิมพ์ (แนะนำตอนแก้ด่วน) */}
+      <datalist id="dl-pub-inline">{publishers.map((n) => <option key={n} value={n} />)}</datalist>
+
       {isLoading ? (
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
@@ -333,6 +339,11 @@ export default function AdminProducts() {
                       onEdit={() => startInline(b.id, "category")} onClose={closeInline} />
                   </td>
                   <td className="px-4 py-3">
+                    <PublisherCell b={b} save={save}
+                      editing={inlineEdit?.id === b.id && inlineEdit.field === "publisher"}
+                      onEdit={() => startInline(b.id, "publisher")} onClose={closeInline} />
+                  </td>
+                  <td className="px-4 py-3">
                     <PriceCell b={b} save={save}
                       editing={inlineEdit?.id === b.id && inlineEdit.field === "price"}
                       onEdit={() => startInline(b.id, "price")} onClose={closeInline} />
@@ -394,6 +405,37 @@ function CategoryCell({ b, categories, editing, onEdit, onClose, save }) {
   return (
     <div className="flex items-center gap-1.5">
       <span className="truncate text-sub">{b.category?.name || "—"}</span>
+      <PencilBtn onClick={onEdit} />
+    </div>
+  );
+}
+
+// สำนักพิมพ์ — แก้ด่วนด้วยช่องพิมพ์ (มีรายชื่อแนะนำ) ในตาราง
+function PublisherCell({ b, editing, onEdit, onClose, save }) {
+  const [val, setVal] = useState(b.publisher ?? "");
+  useEffect(() => {
+    if (editing) setVal(b.publisher ?? "");
+  }, [editing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (editing) {
+    const submit = () => { save.mutate({ ...b, publisher: val.trim() }); onClose(); };
+    return (
+      <div className="flex items-center gap-1">
+        <input autoFocus list="dl-pub-inline" value={val} onChange={(e) => setVal(e.target.value)} placeholder="สำนักพิมพ์"
+          onKeyDown={(e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") onClose(); }}
+          className="w-full rounded-lg border border-accent px-1.5 py-1 text-[13px] outline-none" />
+        <button type="button" onClick={submit} title="บันทึก" className="shrink-0 text-emerald-600 hover:text-emerald-700">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </button>
+        <button type="button" onClick={onClose} title="ยกเลิก" className="shrink-0 text-sub hover:text-ink">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="truncate text-sub">{b.publisher || "—"}</span>
       <PencilBtn onClick={onEdit} />
     </div>
   );
