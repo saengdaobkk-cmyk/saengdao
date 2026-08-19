@@ -296,12 +296,10 @@ function PreorderOrderNotice({ items }) {
       </svg>
       <div className="text-indigo-700" lang="th">
         <p className="font-medium">มีสินค้า<span className="whitespace-nowrap">พรีออเดอร์</span>ในคำสั่งซื้อ</p>
-        <p className="mt-0.5 text-indigo-600/90">สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้า<span className="whitespace-nowrap">พรีออเดอร์</span>พร้อมส่ง</p>
-        {notes.length > 0 && (
-          <p className="mt-1 font-medium">
-            {notes.map((n, i) => <span key={i} className="whitespace-nowrap">{i > 0 ? " · " : ""}{n}</span>)}
-          </p>
-        )}
+        <p className="mt-0.5 text-indigo-600/90">
+          สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้า<span className="whitespace-nowrap">พรีออเดอร์</span>พร้อมส่ง
+          {notes.length > 0 && <> <span className="whitespace-nowrap font-medium text-indigo-700">{notes.join(" · ")}</span></>}
+        </p>
       </div>
     </div>
   );
