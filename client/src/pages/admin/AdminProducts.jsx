@@ -608,6 +608,10 @@ function BookForm({ book, categories, onClose }) {
       <datalist id="dl-cover">{coverOpts.map((n) => <option key={n} value={n} />)}</datalist>
       <datalist id="dl-paper">{paperOpts.map((n) => <option key={n} value={n} />)}</datalist>
 
+      <button type="button" onClick={onClose} className="mb-3 flex items-center gap-1 text-[13px] font-medium text-sub transition hover:text-ink">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        สินค้า
+      </button>
       <h2 className="mb-6 text-2xl font-semibold tracking-tightest text-ink">{book.id ? "แก้ไขหนังสือ" : "เพิ่มหนังสือ"}</h2>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
@@ -775,7 +779,6 @@ function BookForm({ book, categories, onClose }) {
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M7 17 17 7M9 7h8v8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </a>
           )}
-          <button type="button" onClick={onClose} className="w-full rounded-full border border-line py-3 text-[15px] text-ink hover:bg-mist">กลับไปรายการสินค้า</button>
         </div>
       </div>
     </form>
