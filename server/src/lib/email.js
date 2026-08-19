@@ -94,7 +94,7 @@ async function send({ to, toName, subject, html, replyTo }) {
 
 // ---------- อีเมลแต่ละแบบ ----------
 
-const ORDER_INCLUDE = { items: { include: { book: { select: { title: true, coverImage: true } } } } };
+const ORDER_INCLUDE = { items: { include: { book: { select: { title: true, coverImage: true, preorder: true, preorderNote: true } } } } };
 
 // รูปสินค้าเป็น URL เต็มเสมอ (บาง client บล็อก path สัมพัทธ์)
 const imgUrl = (u) => {
@@ -156,6 +156,17 @@ function shipBlock(order) {
   </div>`;
 }
 
+// กล่องแจ้งเตือนพรีออเดอร์ — ทั้งออเดอร์จัดส่งพร้อมของพรีออเดอร์ (โชว์เมื่อมีสินค้าพรีออเดอร์)
+function preorderBlock(order) {
+  const pre = (order.items || []).filter((it) => it.book?.preorder);
+  if (pre.length === 0) return "";
+  const notes = [...new Set(pre.map((it) => (it.book?.preorderNote || "").trim()).filter(Boolean))];
+  return `<div style="background:#eef0fb;border:1px solid #cdd0f4;border-radius:14px;padding:14px 16px;margin:16px 0 2px">
+    <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#4f46e5">มีสินค้าพรีออเดอร์ในคำสั่งซื้อ</p>
+    <p style="margin:0;font-size:13px;line-height:1.55;color:#5b57c9">สินค้าทั้งหมดในออเดอร์จะจัดส่งพร้อมกันเมื่อสินค้าพรีออเดอร์พร้อมส่ง${notes.length ? ` — <b style="color:#4f46e5">${notes.map(esc).join(" · ")}</b>` : ""}</p>
+  </div>`;
+}
+
 // กล่องข้อมูลออกใบเสร็จ/ใบกำกับภาษี — โชว์เฉพาะเมื่อลูกค้าขอ (needReceipt)
 function receiptBlock(order) {
   if (!order.needReceipt) return "";
@@ -179,6 +190,7 @@ export async function sendOrderConfirmation(orderId) {
   const html = layout(`ได้รับคำสั่งซื้อแล้ว #${orderNo(order.id)}`,
     `<p style="margin:0 0 4px;font-size:15px;line-height:1.6;color:#515154;text-align:center">สวัสดีค่ะ คุณ${esc(order.shipName || "")}<br>ขอบคุณที่สั่งซื้อกับแสงดาว — เราได้รับคำสั่งซื้อเรียบร้อยแล้ว</p>
     ${itemsTable(order)}
+    ${preorderBlock(order)}
     ${shipBlock(order)}
     ${receiptBlock(order)}
     ${trackOrderBtn(order)}`,
@@ -216,6 +228,7 @@ export async function sendPaymentReceived(orderId) {
   const html = layout(`ได้รับชำระเงินแล้ว #${orderNo(order.id)}`,
     `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154;text-align:center">เราได้รับชำระเงินสำหรับคำสั่งซื้อนี้เรียบร้อยแล้ว<br>กำลังเตรียมจัดส่งให้เร็วที่สุดค่ะ</p>
     ${itemsTable(order)}
+    ${preorderBlock(order)}
     ${trackOrderBtn(order)}`,
     { eyebrow: "ชำระเงินสำเร็จ", icon: { color: "#1d9e75", glyph: "✓" } });
   return send({ to: order.email, toName: order.shipName, subject: `SAENGDAO · ยืนยันการชำระเงิน #${orderNo(order.id)}`, html });
