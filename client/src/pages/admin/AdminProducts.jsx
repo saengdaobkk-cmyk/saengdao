@@ -20,7 +20,7 @@ const SORT_ACCESS = {
 
 const EMPTY = {
   title: "", author: "", translator: "", categoryId: "", tags: [], description: "",
-  price: "", discountPrice: "", hotDealPrice: "", hotDealStart: "", hotDealEnd: "", stock: "", active: true, preorder: false, preorderNote: "", featured: false, coverImage: "", backCoverImage: "",
+  price: "", discountPrice: "", hotDealPrice: "", hotDealStart: "", hotDealEnd: "", stock: "", active: true, preorder: false, preorderNote: "", preorderPrice: "", preorderStart: "", preorderEnd: "", featured: false, coverImage: "", backCoverImage: "",
   galleryImages: [], previewPdf: "", publisher: "", edition: "", pageCount: "", dimensions: "",
   weight: "", paperType: "", coverType: "", isbn: "", sku: "", metaTitle: "", metaDescription: "",
   slug: "", importedAt: "", variants: [],
@@ -537,7 +537,7 @@ function BookForm({ book, categories, onClose }) {
   const pubs = useTermList("PUBLISHER").data || [];
   const authors = useTermList("AUTHOR").data || [];
   const translators = useTermList("TRANSLATOR").data || [];
-  const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "", hotDealPrice: book.hotDealPrice ?? "", hotDealStart: toLocalInput(book.hotDealStart), hotDealEnd: toLocalInput(book.hotDealEnd) });
+  const [form, setForm] = useState({ ...EMPTY, ...book, tags: book.tags || [], variants: book.variants || [], galleryImages: book.galleryImages || [], importedAt: book.importedAt ? book.importedAt.slice(0, 10) : "", hotDealPrice: book.hotDealPrice ?? "", hotDealStart: toLocalInput(book.hotDealStart), hotDealEnd: toLocalInput(book.hotDealEnd), preorderPrice: book.preorderPrice ?? "", preorderStart: toLocalInput(book.preorderStart), preorderEnd: toLocalInput(book.preorderEnd) });
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState({});
@@ -588,6 +588,8 @@ function BookForm({ book, categories, onClose }) {
       weight: applyUnit(form.weight, wUnit),
       hotDealStart: form.hotDealStart ? new Date(form.hotDealStart).toISOString() : null,
       hotDealEnd: form.hotDealEnd ? new Date(form.hotDealEnd).toISOString() : null,
+      preorderStart: form.preorderStart ? new Date(form.preorderStart).toISOString() : null,
+      preorderEnd: form.preorderEnd ? new Date(form.preorderEnd).toISOString() : null,
     };
     save.mutate(payload, {
       onSuccess: (data) => {
@@ -652,15 +654,22 @@ function BookForm({ book, categories, onClose }) {
             </div>
           </Card>
 
-          <Card title="พรีออเดอร์ (Pre-order)" subtitle="เปิดให้ลูกค้าสั่งซื้อได้แม้สต็อกจะหมด — เหมาะกับหนังสือที่กำลังจะเข้า">
+          <Card title="พรีออเดอร์ (Pre-order)" subtitle="เปิดให้ลูกค้าสั่งซื้อได้แม้สต็อกจะหมด · ตั้งราคา+ช่วงเวลาพิเศษได้ · หมดเวลา = กลับราคาปกติ + ปิดพรีออเดอร์อัตโนมัติ">
             <label className="flex items-center gap-2 text-[14px] text-ink">
               <input type="checkbox" checked={!!form.preorder} onChange={(e) => setForm((f) => ({ ...f, preorder: e.target.checked }))} className="h-4 w-4 accent-accent" />
               เปิดพรีออเดอร์ (สั่งซื้อได้แม้สต็อก = 0)
             </label>
             {form.preorder && (
-              <F label="ข้อความพรีออเดอร์ (แสดงหน้าสินค้า)" hint='เช่น "จัดส่งประมาณ 15 มี.ค. 2569"'>
-                <Inp value={form.preorderNote} onChange={set("preorderNote")} placeholder="เช่น จัดส่งประมาณ..." />
-              </F>
+              <>
+                <F label="ข้อความพรีออเดอร์ (แสดงหน้าสินค้า)" hint='เช่น "จัดส่งประมาณ 15 มี.ค. 2569"'>
+                  <Inp value={form.preorderNote} onChange={set("preorderNote")} placeholder="เช่น จัดส่งประมาณ..." />
+                </F>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <F label="ราคาพรีออเดอร์ (บาท)" hint="เว้นว่าง = ใช้ราคาปกติ"><Inp type="number" value={form.preorderPrice ?? ""} onChange={set("preorderPrice")} /></F>
+                  <F label="เริ่มพรีออเดอร์" hint="เว้นว่าง = เริ่มทันที"><Inp type="datetime-local" value={form.preorderStart ?? ""} onChange={set("preorderStart")} /></F>
+                  <F label="สิ้นสุดพรีออเดอร์" hint="เว้นว่าง = ไม่มีกำหนด · หมดเวลา = กลับราคาปกติ"><Inp type="datetime-local" value={form.preorderEnd ?? ""} onChange={set("preorderEnd")} /></F>
+                </div>
+              </>
             )}
           </Card>
 

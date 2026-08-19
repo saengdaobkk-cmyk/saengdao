@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
 import { authenticate } from "../middleware/auth.js";
 import { computeDiscount } from "../lib/coupon.js";
-import { effectivePrice } from "../lib/pricing.js";
+import { effectivePrice, preorderActive } from "../lib/pricing.js";
 import { uploadSlip } from "../lib/upload.js";
 import { storeFile } from "../lib/storage.js";
 import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl } from "../lib/thaipost.js";
@@ -261,8 +261,8 @@ router.post("/", async (req, res, next) => {
           // ---- ซื้อทั้งเล่ม (ไม่มี variant) ----
           if (book.variants.length > 0)
             throw httpError(400, `กรุณาเลือกตัวเลือกของ "${book.title}" ก่อน`);
-          // พรีออเดอร์ → สั่งได้แม้สต็อกไม่พอ (สต็อกติดลบ = จำนวนค้างส่ง)
-          if (!book.preorder && book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
+          // พรีออเดอร์ที่ยัง active → สั่งได้แม้สต็อกไม่พอ (สต็อกติดลบ = จำนวนค้างส่ง) · หมดช่วงพรีแล้วเช็คสต็อกปกติ
+          if (!preorderActive(book) && book.stock < qty) throw httpError(409, `"${book.title}" มีไม่พอ (เหลือ ${book.stock})`);
 
           const price = Math.ceil(effectivePrice(book)); // Hot Deal (ถ้า active) > ลด > ปกติ
           const listPrice = Math.ceil(Number(book.price));

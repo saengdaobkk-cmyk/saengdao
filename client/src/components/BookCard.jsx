@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { formatPrice } from "../lib/format";
-import { priceInfo } from "../lib/pricing";
+import { priceInfo, preorderActive } from "../lib/pricing";
 import { img } from "../lib/img";
 import { useSettings } from "../api/settings";
 import { useCart } from "../cart/CartContext";
@@ -44,7 +44,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
   const pi = priceInfo(book);
   const pct = pi.price < pi.original ? Math.round((1 - pi.price / pi.original) * 100) : 0;
   const hasVariants = book.variants?.length > 0;
-  const isPreorder = !!book.preorder && !hasVariants; // พรีออเดอร์ — สั่งได้แม้สต็อกหมด
+  const isPreorder = preorderActive(book) && !hasVariants; // พรีออเดอร์กำลัง active — สั่งได้แม้สต็อกหมด
   const canQuickAdd = (stock > 0 || isPreorder) && !hasVariants;
 
   const onCart = (e) => {
@@ -142,8 +142,9 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         <p className="line-clamp-1 text-[13px] text-sub">{book.author}</p>
         {pct > 0 ? (
           <p className="mt-1.5 flex items-center gap-2">
-            <span className={`text-[15px] font-semibold tracking-tight ${pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
+            <span className={`text-[15px] font-semibold tracking-tight ${pi.preorder ? "text-indigo-600" : pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
             <span className="text-[12px] text-sub line-through">{formatPrice(pi.original)}</span>
+            {pi.preorder && <span className="text-[10px] font-medium text-indigo-500">พรีออเดอร์</span>}
           </p>
         ) : (
           <p className="mt-1.5 text-[15px] font-semibold tracking-tight text-ink">{formatPrice(pi.price)}</p>

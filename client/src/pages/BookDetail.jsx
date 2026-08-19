@@ -11,7 +11,7 @@ import BookCard from "../components/BookCard";
 import FlipBook from "../components/FlipBook";
 import HotDealCountdown from "../components/HotDealCountdown";
 import { formatPrice } from "../lib/format";
-import { priceInfo } from "../lib/pricing";
+import { priceInfo, preorderActive } from "../lib/pricing";
 import { img } from "../lib/img";
 
 export default function BookDetail() {
@@ -61,8 +61,8 @@ export default function BookDetail() {
   const variant = book?.variants?.find((v) => v.id === variantId) || null;
   const hasVariants = book?.variants?.length > 0;
   const effStock = hasVariants ? (variant ? variant.stock : null) : book?.stock;
-  // พรีออเดอร์ — เฉพาะเล่มที่ไม่มี variant · สั่งได้แม้สต็อกหมด
-  const canPreorder = !!book?.preorder && !hasVariants;
+  // พรีออเดอร์ที่ยัง active — เฉพาะเล่มที่ไม่มี variant · สั่งได้แม้สต็อกหมด
+  const canPreorder = preorderActive(book) && !hasVariants;
 
   // รูปทั้งหมด (ปกหน้า → ปกหลัง → แกลเลอรี) สำหรับ lightbox
   const front = img(variant?.coverImage || book?.coverImage, 800);

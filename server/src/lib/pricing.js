@@ -6,7 +6,16 @@ export function hotDealActive(book, now = new Date()) {
   return true;
 }
 
+// พรีออเดอร์กำลัง active (เปิด + อยู่ในช่วงเวลา) — หมดเวลา = false → กลับราคาปกติ + ปิดพรีออเดอร์
+export function preorderActive(book, now = new Date()) {
+  if (!book?.preorder) return false;
+  if (book.preorderStart && now < new Date(book.preorderStart)) return false;
+  if (book.preorderEnd && now > new Date(book.preorderEnd)) return false;
+  return true;
+}
+
 export function effectivePrice(book) {
+  if (preorderActive(book) && book.preorderPrice != null) return Number(book.preorderPrice);
   if (hotDealActive(book)) return Number(book.hotDealPrice);
   if (book.discountPrice != null) return Number(book.discountPrice);
   return Number(book.price);
