@@ -226,7 +226,7 @@ export default function BookDetail() {
           {canPreorder && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-2.5 py-1 text-[12px] font-semibold tracking-wide text-white">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                 PRE-ORDER
               </span>
               {book.preorderNote && <span className="text-[12px] text-indigo-600">{book.preorderNote}</span>}
