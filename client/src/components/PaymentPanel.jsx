@@ -7,6 +7,9 @@ import { formatPrice } from "../lib/format";
 export default function PaymentPanel({ order }) {
   const { paymentStatus, paymentMethod, id } = order;
 
+  // ยกเลิกแล้ว → ไม่ต้องแสดงช่องทางชำระเงิน/แนบสลิป
+  if (order.status === "CANCELLED") return null;
+
   // ชำระ/รอตรวจแล้ว
   if (paymentStatus === "PAID")
     return (

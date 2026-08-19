@@ -36,6 +36,7 @@ const ORDER_STATUS_LABEL = {
 
 // จ่ายแล้ว → โชว์สถานะจัดการ (กำลังดำเนินการ ...) · ยังไม่จ่าย → โชว์สถานะการชำระเงิน
 function displayStatus(order) {
+  if (order.status === "CANCELLED") return ORDER_STATUS_LABEL.CANCELLED; // ยกเลิกแล้ว → โชว์ "ยกเลิก" เสมอ
   if (order.paymentStatus === "PAID")
     return ORDER_STATUS_LABEL[order.status] || "กำลังดำเนินการ";
   return PAYMENT_STATUS_LABEL[order.paymentStatus] || order.paymentStatus;
