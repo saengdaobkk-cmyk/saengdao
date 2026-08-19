@@ -301,14 +301,18 @@ export default function AdminProducts() {
                   <td className="px-3 py-3 align-top">
                     <input type="checkbox" checked={selected.has(b.id)} onChange={() => toggleSelect(b.id)} className="mt-1 h-4 w-4 cursor-pointer accent-accent" aria-label={`เลือก ${b.title}`} />
                   </td>
-                  <td className="px-4 py-3 text-[12px] text-sub">{b.isbn || "—"}</td>
                   <td className="px-4 py-3">
-                    <button type="button" onClick={() => setEditing(b)} className="group flex w-full items-center gap-3 text-left" title="คลิกเพื่อแก้ไข">
+                    <button type="button" onClick={() => setEditing(b)} className="text-[12px] text-sub underline-offset-2 transition-colors hover:text-accent hover:underline" title="คลิกเพื่อแก้ไข">
+                      {b.isbn || "—"}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex w-full items-center gap-3">
                       <div className={`flex h-12 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-mist ${b.active === false ? "opacity-40" : ""}`}>
                         {b.coverImage ? <img src={b.coverImage} alt="" className="h-full w-full object-cover" /> : <span className="text-[10px] opacity-30">𝐀</span>}
                       </div>
                       <div className="min-w-0">
-                        <p className={`truncate font-medium transition-colors group-hover:text-accent ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
+                        <p className={`truncate font-medium ${b.active === false ? "text-sub" : "text-ink"}`}>{b.title}</p>
                         <div className="mt-0.5 flex flex-wrap gap-1">
                           {b.active === false && <Tag color="gray">ปิดอยู่</Tag>}
                           {b.featured && <Tag color="indigo">แนะนำ</Tag>}
@@ -316,7 +320,7 @@ export default function AdminProducts() {
                           {(b.tags || []).map((t) => <Tag key={t} color="gray">{t}</Tag>)}
                         </div>
                       </div>
-                    </button>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-sub">{b.category?.name || "—"}</td>
                   <td className="px-4 py-3">
