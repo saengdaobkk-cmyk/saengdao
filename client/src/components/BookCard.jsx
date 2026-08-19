@@ -144,7 +144,6 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           <p className="mt-1.5 flex items-center gap-2">
             <span className={`text-[15px] font-semibold tracking-tight ${pi.preorder ? "text-indigo-600" : pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
             <span className="text-[12px] text-sub line-through">{formatPrice(pi.original)}</span>
-            {pi.preorder && <span className="text-[10px] font-medium text-indigo-500">พรีออเดอร์</span>}
           </p>
         ) : (
           <p className="mt-1.5 text-[15px] font-semibold tracking-tight text-ink">{formatPrice(pi.price)}</p>
