@@ -39,7 +39,7 @@ export default function CookieConsent() {
               <Link to="/privacy" className="font-medium text-accent hover:underline">นโยบายความเป็นส่วนตัว</Link>
             </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <button onClick={() => setOpenPrefs(true)} className="text-[13px] font-medium text-sub underline underline-offset-2 transition hover:text-ink">ตั้งค่าคุกกี้</button>
+              <button onClick={() => setOpenPrefs(true)} className="text-[13px] font-medium text-sub underline underline-offset-2 transition hover:text-accent">ตั้งค่าคุกกี้</button>
               <button onClick={necessaryOnly} className="rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:border-accent hover:text-accent">เฉพาะที่จำเป็น</button>
               <button onClick={acceptAll} className="rounded-full bg-ink px-5 py-2 text-[13px] font-medium text-white transition hover:bg-ink/90">ยอมรับทั้งหมด</button>
             </div>
