@@ -80,7 +80,7 @@ export default function Register() {
   return (
     <AuthShell title="สมัครสมาชิก" subtitle="สร้างบัญชีเพื่อเริ่มช้อปกับ SAENGDAO">
       <form onSubmit={submit} className="space-y-4">
-        <Field label="ชื่อ" value={name} onChange={setName} autoComplete="name" />
+        <Field label="ชื่อ-นามสกุล" value={name} onChange={setName} autoComplete="name" />
         <Field label="อีเมล" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
 

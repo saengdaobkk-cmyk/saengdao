@@ -126,7 +126,7 @@ function ProfileSection({ user, updateUser }) {
         editing={editing} onEdit={startEdit} msg={msg} />
       {editing ? (
         <form onSubmit={save} className="mt-4 space-y-4">
-          <Field label="ชื่อ" value={form.name} onChange={set("name")} />
+          <Field label="ชื่อ-นามสกุล" value={form.name} onChange={set("name")} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="อีเมล" type="email" value={form.email} onChange={set("email")} />
             <Field label="เบอร์โทรศัพท์" type="tel" value={form.phone} onChange={set("phone")} />
@@ -144,7 +144,7 @@ function ProfileSection({ user, updateUser }) {
         </form>
       ) : (
         <dl className="mt-4 space-y-4">
-          <ReadRow label="ชื่อ" value={user.name} />
+          <ReadRow label="ชื่อ-นามสกุล" value={user.name} />
           <ReadRow label="อีเมล" value={user.email} />
           <ReadRow label="เบอร์โทรศัพท์" value={user.phone} />
           <ReadRow label="ที่อยู่จัดส่ง" value={user.address} />
