@@ -364,7 +364,7 @@ function AccountMenu({ overHero }) {
     return (
       <Link
         to="/login"
-        className={`text-[14px] tracking-tight transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
+        className={`hidden text-[14px] tracking-tight transition-colors sm:inline-block ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
       >
         เข้าสู่ระบบ
       </Link>
