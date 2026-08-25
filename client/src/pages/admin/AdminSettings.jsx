@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
 import { uploadImage } from "../../api/admin";
+import { api } from "../../lib/api";
 
 const SETTINGS_TABS = [
   { id: "appearance", label: "หน้าตา & แบรนด์" },
@@ -50,7 +51,12 @@ export default function AdminSettings() {
             <LoyaltySettings settings={settings} save={update} />
           </>
         )}
-        {tab === "payment" && <PaymentSettings settings={settings} save={update} />}
+        {tab === "payment" && (
+          <>
+            <OmiseSettings settings={settings} save={update} />
+            <PaymentSettings settings={settings} save={update} />
+          </>
+        )}
         {tab === "contact" && <ContactSettings settings={settings} save={update} />}
         {tab === "security" && <TurnstileSettings settings={settings} save={update} />}
       </div>
@@ -716,6 +722,57 @@ function PaymentSettings({ settings, save }) {
           {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
         </div>
       </form>
+    </section>
+  );
+}
+
+// รับชำระอัตโนมัติผ่าน Omise — PromptPay QR + บัตร (ยืนยันจ่ายเองผ่าน webhook)
+function OmiseSettings({ settings, save }) {
+  const [pub, setPub] = useState("");
+  const [secret, setSecret] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { setPub(settings.omisePublicKey || ""); }, [settings.omisePublicKey]);
+
+  const webhookUrl = `${(api.defaults.baseURL || "").replace(/\/$/, "")}/webhooks/omise`;
+  const copy = () => { navigator.clipboard?.writeText(webhookUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); };
+  const saveAll = () => {
+    const payload = { omisePublicKey: pub.trim() };
+    if (secret.trim()) payload.omiseSecretKey = secret.trim(); // เว้นว่าง = คงคีย์เดิม
+    save.mutate(payload, { onSuccess: () => { setSaved(true); setSecret(""); } });
+  };
+
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">รับชำระอัตโนมัติ (Omise)</h2>
+      <p className="mb-4 text-[12px] text-sub">ลูกค้าสแกน QR พร้อมเพย์ / จ่ายบัตร แล้วระบบยืนยัน “ชำระแล้ว” อัตโนมัติ ไม่ต้องแนบสลิป</p>
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+        <label className="flex items-center gap-2 text-[14px] font-medium text-ink">
+          <input type="checkbox" checked={!!settings.omiseEnabled} disabled={save.isPending} onChange={(e) => save.mutate({ omiseEnabled: e.target.checked })} className="h-4 w-4 accent-accent" />
+          เปิดรับชำระผ่าน Omise (PromptPay + บัตร)
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="Public Key (pkey_...)" value={pub} onChange={(e) => setPub(e.target.value)} placeholder="pkey_test_xxx" />
+          <label className="block">
+            <span className="mb-1.5 block text-[13px] font-medium text-ink">Secret Key (skey_...)</span>
+            <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="เว้นว่าง = คงคีย์เดิม"
+              className="w-full rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30" />
+          </label>
+        </div>
+        <div className="rounded-xl bg-mist/60 px-4 py-3">
+          <p className="text-[12px] font-medium text-ink">Webhook URL — เอาไปตั้งใน Omise Dashboard → Webhooks</p>
+          <div className="mt-1.5 flex items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-[12px] text-ink">{webhookUrl}</code>
+            <button type="button" onClick={copy} className={`shrink-0 rounded-lg border px-3 py-2 text-[12px] transition ${copied ? "border-emerald-400 text-emerald-600" : "border-line text-ink hover:bg-white"}`}>{copied ? "คัดลอกแล้ว" : "คัดลอก"}</button>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button type="button" onClick={saveAll} disabled={save.isPending} className="rounded-full bg-ink px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-ink/90 disabled:opacity-50">
+            {save.isPending ? "กำลังบันทึก..." : "บันทึกคีย์ Omise"}
+          </button>
+          {saved && <span className="text-[13px] text-emerald-600">บันทึกแล้ว</span>}
+        </div>
+      </div>
     </section>
   );
 }

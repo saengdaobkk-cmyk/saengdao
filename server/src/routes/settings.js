@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "omiseEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -50,6 +50,8 @@ const STRING_KEYS = [
   "footerNav", // เมนู footer (JSON array ของ { label, url })
   "turnstileSiteKey", // Cloudflare Turnstile — Site Key (public)
   "turnstileSecretKey", // 🔒 Secret Key — บันทึกได้ แต่ SECRET_KEY_RE กรองไม่ให้หลุด client
+  "omisePublicKey", // Omise Public Key (pkey_...) — client ใช้ tokenize บัตร (เปิดเผยได้)
+  "omiseSecretKey", // 🔒 Omise Secret Key (skey_...) — SECRET_KEY_RE กรองไม่ให้หลุด client
 ];
 const DEFAULTS = {
   cartDrawerEnabled: true,
@@ -96,6 +98,8 @@ const DEFAULTS = {
   turnstileEnabled: false,
   turnstileSiteKey: "",
   productStickyCover: false, // ปกสินค้าค้าง (sticky) ตอนเลื่อน
+  omiseEnabled: false, // รับชำระอัตโนมัติผ่าน Omise (PromptPay + บัตร)
+  omisePublicKey: "",
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด

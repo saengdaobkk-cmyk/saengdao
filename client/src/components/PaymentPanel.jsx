@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { useSettings } from "../api/settings";
 import { formatPrice } from "../lib/format";
 
 export default function PaymentPanel({ order }) {
+  const { omiseEnabled, omisePublicKey } = useSettings();
   const { paymentStatus, paymentMethod, id } = order;
 
   // ยกเลิกแล้ว → ไม่ต้องแสดงช่องทางชำระเงิน/แนบสลิป
@@ -28,17 +29,131 @@ export default function PaymentPanel({ order }) {
       </div>
     );
 
-  // ยังไม่จ่าย → แสดงวิธีจ่ายตามช่องทาง
+  // โหมด Omise (ยืนยันจ่ายอัตโนมัติ) — พร้อมเพย์ + บัตร
+  const omise = omiseEnabled && (paymentMethod === "PROMPTPAY" || paymentMethod === "CARD");
+
   return (
     <div className="mt-8">
-      {paymentMethod === "PROMPTPAY" && <PromptPayBox orderId={id} />}
+      {paymentMethod === "PROMPTPAY" && (omise ? <OmisePromptPay orderId={id} /> : <PromptPayBox orderId={id} />)}
+      {paymentMethod === "CARD" && (omise
+        ? <OmiseCard order={order} publicKey={omisePublicKey} />
+        : <Banner tone="mist" title="บัตรเครดิต/เดบิต" desc="ช่องทางบัตรจะเปิดใช้งานเร็วๆ นี้ — ระหว่างนี้เลือกพร้อมเพย์หรือโอนเงินได้" />)}
       {paymentMethod === "TRANSFER" && <BankBox total={order.total} />}
-      {paymentMethod === "CARD" && (
-        <Banner tone="mist" title="บัตรเครดิต/เดบิต" desc="ช่องทางบัตรจะเปิดใช้งานเร็วๆ นี้ — ระหว่างนี้เลือกพร้อมเพย์หรือโอนเงินได้" />
-      )}
-      {(paymentMethod === "PROMPTPAY" || paymentMethod === "TRANSFER") && <SlipUpload orderId={id} />}
+      {/* แนบสลิป — เฉพาะช่องทางที่ไม่ผ่าน Omise (โอนธนาคาร / พร้อมเพย์แบบ static) */}
+      {(paymentMethod === "TRANSFER" || (paymentMethod === "PROMPTPAY" && !omise)) && <SlipUpload orderId={id} />}
     </div>
   );
+}
+
+// ---- Omise PromptPay (ยืนยันอัตโนมัติ) ----
+function OmisePromptPay({ orderId }) {
+  const qc = useQueryClient();
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["omise-promptpay", orderId],
+    queryFn: async () => (await api.get(`/orders/${orderId}/promptpay`)).data,
+    refetchInterval: (q) => (q.state.data?.paid ? false : 5000), // เช็คสถานะทุก 5 วิ จนจ่ายสำเร็จ
+  });
+
+  // จ่ายสำเร็จ → รีเฟรชออเดอร์ให้พลิกเป็น "ชำระเงินเรียบร้อย"
+  useEffect(() => {
+    if (data?.paid) qc.invalidateQueries({ queryKey: ["order", orderId] });
+  }, [data?.paid, orderId, qc]);
+
+  if (isLoading) return <div className="py-8 text-center text-[14px] text-sub">กำลังสร้าง QR...</div>;
+  if (isError || (!data?.qr && !data?.paid)) return <Banner tone="amber" title="สร้าง QR ไม่สำเร็จ" desc="ลองรีเฟรชหน้าอีกครั้ง หรือติดต่อร้าน" />;
+  if (data?.paid) return <Banner tone="green" title="ชำระเงินเรียบร้อย" desc="ขอบคุณครับ กำลังอัปเดตสถานะ..." />;
+
+  return (
+    <div className="rounded-2xl border border-line p-6 text-center">
+      <p className="text-[15px] font-semibold text-ink">สแกนจ่ายด้วยพร้อมเพย์</p>
+      <img src={data.qr} alt="PromptPay QR" className="mx-auto mt-3 h-64 w-64 object-contain" />
+      <p className="mt-1 text-[20px] font-semibold text-ink">{formatPrice(data.amount)}</p>
+      <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-mist px-3 py-1.5 text-[13px] text-sub">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+        รอการชำระเงิน — ระบบจะยืนยันให้อัตโนมัติเมื่อจ่ายสำเร็จ
+      </div>
+    </div>
+  );
+}
+
+// ---- Omise บัตรเครดิต/เดบิต ----
+function OmiseCard({ order, publicKey }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState({ number: "", name: "", exp: "", cvc: "" });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // โหลด Omise.js (สำหรับ tokenize บัตรฝั่ง client — ข้อมูลบัตรไม่ผ่านเซิร์ฟเวอร์เรา)
+  useEffect(() => { loadOmiseJs(); }, []);
+
+  const pay = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!publicKey) return setError("ร้านยังไม่ได้ตั้งค่าบัตร (Public Key)");
+    const [mm, yy] = form.exp.split("/").map((s) => s.trim());
+    if (!form.number || !mm || !yy || !form.cvc) return setError("กรอกข้อมูลบัตรให้ครบ");
+    setBusy(true);
+    try {
+      const Omise = await loadOmiseJs();
+      Omise.setPublicKey(publicKey);
+      const token = await new Promise((resolve, reject) => {
+        Omise.createToken("card", {
+          name: form.name || order.shipName,
+          number: form.number.replace(/\s/g, ""),
+          expiration_month: mm,
+          expiration_year: yy.length === 2 ? `20${yy}` : yy,
+          security_code: form.cvc,
+        }, (status, resp) => {
+          if (status === 200 && resp?.id) resolve(resp.id);
+          else reject(new Error(resp?.message || "ข้อมูลบัตรไม่ถูกต้อง"));
+        });
+      });
+      const { data } = await api.post(`/orders/${order.id}/pay-card`, { token });
+      if (data.paid) { qc.invalidateQueries({ queryKey: ["order", order.id] }); return; }
+      if (data.authorizeUri) { window.location.href = data.authorizeUri; return; } // ยืนยัน 3DS
+      setError("ชำระเงินไม่สำเร็จ");
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "ชำระเงินไม่สำเร็จ");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const inp = "w-full rounded-xl border border-line px-4 py-2.5 text-[15px] outline-none focus:border-ink/30";
+  return (
+    <form onSubmit={pay} className="rounded-2xl border border-line p-6">
+      <p className="text-[15px] font-semibold text-ink">ชำระด้วยบัตรเครดิต/เดบิต</p>
+      <p className="mt-0.5 text-[12px] text-sub">ข้อมูลบัตรเข้ารหัสส่งตรงไปยัง Omise — ร้านไม่เห็นเลขบัตรของคุณ</p>
+      <div className="mt-4 space-y-3">
+        <input value={form.number} onChange={set("number")} inputMode="numeric" placeholder="หมายเลขบัตร" className={inp} />
+        <input value={form.name} onChange={set("name")} placeholder="ชื่อบนบัตร" className={inp} />
+        <div className="grid grid-cols-2 gap-3">
+          <input value={form.exp} onChange={set("exp")} placeholder="เดือน/ปี (MM/YY)" className={inp} />
+          <input value={form.cvc} onChange={set("cvc")} inputMode="numeric" placeholder="CVC" className={inp} />
+        </div>
+      </div>
+      {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
+      <button type="submit" disabled={busy} className="mt-4 w-full rounded-full bg-accent py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">
+        {busy ? "กำลังชำระเงิน..." : `จ่าย ${formatPrice(order.total)}`}
+      </button>
+    </form>
+  );
+}
+
+// โหลดสคริปต์ Omise.js ครั้งเดียว → คืน window.Omise
+let omisePromise = null;
+function loadOmiseJs() {
+  if (window.Omise) return Promise.resolve(window.Omise);
+  if (omisePromise) return omisePromise;
+  omisePromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.omise.co/omise.js";
+    s.onload = () => resolve(window.Omise);
+    s.onerror = () => reject(new Error("โหลด Omise.js ไม่สำเร็จ"));
+    document.head.appendChild(s);
+  });
+  return omisePromise;
 }
 
 // ---- PromptPay QR ----

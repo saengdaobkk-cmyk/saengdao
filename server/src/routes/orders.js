@@ -11,6 +11,8 @@ import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl
 import { computeCartRuleDiscount } from "../lib/discountRules.js";
 import { expireStaleOrders, refundUsedPoints } from "../lib/orderExpiry.js";
 import { sendOrderConfirmation, sendNewOrderToShop, sendOrderCancelled } from "../lib/email.js";
+import { getOmiseConfig, createPromptPayCharge, createCardCharge, fetchCharge, chargePaid, chargeQrUrl, fetchQrDataUrl } from "../lib/omise.js";
+import { markOrderPaid } from "../lib/orderPaid.js";
 
 // แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
 async function attachTrackingLink(order) {
@@ -434,26 +436,65 @@ async function getSetting(key) {
   return row?.value || "";
 }
 
-// GET /api/orders/:id/promptpay — สร้าง QR PromptPay สำหรับยอดของออเดอร์
+// GET /api/orders/:id/promptpay — QR PromptPay (Omise อัตโนมัติ ถ้าเปิด · ไม่งั้น static)
 router.get("/:id/promptpay", async (req, res, next) => {
   try {
     const order = await getOwnedOrder(req.params.id, req.user.id);
     if (!order) return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
-
-    const promptpayId = await getSetting("promptpayId");
-    if (!promptpayId)
-      return res.status(400).json({ error: "ร้านยังไม่ได้ตั้งค่าพร้อมเพย์" });
+    if (order.paymentStatus === "PAID") return res.json({ paid: true });
 
     const amount = Number(order.total);
+    const cfg = await getOmiseConfig();
+
+    // โหมด Omise — สร้าง/ใช้ charge เดิม แล้วคืน QR (ยืนยันจ่ายอัตโนมัติผ่าน webhook)
+    if (cfg.enabled && cfg.secretKey) {
+      let charge = null;
+      if (order.omiseChargeId) charge = await fetchCharge({ secretKey: cfg.secretKey, chargeId: order.omiseChargeId }).catch(() => null);
+      if (chargePaid(charge)) { await markOrderPaid(order.id, { chargeId: charge.id }).catch(() => {}); return res.json({ paid: true }); }
+      // ไม่มี charge / ไม่ใช่พร้อมเพย์ที่ยัง pending → สร้างใหม่
+      if (!charge || charge.status !== "pending" || charge.source?.type !== "promptpay") {
+        charge = await createPromptPayCharge({ secretKey: cfg.secretKey, orderId: order.id, amount });
+        await prisma.order.update({ where: { id: order.id }, data: { omiseChargeId: charge.id } });
+      }
+      const url = chargeQrUrl(charge);
+      const qr = url ? await fetchQrDataUrl({ secretKey: cfg.secretKey, url }).catch(() => null) : null;
+      return res.json({ omise: true, qr, amount });
+    }
+
+    // โหมดเดิม — static PromptPay + แนบสลิป
+    const promptpayId = await getSetting("promptpayId");
+    if (!promptpayId) return res.status(400).json({ error: "ร้านยังไม่ได้ตั้งค่าพร้อมเพย์" });
     const payload = generatePayload(promptpayId, { amount });
     const qr = await QRCode.toDataURL(payload, { margin: 1, width: 480 });
+    res.json({ qr, amount, promptpayId, promptpayName: await getSetting("promptpayName") });
+  } catch (err) {
+    next(err);
+  }
+});
 
-    res.json({
-      qr,
-      amount,
-      promptpayId,
-      promptpayName: await getSetting("promptpayName"),
+// POST /api/orders/:id/pay-card — ชำระด้วยบัตร (Omise token จาก client) · คืน paid | authorizeUri (3DS) | error
+router.post("/:id/pay-card", async (req, res, next) => {
+  try {
+    const order = await getOwnedOrder(req.params.id, req.user.id);
+    if (!order) return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
+    if (order.paymentStatus === "PAID") return res.json({ paid: true });
+    if (order.status === "CANCELLED") return res.status(400).json({ error: "คำสั่งซื้อถูกยกเลิกแล้ว" });
+    const token = String(req.body?.token || "").trim();
+    if (!token) return res.status(400).json({ error: "ไม่มีข้อมูลบัตร" });
+
+    const cfg = await getOmiseConfig();
+    if (!cfg.enabled || !cfg.secretKey) return res.status(400).json({ error: "ร้านยังไม่ได้เปิดรับชำระผ่านบัตร" });
+
+    const SITE = (process.env.CLIENT_URL || "").split(",")[0].trim() || "";
+    const charge = await createCardCharge({
+      secretKey: cfg.secretKey, orderId: order.id, amount: Number(order.total),
+      token, returnUri: `${SITE}/orders/${order.id}`,
     });
+    await prisma.order.update({ where: { id: order.id }, data: { omiseChargeId: charge.id } });
+
+    if (chargePaid(charge)) { await markOrderPaid(order.id, { chargeId: charge.id }); return res.json({ paid: true }); }
+    if (charge.authorize_uri) return res.json({ authorizeUri: charge.authorize_uri }); // ต้องยืนยัน 3DS
+    return res.status(402).json({ error: charge.failure_message || "ชำระเงินด้วยบัตรไม่สำเร็จ" });
   } catch (err) {
     next(err);
   }
