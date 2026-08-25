@@ -199,7 +199,7 @@ export async function sendOrderConfirmation(orderId) {
 }
 
 // 1.5) แจ้งเตือนร้าน — มีออเดอร์ใหม่เข้ามา
-const PAY_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนธนาคาร", CARD: "บัตรเครดิต" };
+const PAY_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนธนาคาร", CARD: "บัตรเครดิต", MOBILE_BANKING: "โมบายแบงก์กิ้ง" };
 export async function sendNewOrderToShop(orderId) {
   const cfg = await getEmailConfig();
   if (!cfg.shopEmail) return { skipped: true, reason: "ยังไม่ได้ตั้งอีเมลร้าน" };

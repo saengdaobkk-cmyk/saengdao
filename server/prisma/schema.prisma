@@ -274,6 +274,7 @@ enum PaymentMethod {
   PROMPTPAY // PromptPay QR (สร้างเอง + แนบสลิป)
   CARD // บัตรเครดิต (Omise)
   TRANSFER // โอนเงิน + แนบสลิป
+  MOBILE_BANKING // โมบายแบงก์กิ้ง (Omise redirect)
 }
 
 enum PaymentStatus {

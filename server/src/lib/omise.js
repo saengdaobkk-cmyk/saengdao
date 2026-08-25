@@ -82,6 +82,24 @@ export async function createCardCharge({ secretKey, orderId, amount, token, retu
   });
 }
 
+// ธนาคารที่รองรับ mobile banking (Omise source type = mobile_banking_<id>)
+export const MOBILE_BANKS = ["scb", "kbank", "bay", "bbl", "ktb"];
+
+// สร้าง charge จาก source แบบ redirect (mobile banking / internet banking) — คืน charge ที่มี authorize_uri
+export async function createSourceCharge({ secretKey, orderId, amount, sourceType, returnUri }) {
+  return omiseRequest("/charges", {
+    method: "POST",
+    secretKey,
+    body: {
+      amount: satang(amount),
+      currency: "thb",
+      source: { type: sourceType },
+      return_uri: returnUri,
+      metadata: { order_id: orderId },
+    },
+  });
+}
+
 export async function fetchCharge({ secretKey, chargeId }) {
   return omiseRequest(`/charges/${chargeId}`, { secretKey });
 }

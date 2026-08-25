@@ -16,6 +16,7 @@ const PAYMENT_LABEL = {
   PROMPTPAY: "พร้อมเพย์ (PromptPay)",
   TRANSFER: "โอนเงินผ่านธนาคาร",
   CARD: "บัตรเครดิต/เดบิต",
+  MOBILE_BANKING: "โมบายแบงก์กิ้ง",
 };
 
 const PAYMENT_STATUS_LABEL = {

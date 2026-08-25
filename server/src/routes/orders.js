@@ -11,7 +11,7 @@ import { updateOrderTracking, looksDelivered, isThaiPostMethod, buildTrackingUrl
 import { computeCartRuleDiscount } from "../lib/discountRules.js";
 import { expireStaleOrders, refundUsedPoints } from "../lib/orderExpiry.js";
 import { sendOrderConfirmation, sendNewOrderToShop, sendOrderCancelled } from "../lib/email.js";
-import { getOmiseConfig, createPromptPayCharge, createCardCharge, fetchCharge, chargePaid, chargeQrUrl, fetchQrDataUrl } from "../lib/omise.js";
+import { getOmiseConfig, createPromptPayCharge, createCardCharge, createSourceCharge, MOBILE_BANKS, fetchCharge, chargePaid, chargeQrUrl, fetchQrDataUrl } from "../lib/omise.js";
 import { markOrderPaid } from "../lib/orderPaid.js";
 
 // แนบลิงก์หน้า tracking ให้ออเดอร์ (ไปรษณีย์ไทย = ลิงก์เว็บไปรษณีย์, อื่นๆ = template ของขนส่ง)
@@ -34,7 +34,7 @@ const router = Router();
 // ส่วนลด % เทียบราคาเต็ม (สำหรับเก็บลงออเดอร์ไว้แสดง)
 const dpOf = (list, net) => (list > net ? Math.round(((list - net) / list) * 100) : 0);
 
-const PAYMENT_METHODS = ["PROMPTPAY", "CARD", "TRANSFER"];
+const PAYMENT_METHODS = ["PROMPTPAY", "CARD", "TRANSFER", "MOBILE_BANKING"];
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ── ติดตามคำสั่งซื้อแบบ guest (ไม่ต้องล็อกอิน) ──────────────────────────
@@ -495,6 +495,34 @@ router.post("/:id/pay-card", async (req, res, next) => {
     if (chargePaid(charge)) { await markOrderPaid(order.id, { chargeId: charge.id }); return res.json({ paid: true }); }
     if (charge.authorize_uri) return res.json({ authorizeUri: charge.authorize_uri }); // ต้องยืนยัน 3DS
     return res.status(402).json({ error: charge.failure_message || "ชำระเงินด้วยบัตรไม่สำเร็จ" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/orders/:id/pay-mobile-banking — จ่ายผ่านแอปธนาคาร (Omise redirect) · คืน authorizeUri
+router.post("/:id/pay-mobile-banking", async (req, res, next) => {
+  try {
+    const order = await getOwnedOrder(req.params.id, req.user.id);
+    if (!order) return res.status(404).json({ error: "ไม่พบคำสั่งซื้อ" });
+    if (order.paymentStatus === "PAID") return res.json({ paid: true });
+    if (order.status === "CANCELLED") return res.status(400).json({ error: "คำสั่งซื้อถูกยกเลิกแล้ว" });
+    const bank = String(req.body?.bank || "").trim().toLowerCase();
+    if (!MOBILE_BANKS.includes(bank)) return res.status(400).json({ error: "ธนาคารไม่ถูกต้อง" });
+
+    const cfg = await getOmiseConfig();
+    if (!cfg.enabled || !cfg.secretKey) return res.status(400).json({ error: "ร้านยังไม่ได้เปิดรับชำระผ่าน Omise" });
+
+    const SITE = (process.env.CLIENT_URL || "").split(",")[0].trim() || "";
+    const charge = await createSourceCharge({
+      secretKey: cfg.secretKey, orderId: order.id, amount: Number(order.total),
+      sourceType: `mobile_banking_${bank}`, returnUri: `${SITE}/orders/${order.id}`,
+    });
+    await prisma.order.update({ where: { id: order.id }, data: { omiseChargeId: charge.id } });
+
+    if (chargePaid(charge)) { await markOrderPaid(order.id, { chargeId: charge.id }); return res.json({ paid: true }); }
+    if (charge.authorize_uri) return res.json({ authorizeUri: charge.authorize_uri });
+    return res.status(402).json({ error: charge.failure_message || "เริ่มการชำระเงินไม่สำเร็จ" });
   } catch (err) {
     next(err);
   }

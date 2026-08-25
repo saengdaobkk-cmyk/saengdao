@@ -13,9 +13,10 @@ import { useAutoDiscount } from "../api/discounts";
 import { useSettings } from "../api/settings";
 
 const PAYMENTS = [
-  { value: "PROMPTPAY", label: "พร้อมเพย์ (PromptPay)", desc: "สแกน QR จ่ายเงิน แล้วแนบสลิป" },
+  { value: "PROMPTPAY", label: "พร้อมเพย์ (PromptPay)", desc: "สแกน QR จ่ายเงิน" },
+  { value: "MOBILE_BANKING", label: "โมบายแบงก์กิ้ง", desc: "จ่ายผ่านแอปธนาคาร (SCB / KBank / กรุงศรี / กรุงเทพ / กรุงไทย)", omiseOnly: true },
+  { value: "CARD", label: "บัตรเครดิต/เดบิต", desc: "ชำระผ่านบัตรอย่างปลอดภัย", omiseOnly: true },
   { value: "TRANSFER", label: "โอนเงินผ่านธนาคาร", desc: "โอนแล้วแนบสลิปยืนยัน" },
-  { value: "CARD", label: "บัตรเครดิต/เดบิต", desc: "ชำระผ่านบัตรอย่างปลอดภัย" },
 ];
 
 export default function Checkout() {
@@ -254,7 +255,7 @@ export default function Checkout() {
           <section>
             <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.payment_heading", "วิธีชำระเงิน")}</h2>
             <div className="space-y-3">
-              {PAYMENTS.map((p) => (
+              {PAYMENTS.filter((p) => !p.omiseOnly || settings.omiseEnabled).map((p) => (
                 <label
                   key={p.value}
                   className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
@@ -277,7 +278,7 @@ export default function Checkout() {
               ))}
             </div>
             <p className="mt-3 text-[12px] text-sub">
-              {t("checkout.payment_note", "* ขั้นตอนชำระเงินจริง (QR / สลิป / บัตร) จะเปิดใช้งานใน Phase 5")}
+              {t("checkout.payment_note", "ขั้นตอนชำระเงินจะแสดงหลังยืนยันคำสั่งซื้อ")}
             </p>
           </section>
 

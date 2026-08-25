@@ -29,8 +29,8 @@ export default function PaymentPanel({ order }) {
       </div>
     );
 
-  // โหมด Omise (ยืนยันจ่ายอัตโนมัติ) — พร้อมเพย์ + บัตร
-  const omise = omiseEnabled && (paymentMethod === "PROMPTPAY" || paymentMethod === "CARD");
+  // โหมด Omise (ยืนยันจ่ายอัตโนมัติ) — พร้อมเพย์ + บัตร + โมบายแบงก์กิ้ง
+  const omise = omiseEnabled && (paymentMethod === "PROMPTPAY" || paymentMethod === "CARD" || paymentMethod === "MOBILE_BANKING");
 
   return (
     <div className="mt-8">
@@ -38,9 +38,50 @@ export default function PaymentPanel({ order }) {
       {paymentMethod === "CARD" && (omise
         ? <OmiseCard order={order} publicKey={omisePublicKey} />
         : <Banner tone="mist" title="บัตรเครดิต/เดบิต" desc="ช่องทางบัตรจะเปิดใช้งานเร็วๆ นี้ — ระหว่างนี้เลือกพร้อมเพย์หรือโอนเงินได้" />)}
+      {paymentMethod === "MOBILE_BANKING" && omise && <OmiseMobileBanking order={order} />}
       {paymentMethod === "TRANSFER" && <BankBox total={order.total} />}
       {/* แนบสลิป — เฉพาะช่องทางที่ไม่ผ่าน Omise (โอนธนาคาร / พร้อมเพย์แบบ static) */}
       {(paymentMethod === "TRANSFER" || (paymentMethod === "PROMPTPAY" && !omise)) && <SlipUpload orderId={id} />}
+    </div>
+  );
+}
+
+// ---- Omise โมบายแบงก์กิ้ง (จ่ายผ่านแอปธนาคาร แบบ redirect) ----
+function OmiseMobileBanking({ order }) {
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const banks = [
+    { id: "scb", name: "ไทยพาณิชย์ (SCB)" },
+    { id: "kbank", name: "กสิกรไทย (KBank)" },
+    { id: "bay", name: "กรุงศรี (Krungsri)" },
+    { id: "bbl", name: "กรุงเทพ (BBL)" },
+    { id: "ktb", name: "กรุงไทย (KTB)" },
+  ];
+  const pay = async (bank) => {
+    setError(""); setBusy(bank);
+    try {
+      const { data } = await api.post(`/orders/${order.id}/pay-mobile-banking`, { bank });
+      if (data.authorizeUri) { window.location.href = data.authorizeUri; return; }
+      if (data.paid) { window.location.reload(); return; }
+      setError("เริ่มการชำระเงินไม่สำเร็จ");
+    } catch (err) {
+      setError(err.response?.data?.error || "เริ่มการชำระเงินไม่สำเร็จ");
+    } finally { setBusy(""); }
+  };
+  return (
+    <div className="rounded-2xl border border-line p-6">
+      <p className="text-[15px] font-semibold text-ink">เลือกธนาคารเพื่อจ่ายผ่านแอป</p>
+      <p className="mt-0.5 text-[12px] text-sub">กดแล้วจะพาไปยืนยันในแอปธนาคาร — เสร็จแล้วระบบยืนยันให้อัตโนมัติ</p>
+      <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        {banks.map((b) => (
+          <button key={b.id} type="button" onClick={() => pay(b.id)} disabled={!!busy}
+            className="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-[14px] text-ink transition hover:border-ink/30 disabled:opacity-50">
+            <span>{b.name}</span>
+            <span className="text-sub">{busy === b.id ? "กำลังไป..." : "→"}</span>
+          </button>
+        ))}
+      </div>
+      {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
     </div>
   );
 }
