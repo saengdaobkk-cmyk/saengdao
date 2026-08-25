@@ -1,6 +1,6 @@
 import { useState } from "react";
 import BookLoader from "../components/BookLoader";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../auth/AuthContext";
 import { api } from "../lib/api";
@@ -31,6 +31,7 @@ export default function Account() {
         <PasswordSection />
         {isStaff && <TwoFactorSection user={user} updateUser={updateUser} />}
         <OrdersLink />
+        {!isStaff && <DeleteAccountSection />}
       </div>
     </div>
   );
@@ -345,6 +346,47 @@ function PasswordSection() {
       ) : (
         <p className="mt-4 text-[14px] text-sub">••••••••</p>
       )}
+    </section>
+  );
+}
+
+// ลบบัญชี (PDPA) — anonymize ข้อมูลส่วนตัว · เก็บประวัติออเดอร์แบบไม่ระบุตัวตนตามกฎหมายบัญชี
+function DeleteAccountSection() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const del = async () => {
+    setError(""); setBusy(true);
+    try {
+      await api.post("/auth/delete-account");
+      logout();
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || "ลบบัญชีไม่สำเร็จ");
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="rounded-2xl border border-red-200 bg-red-50/40 p-6">
+      <h2 className="text-[15px] font-semibold text-red-700">ลบบัญชีของฉัน</h2>
+      <p className="mt-1 text-[13px] leading-relaxed text-red-700/80">
+        ลบข้อมูลส่วนบุคคลของคุณออกจากระบบอย่างถาวร (ชื่อ อีเมล เบอร์โทร ที่อยู่ รีวิว) และจะเข้าสู่ระบบด้วยบัญชีนี้ไม่ได้อีก ·
+        ประวัติคำสั่งซื้อจะถูกเก็บแบบไม่ระบุตัวตนตามกฎหมายบัญชี/ภาษี — <b>การลบนี้ย้อนกลับไม่ได้</b>
+      </p>
+      <label className="mt-4 block max-w-xs">
+        <span className="mb-1 block text-[12px] text-red-700/80">พิมพ์ “ลบบัญชี” เพื่อยืนยัน</span>
+        <input value={confirm} onChange={(e) => setConfirm(e.target.value)}
+          className="w-full rounded-xl border border-red-300 bg-white px-4 py-2.5 text-[14px] text-ink outline-none focus:border-red-400" />
+      </label>
+      {error && <p className="mt-2 text-[13px] text-red-600">{error}</p>}
+      <button onClick={del} disabled={busy || confirm.trim() !== "ลบบัญชี"}
+        className="mt-3 rounded-full bg-red-600 px-6 py-2.5 text-[14px] font-medium text-white transition hover:bg-red-700 disabled:opacity-40">
+        {busy ? "กำลังลบ..." : "ลบบัญชีถาวร"}
+      </button>
     </section>
   );
 }

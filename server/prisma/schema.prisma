@@ -125,6 +125,8 @@ model User {
   emailVerified      Boolean        @default(true)
   emailVerifyToken   String?
   emailVerifyExpires DateTime?
+  consentAt          DateTime? // ยินยอมเงื่อนไข + นโยบายความเป็นส่วนตัว (PDPA)
+  deletedAt          DateTime? // ขอลบบัญชี (PDPA) — anonymize PII แล้วบล็อกล็อกอิน
   // ยืนยันตัวตน 2 ชั้น (TOTP) — สำหรับเจ้าหน้าที่/แอดมิน
   totpSecret         String? // 🔒 secret สำหรับสร้างรหัส 6 หลัก (base32)
   totpEnabled        Boolean        @default(false)

@@ -21,6 +21,7 @@ export default function Register() {
   const [sent, setSent] = useState(false); // สมัครเสร็จ รออีเมลยืนยัน
   const [resent, setResent] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [consent, setConsent] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -33,9 +34,13 @@ export default function Register() {
       setError("กรุณายืนยันว่าคุณไม่ใช่บอทก่อน");
       return;
     }
+    if (!consent) {
+      setError("กรุณายอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว");
+      return;
+    }
     setBusy(true);
     try {
-      const res = await register(email, password, name, captchaToken);
+      const res = await register(email, password, name, captchaToken, consent);
       if (res?.pendingVerification) setSent(true);
       else navigate(from, { replace: true });
     } catch (err) {
@@ -82,6 +87,16 @@ export default function Register() {
         {captchaOn && (
           <TurnstileWidget siteKey={s.turnstileSiteKey} onToken={setCaptchaToken} />
         )}
+
+        <label className="flex items-start gap-2.5 text-[13px] leading-relaxed text-sub">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-accent" />
+          <span>
+            ฉันได้อ่านและยอมรับ{" "}
+            <Link to="/terms" target="_blank" className="text-accent hover:underline">เงื่อนไขการใช้งาน</Link>{" "}
+            และ{" "}
+            <Link to="/privacy" target="_blank" className="text-accent hover:underline">นโยบายความเป็นส่วนตัว</Link>
+          </span>
+        </label>
 
         {error && <p className="text-[13px] text-red-600">{error}</p>}
 

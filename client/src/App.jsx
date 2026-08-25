@@ -7,6 +7,7 @@ import { useContent } from "./api/content";
 import { useNav } from "./api/nav";
 import CartDrawer from "./components/CartDrawer";
 import SearchModal from "./components/SearchModal";
+import CookieConsent from "./components/CookieConsent";
 
 export default function App() {
   const { t } = useContent();
@@ -169,6 +170,7 @@ export default function App() {
 
       <CartDrawer />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <CookieConsent />
 
       <footer className="bg-ink text-white">
         <div className="mx-auto max-w-page px-5">

@@ -41,12 +41,14 @@ const publicUser = (u) => ({
 // POST /api/auth/register
 router.post("/register", registerLimiter, async (req, res, next) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, consent } = req.body;
 
     if (!email || !emailRe.test(email))
       return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
     if (!password || password.length < 6)
       return res.status(400).json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+    if (!consent)
+      return res.status(400).json({ error: "กรุณายอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัวก่อนสมัคร" });
 
     // ตรวจ CAPTCHA (Turnstile) — ถ้ายังไม่ได้เปิดใช้ จะผ่านทันที
     const ts = await verifyTurnstile(req.body?.turnstileToken, req.ip);
@@ -64,6 +66,7 @@ router.post("/register", registerLimiter, async (req, res, next) => {
         emailVerified: false,
         emailVerifyToken,
         emailVerifyExpires,
+        consentAt: new Date(), // บันทึกวัน-เวลาที่ยินยอม (PDPA)
       },
     });
 
@@ -127,6 +130,8 @@ router.post("/login", loginLimiter, async (req, res, next) => {
     const ok = user && (await bcrypt.compare(password, user.password));
     if (!ok) return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
 
+    if (user.deletedAt) return res.status(403).json({ error: "บัญชีนี้ถูกลบแล้ว" });
+
     // ยังไม่ยืนยันอีเมล → ยังเข้าใช้ไม่ได้
     if (!user.emailVerified)
       return res.status(403).json({ error: "กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ — เช็กกล่องจดหมาย (รวมถึง Junk/Spam)", verificationRequired: true, email: user.email });
@@ -184,6 +189,34 @@ router.patch("/profile", authenticate, async (req, res, next) => {
 
     const user = await prisma.user.update({ where: { id: req.user.id }, data });
     res.json({ user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/delete-account — ขอลบบัญชี (PDPA) · anonymize PII + บล็อกล็อกอิน · เก็บออเดอร์ไว้ตามกฎหมายบัญชี/ภาษี
+router.post("/delete-account", authenticate, async (req, res, next) => {
+  try {
+    const uid = req.user.id;
+    const orderCount = await prisma.order.count({ where: { userId: uid } });
+    const anonEmail = `deleted-${uid.slice(0, 8)}-${Date.now().toString(36)}@removed.invalid`;
+
+    await prisma.user.update({
+      where: { id: uid },
+      data: {
+        name: null, email: anonEmail, phone: null, address: null,
+        receiptName: null, receiptTaxId: null, receiptAddress: null,
+        tags: [], totpSecret: null, totpEnabled: false,
+        emailVerifyToken: null, emailVerifyExpires: null,
+        password: await bcrypt.hash(`${Math.random()}${Date.now()}`, 10), // สุ่ม เพื่อให้ล็อกอินไม่ได้อีก
+        deletedAt: new Date(),
+      },
+    });
+    // ลบเนื้อหาส่วนบุคคล (รีวิว/โน้ต CRM) — ออเดอร์+แต้มเก็บไว้เพื่อการบัญชี/ภาษี
+    await prisma.review.deleteMany({ where: { userId: uid } }).catch(() => {});
+    await prisma.customerNote.deleteMany({ where: { userId: uid } }).catch(() => {});
+
+    res.json({ ok: true, keptOrders: orderCount });
   } catch (err) {
     next(err);
   }
