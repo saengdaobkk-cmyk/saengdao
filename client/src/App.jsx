@@ -13,6 +13,7 @@ export default function App() {
   const s = useSettings();
   const settingsLoaded = useSettingsLoaded(); // กันโลโก้กระพริบ text ก่อนขึ้นรูป
   const { data: nav = [] } = useNav();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -150,8 +151,14 @@ export default function App() {
             )}
           </nav>
           <div className="border-t border-line p-3">
-            <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
-            <Link to="/orders" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">ประวัติคำสั่งซื้อ</Link>
+            {user ? (
+              <>
+                <Link to="/account" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">บัญชีของฉัน</Link>
+                <Link to="/orders" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] text-ink hover:bg-mist">ประวัติคำสั่งซื้อ</Link>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 text-[15px] font-medium text-accent hover:bg-mist">เข้าสู่ระบบ</Link>
+            )}
           </div>
         </div>
       </div>
