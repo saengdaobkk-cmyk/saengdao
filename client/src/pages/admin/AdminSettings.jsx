@@ -2,19 +2,68 @@ import { useEffect, useState } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
 import { uploadImage } from "../../api/admin";
 
+const SETTINGS_TABS = [
+  { id: "appearance", label: "หน้าตา & แบรนด์" },
+  { id: "product", label: "สินค้า" },
+  { id: "orders", label: "คำสั่งซื้อ & แต้ม" },
+  { id: "payment", label: "ชำระเงิน" },
+  { id: "contact", label: "ติดต่อ" },
+  { id: "security", label: "ความปลอดภัย" },
+];
+
 export default function AdminSettings() {
   const settings = useSettings();
   const update = useUpdateSettings();
+  const [tab, setTab] = useState(() => {
+    const saved = localStorage.getItem("adminSettingsTab");
+    return SETTINGS_TABS.some((t) => t.id === saved) ? saved : "appearance";
+  });
+  const go = (id) => { setTab(id); localStorage.setItem("adminSettingsTab", id); };
 
   return (
-    <div className="space-y-12">
-      <BrandSettings settings={settings} save={update} />
-      <FooterSettings settings={settings} save={update} />
+    <div>
+      {/* แท็บแบ่งหมวด */}
+      <div className="mb-8 flex flex-wrap gap-1 overflow-x-auto border-b border-line">
+        {SETTINGS_TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => go(t.id)}
+            className={`whitespace-nowrap px-4 py-2.5 text-[14px] font-medium transition ${tab === t.id ? "border-b-2 border-ink text-ink" : "border-b-2 border-transparent text-sub hover:text-ink"}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {/* การแสดงผล */}
-      <section>
-        <h2 className="mb-4 text-[15px] font-semibold text-ink">การแสดงผล</h2>
-        <div className="divide-y divide-line rounded-2xl border border-line bg-white">
+      <div className="space-y-12">
+        {tab === "appearance" && (
+          <>
+            <BrandSettings settings={settings} save={update} />
+            <FooterSettings settings={settings} save={update} />
+            <DisplaySettings settings={settings} update={update} />
+          </>
+        )}
+        {tab === "product" && <ProductSpecSettings settings={settings} save={update} />}
+        {tab === "orders" && (
+          <>
+            <OrderSettings settings={settings} save={update} />
+            <LoyaltySettings settings={settings} save={update} />
+          </>
+        )}
+        {tab === "payment" && <PaymentSettings settings={settings} save={update} />}
+        {tab === "contact" && <ContactSettings settings={settings} save={update} />}
+        {tab === "security" && <TurnstileSettings settings={settings} save={update} />}
+      </div>
+    </div>
+  );
+}
+
+// การแสดงผล — สวิตช์เปิด/ปิดฟีเจอร์หน้าร้าน
+function DisplaySettings({ settings, update }) {
+  return (
+    <section>
+      <h2 className="mb-4 text-[15px] font-semibold text-ink">การแสดงผล</h2>
+      <div className="divide-y divide-line rounded-2xl border border-line bg-white">
           <ToggleRow
             title="Cart Drawer"
             desc="เปิด: กดตะกร้าแล้วแผงเลื่อนออกจากด้านขวา · ปิด: ไปหน้าตะกร้าเต็มจอ"
@@ -94,14 +143,6 @@ export default function AdminSettings() {
           />
         </div>
       </section>
-
-      <ProductSpecSettings settings={settings} save={update} />
-      <LoyaltySettings settings={settings} save={update} />
-      <OrderSettings settings={settings} save={update} />
-      <ContactSettings settings={settings} save={update} />
-      <TurnstileSettings settings={settings} save={update} />
-      <PaymentSettings settings={settings} save={update} />
-    </div>
   );
 }
 
