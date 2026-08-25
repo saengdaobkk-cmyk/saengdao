@@ -39,7 +39,7 @@ export default function AuthorSpotlight({ cfg }) {
 
   return (
     <section className="mx-auto max-w-page px-5 py-10">
-      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.55fr)_1px_1fr] lg:gap-x-14">
+      <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.62fr)_1px_1fr] lg:gap-x-14">
         {/* ปกใหญ่ฝั่งซ้าย */}
         {featured && featured.coverImage ? (
           <Link to={featTo} className="group mx-auto block w-full max-w-[260px] lg:mx-0 lg:max-w-none">
