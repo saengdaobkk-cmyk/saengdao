@@ -751,6 +751,19 @@ function OmiseSettings({ settings, save }) {
           <input type="checkbox" checked={!!settings.omiseEnabled} disabled={save.isPending} onChange={(e) => save.mutate({ omiseEnabled: e.target.checked })} className="h-4 w-4 accent-accent" />
           เปิดรับชำระผ่าน Omise (PromptPay + บัตร)
         </label>
+
+        {/* เปิด/ปิดรายช่องทาง — ปิดชั่วคราวได้ถ้าช่องทางไหนมีปัญหา */}
+        <div className="rounded-xl border border-line/70 bg-mist/30 p-4">
+          <p className="mb-3 text-[12px] font-medium text-sub">ช่องทางที่เปิดรับ (มีผลเมื่อเปิด Omise)</p>
+          <div className="space-y-2.5">
+            {[["omisePromptPayEnabled", "พร้อมเพย์ (QR)"], ["omiseMobileBankingEnabled", "โมบายแบงก์กิ้ง"], ["omiseCardEnabled", "บัตรเครดิต/เดบิต"]].map(([k, label]) => (
+              <label key={k} className="flex items-center gap-2 text-[13px] text-ink">
+                <input type="checkbox" checked={settings[k] !== false} disabled={save.isPending} onChange={(e) => save.mutate({ [k]: e.target.checked })} className="h-4 w-4 accent-accent" />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Public Key (pkey_...)" value={pub} onChange={(e) => setPub(e.target.value)} placeholder="pkey_test_xxx" />
           <label className="block">

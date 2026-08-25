@@ -19,6 +19,19 @@ const PAYMENTS = [
   { value: "TRANSFER", label: "โอนเงินผ่านธนาคาร", desc: "โอนแล้วแนบสลิปยืนยัน" },
 ];
 
+// วิธีชำระที่แสดง — บัตร/โมบายแบงก์กิ้ง ต้องเปิด Omise · เปิด Omise แล้วเคารพสวิตช์เปิด/ปิดรายช่องทาง
+function visiblePayments(s) {
+  return PAYMENTS.filter((p) => {
+    if (p.omiseOnly && !s.omiseEnabled) return false;
+    if (s.omiseEnabled) {
+      if (p.value === "PROMPTPAY" && s.omisePromptPayEnabled === false) return false;
+      if (p.value === "MOBILE_BANKING" && s.omiseMobileBankingEnabled === false) return false;
+      if (p.value === "CARD" && s.omiseCardEnabled === false) return false;
+    }
+    return true;
+  });
+}
+
 export default function Checkout() {
   const { items, subtotal, count, clear, note: cartNote } = useCart();
   const { user, loading, updateUser } = useAuth();
@@ -32,6 +45,12 @@ export default function Checkout() {
   const [form, setForm] = useState({ shipName: "", shipPhone: "", shipAddress: "", email: "" });
   const [paymentMethod, setPaymentMethod] = useState("PROMPTPAY");
   const [note, setNote] = useState(cartNote || ""); // ดึงหมายเหตุที่กรอกในตะกร้ามาเป็นค่าเริ่มต้น
+
+  // ถ้าวิธีที่เลือกไว้ถูกปิด → เด้งไปวิธีแรกที่ยังเปิดอยู่
+  useEffect(() => {
+    const list = visiblePayments(settings);
+    if (list.length && !list.some((m) => m.value === paymentMethod)) setPaymentMethod(list[0].value);
+  }, [settings, paymentMethod]);
 
   // ช่องทางจัดส่ง
   const { data: shippingMethods = [] } = useShipping();
@@ -255,7 +274,7 @@ export default function Checkout() {
           <section>
             <h2 className="mb-4 text-[15px] font-semibold text-ink">{t("checkout.payment_heading", "วิธีชำระเงิน")}</h2>
             <div className="space-y-3">
-              {PAYMENTS.filter((p) => !p.omiseOnly || settings.omiseEnabled).map((p) => (
+              {visiblePayments(settings).map((p) => (
                 <label
                   key={p.value}
                   className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${

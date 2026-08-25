@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "omiseEnabled"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -100,6 +100,9 @@ const DEFAULTS = {
   productStickyCover: false, // ปกสินค้าค้าง (sticky) ตอนเลื่อน
   omiseEnabled: false, // รับชำระอัตโนมัติผ่าน Omise (PromptPay + บัตร)
   omisePublicKey: "",
+  omisePromptPayEnabled: true, // เปิด/ปิดช่องทางแต่ละแบบ (มีผลเมื่อเปิด Omise)
+  omiseMobileBankingEnabled: true,
+  omiseCardEnabled: true,
 };
 
 // 🔒 กันชั้นสอง (defense-in-depth): key ที่เข้าข่ายความลับ ห้ามหลุดออก client เด็ดขาด
