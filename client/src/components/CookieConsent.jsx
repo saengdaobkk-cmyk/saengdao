@@ -34,8 +34,9 @@ export default function CookieConsent() {
           // แถบหลัก
           <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
             <p className="flex-1 text-[13px] leading-relaxed text-ink/80">
-              เราใช้คุกกี้เพื่อให้เว็บทำงานและปรับปรุงประสบการณ์ของคุณ คุณเลือกได้ว่าจะยอมรับหมวดใด —
-              อ่าน <Link to="/privacy" className="font-medium text-accent hover:underline">นโยบายความเป็นส่วนตัว</Link>
+              เราใช้คุกกี้เพื่อให้เว็บไซต์ทำงานได้อย่างเต็มประสิทธิภาพ และช่วยมอบประสบการณ์การช้อปที่ดีที่สุดให้คุณ
+              คุณเลือกได้ว่าจะยอมรับคุกกี้ประเภทใด · ดูรายละเอียดได้ที่{" "}
+              <Link to="/privacy" className="font-medium text-accent hover:underline">นโยบายความเป็นส่วนตัว</Link>
             </p>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => setOpenPrefs(true)} className="rounded-full border border-line px-4 py-2 text-[13px] font-medium text-ink transition hover:bg-mist">ตั้งค่า</button>
