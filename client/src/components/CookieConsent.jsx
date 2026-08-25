@@ -12,8 +12,8 @@ export function getCookieConsent() {
 export default function CookieConsent() {
   const [show, setShow] = useState(false);
   const [openPrefs, setOpenPrefs] = useState(false);
-  const [analytics, setAnalytics] = useState(false);
-  const [marketing, setMarketing] = useState(false);
+  const [analytics, setAnalytics] = useState(true); // default ติ๊กไว้ ลูกค้าเอาออกเองได้
+  const [marketing, setMarketing] = useState(true);
 
   useEffect(() => { if (!getCookieConsent()) setShow(true); }, []);
 
