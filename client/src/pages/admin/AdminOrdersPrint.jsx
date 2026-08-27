@@ -400,7 +400,7 @@ const BASE_CSS = `
 .lbl-addr { font-size: 12.5pt; line-height: 1.5; margin-top: 2.5mm; }
 /* ล่าง: โลโก้ / QR + ระวังแตก */
 .lbl-foot { display: flex; align-items: center; justify-content: space-between; gap: 3mm; padding: 3mm 4mm; min-height: 24mm; }
-.lbl-brand { display: flex; align-items: center; gap: 3mm; }
+.lbl-brand { display: flex; align-items: flex-start; gap: 3mm; }
 .lbl-logo { max-height: 20mm; max-width: 40mm; object-fit: contain; }
 .lbl-qr { display: flex; flex-direction: column; align-items: center; }
 .lbl-qr img { width: 20mm; height: 20mm; object-fit: contain; }
