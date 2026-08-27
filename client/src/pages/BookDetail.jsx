@@ -203,7 +203,7 @@ export default function BookDetail() {
             {(book.tags || []).map((t) => <span key={t} className="rounded-full bg-mist px-2.5 py-1 text-[11px] text-ink/60">{t}</span>)}
           </div>
 
-          <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
+          <h1 className="mt-4 text-3xl font-semibold leading-snug tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
           {book.authorLinks?.length > 0 && (
             <p className="mt-2 text-[15px] text-sub">
               {t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
