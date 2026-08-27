@@ -7,6 +7,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { CartProvider } from "./cart/CartContext";
 import App from "./App.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
+import RedirectHandler from "./components/RedirectHandler.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import Collection from "./pages/Collection.jsx";
@@ -48,6 +49,7 @@ import AdminSettings from "./pages/admin/AdminSettings.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
 import AdminReviews from "./pages/admin/AdminReviews.jsx";
+import AdminRedirects from "./pages/admin/AdminRedirects.jsx";
 
 // cache ข้อมูล 1 นาที + เก็บไว้ 5 นาที → กลับเข้าหน้าเดิมภายในเวลานี้แสดงทันที ไม่ต้องโหลดใหม่
 const queryClient = new QueryClient({
@@ -68,6 +70,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
+            <RedirectHandler />
             <ErrorBoundary>
             <Routes>
               {/* หน้าร้าน */}
@@ -126,6 +129,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="blog" element={<AdminBlog />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="redirects" element={<AdminRedirects />} />
               </Route>
             </Routes>
             </ErrorBoundary>

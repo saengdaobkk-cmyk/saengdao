@@ -11,6 +11,26 @@ export const useAdminStats = () =>
     staleTime: 10000,
   });
 
+/* ---------- Redirects ---------- */
+export const useAdminRedirects = () =>
+  useQuery({ queryKey: ["admin", "redirects"], queryFn: async () => (await api.get("/admin/redirects")).data });
+
+export function useSaveRedirect() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...body }) =>
+      id ? (await api.patch(`/admin/redirects/${id}`, body)).data : (await api.post("/admin/redirects", body)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "redirects"] }),
+  });
+}
+export function useDeleteRedirect() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => (await api.delete(`/admin/redirects/${id}`)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "redirects"] }),
+  });
+}
+
 // รายงานยอดขาย (จาก order) — days = ช่วงวัน
 export const useAdminAnalytics = (days = 30) =>
   useQuery({

@@ -272,6 +272,16 @@ enum OrderStatus {
   CANCELLED // ยกเลิก
 }
 
+// เปลี่ยนเส้นทาง URL เก่า → ใหม่ (ตอนย้ายจากเว็บเดิม กัน 404 + รักษา SEO)
+model Redirect {
+  id        String   @id @default(uuid())
+  fromPath  String   @unique // path เดิม เช่น "/product/old-book" (ไม่รวมโดเมน)
+  toPath    String // ปลายทาง เช่น "/books/new-slug" หรือ URL เต็ม
+  active    Boolean  @default(true)
+  hits      Int      @default(0) // นับจำนวนครั้งที่ถูกใช้
+  createdAt DateTime @default(now())
+}
+
 enum PaymentMethod {
   PROMPTPAY // PromptPay QR (สร้างเอง + แนบสลิป)
   CARD // บัตรเครดิต (Omise)

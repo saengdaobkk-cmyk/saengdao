@@ -43,13 +43,14 @@ const NAV_GROUPS = [
     items: [
       { to: "/sdpub/users", label: "ผู้ใช้งาน", icon: UsersIcon, adminOnly: true },
       { to: "/sdpub/integrations", label: "การเชื่อมต่อ", icon: PlugIcon, adminOnly: true },
+      { to: "/sdpub/redirects", label: "Redirect (ย้าย URL)", icon: RedirectIcon, adminOnly: true },
       { to: "/sdpub/settings", label: "ตั้งค่า", icon: GearIcon, adminOnly: true },
     ],
   },
 ];
 
 // path ที่เฉพาะแอดมินเต็ม (กัน STAFF เข้าตรงๆ ผ่าน URL)
-const ADMIN_ONLY_PATHS = ["/sdpub/pages", "/sdpub/slides", "/sdpub/home-layout", "/sdpub/content", "/sdpub/blog", "/sdpub/coupons", "/sdpub/discount-rules", "/sdpub/shipping", "/sdpub/users", "/sdpub/integrations", "/sdpub/settings"];
+const ADMIN_ONLY_PATHS = ["/sdpub/pages", "/sdpub/slides", "/sdpub/home-layout", "/sdpub/content", "/sdpub/blog", "/sdpub/coupons", "/sdpub/discount-rules", "/sdpub/shipping", "/sdpub/users", "/sdpub/integrations", "/sdpub/redirects", "/sdpub/settings"];
 
 const TITLES = {
   "/sdpub": "ภาพรวม",
@@ -69,6 +70,7 @@ const TITLES = {
   "/sdpub/shipping": "ช่องทางจัดส่ง",
   "/sdpub/users": "ผู้ใช้งาน (เจ้าหน้าที่)",
   "/sdpub/integrations": "การเชื่อมต่อ",
+  "/sdpub/redirects": "Redirect (ย้าย URL)",
   "/sdpub/settings": "ตั้งค่า",
 };
 
@@ -226,3 +228,4 @@ function BlogIcon() { return <svg {...base()}><path d="M5 4h11l3 3v13H5z" /><pat
 function TruckIcon() { return <svg {...base()}><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" /><circle cx="7" cy="18" r="1.6" /><circle cx="17.5" cy="18" r="1.6" /></svg>; }
 function LayoutIcon() { return <svg {...base()}><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 9h16M9 9v11" /></svg>; }
 function DiscountIcon() { return <svg {...base()}><path d="M9 15l6-6" /><circle cx="9" cy="9" r="1.2" /><circle cx="15" cy="15" r="1.2" /><path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z" /></svg>; }
+function RedirectIcon() { return <svg {...base()}><path d="M4 7h11a4 4 0 0 1 0 8H9" /><path d="M8 11l-4 4 4 4" /></svg>; }

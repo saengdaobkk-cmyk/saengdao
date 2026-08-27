@@ -21,6 +21,7 @@ import contactRouter from "./routes/contact.js";
 import previewRouter from "./routes/preview.js";
 import adminRouter from "./routes/admin.js";
 import webhooksRouter from "./routes/webhooks.js";
+import redirectsRouter from "./routes/redirects.js";
 import { syncStockFromZort } from "./lib/zort.js";
 
 const app = express();
@@ -85,6 +86,7 @@ app.use("/api/contact", contactRouter);
 app.use("/api/preview", previewRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/webhooks", webhooksRouter);
+app.use("/api/redirects", redirectsRouter);
 
 // 404
 app.use((req, res) => {

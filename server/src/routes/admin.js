@@ -152,6 +152,57 @@ router.get("/analytics", async (req, res, next) => {
   }
 });
 
+/* ---------- Redirects (ย้าย URL เก่า → ใหม่) ---------- */
+function normFromPath(p) {
+  let s = String(p || "").trim();
+  if (!s) return "";
+  try { if (/^https?:\/\//i.test(s)) { const u = new URL(s); s = u.pathname + u.search; } } catch { /* ใช้ค่าเดิม */ }
+  if (!s.startsWith("/")) s = "/" + s;
+  return s.replace(/\/+$/, "") || "/"; // ตัด trailing slash
+}
+function normToPath(p) {
+  let s = String(p || "").trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s; // URL เต็ม → ปล่อยไว้
+  if (!s.startsWith("/")) s = "/" + s;
+  return s;
+}
+
+router.get("/redirects", async (req, res, next) => {
+  try { res.json(await prisma.redirect.findMany({ orderBy: { createdAt: "desc" } })); } catch (err) { next(err); }
+});
+
+router.post("/redirects", async (req, res, next) => {
+  try {
+    const fromPath = normFromPath(req.body?.fromPath);
+    const toPath = normToPath(req.body?.toPath);
+    if (!fromPath || !toPath) return res.status(400).json({ error: "กรอก URL เดิมและปลายทางให้ครบ" });
+    if (fromPath === toPath) return res.status(400).json({ error: "ต้นทางและปลายทางซ้ำกัน" });
+    if (await prisma.redirect.findUnique({ where: { fromPath } }))
+      return res.status(409).json({ error: "มี redirect ของ path นี้อยู่แล้ว" });
+    res.status(201).json(await prisma.redirect.create({ data: { fromPath, toPath, active: req.body?.active !== false } }));
+  } catch (err) { next(err); }
+});
+
+router.patch("/redirects/:id", async (req, res, next) => {
+  try {
+    const data = {};
+    if (req.body.fromPath !== undefined) data.fromPath = normFromPath(req.body.fromPath);
+    if (req.body.toPath !== undefined) data.toPath = normToPath(req.body.toPath);
+    if (req.body.active !== undefined) data.active = !!req.body.active;
+    if (data.fromPath === "" || data.toPath === "") return res.status(400).json({ error: "ค่าห้ามว่าง" });
+    if (data.fromPath) {
+      const dup = await prisma.redirect.findUnique({ where: { fromPath: data.fromPath } });
+      if (dup && dup.id !== req.params.id) return res.status(409).json({ error: "มี redirect ของ path นี้อยู่แล้ว" });
+    }
+    res.json(await prisma.redirect.update({ where: { id: req.params.id }, data }));
+  } catch (err) { next(err); }
+});
+
+router.delete("/redirects/:id", async (req, res, next) => {
+  try { await prisma.redirect.delete({ where: { id: req.params.id } }); res.json({ ok: true }); } catch (err) { next(err); }
+});
+
 /* ---------- Books ---------- */
 router.get("/books", async (req, res, next) => {
   try {
