@@ -354,7 +354,7 @@ const BASE_CSS = `
 .inv-meta { margin-left: auto; border-collapse: collapse; font-size: 12px; }
 .inv-meta td { padding: 1.5px 0 1.5px 12px; }
 .inv-meta td:first-child { color: #999; text-align: right; }
-.inv-meta td:last-child { font-weight: 600; }
+.inv-meta td:last-child { font-weight: 600; text-align: left; }
 .inv-parties { display: flex; gap: 14px; margin: 16px 0; }
 .inv-box { flex: 1; border: 1px solid #d8d8dd; border-radius: 8px; overflow: hidden; }
 .inv-box-h { background: #f5f5f7; padding: 6px 12px; font-size: 11px; font-weight: 700; color: #555; letter-spacing: .5px; border-bottom: 1px solid #e5e5e7; }
