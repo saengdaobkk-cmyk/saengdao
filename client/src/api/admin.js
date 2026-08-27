@@ -11,6 +11,15 @@ export const useAdminStats = () =>
     staleTime: 10000,
   });
 
+// รายงานยอดขาย (จาก order) — days = ช่วงวัน
+export const useAdminAnalytics = (days = 30) =>
+  useQuery({
+    queryKey: ["admin", "analytics", days],
+    queryFn: async () => (await api.get(`/admin/analytics?days=${days}`)).data,
+    staleTime: 60000,
+    placeholderData: keepPreviousData,
+  });
+
 /* ---------- Books ---------- */
 export const useAdminBooks = () =>
   useQuery({ queryKey: ["admin", "books"], queryFn: async () => (await api.get("/admin/books")).data });

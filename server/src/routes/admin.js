@@ -84,6 +84,74 @@ router.get("/stats", async (req, res, next) => {
   }
 });
 
+// GET /admin/analytics?days=30 — รายงานยอดขายจากข้อมูลออเดอร์ (เฉพาะที่ชำระแล้ว)
+router.get("/analytics", async (req, res, next) => {
+  try {
+    const days = Math.min(365, Math.max(7, parseInt(req.query.days) || 30));
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1));
+    const paidWhere = { paymentStatus: "PAID", createdAt: { gte: start } };
+
+    const [orders, agg, byUser] = await Promise.all([
+      prisma.order.findMany({
+        where: paidWhere,
+        select: {
+          createdAt: true, total: true, discount: true, ruleDiscount: true, pointsDiscount: true, shippingFee: true,
+          items: { select: { price: true, quantity: true, book: { select: { category: { select: { name: true } }, publisher: true } } } },
+        },
+      }),
+      prisma.order.aggregate({ where: paidWhere, _sum: { total: true, discount: true, ruleDiscount: true, pointsDiscount: true, shippingFee: true }, _count: true }),
+      prisma.order.groupBy({ by: ["userId"], where: paidWhere, _count: true }),
+    ]);
+
+    // ยอดขายรายวัน (เติมวันที่ว่าง = 0)
+    const dayMap = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      dayMap[d.toISOString().slice(0, 10)] = 0;
+    }
+    for (const o of orders) {
+      const k = new Date(o.createdAt).toISOString().slice(0, 10);
+      if (k in dayMap) dayMap[k] += Number(o.total);
+    }
+    const salesByDay = Object.entries(dayMap).map(([date, total]) => ({ date, total }));
+
+    // ยอดขายแยกหมวด / สำนักพิมพ์ (จากรายการในออเดอร์)
+    const catMap = {}, pubMap = {};
+    for (const o of orders) {
+      for (const it of o.items) {
+        const rev = Number(it.price) * it.quantity;
+        const cat = it.book?.category?.name || "ไม่ระบุ";
+        const pub = it.book?.publisher || "ไม่ระบุ";
+        catMap[cat] = (catMap[cat] || 0) + rev;
+        pubMap[pub] = (pubMap[pub] || 0) + rev;
+      }
+    }
+    const topN = (m) => Object.entries(m).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total).slice(0, 6);
+
+    const revenue = Number(agg._sum.total || 0);
+    const paidOrders = agg._count || 0;
+    const discount = Number(agg._sum.discount || 0) + Number(agg._sum.ruleDiscount || 0) + Number(agg._sum.pointsDiscount || 0);
+    const shipping = Number(agg._sum.shippingFee || 0);
+    const returningCustomers = byUser.filter((u) => u._count > 1).length;
+    const totalCustomers = byUser.length;
+
+    res.json({
+      days,
+      revenue,
+      paidOrders,
+      aov: paidOrders ? Math.round(revenue / paidOrders) : 0,
+      breakdown: { goods: revenue - shipping, discount, shipping, net: revenue },
+      returningRate: totalCustomers ? Math.round((returningCustomers / totalCustomers) * 1000) / 10 : 0,
+      salesByDay,
+      byCategory: topN(catMap),
+      byPublisher: topN(pubMap),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ---------- Books ---------- */
 router.get("/books", async (req, res, next) => {
   try {

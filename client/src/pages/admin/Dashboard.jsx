@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAdminStats } from "../../api/admin";
+import { useAdminStats, useAdminAnalytics } from "../../api/admin";
 import { formatPrice } from "../../lib/format";
 import { img } from "../../lib/img";
 
@@ -90,6 +91,129 @@ export default function Dashboard() {
           </ul>
         </section>
       </div>
+
+      <SalesAnalytics />
+    </div>
+  );
+}
+
+/* ================= รายงานยอดขาย (จาก order) ================= */
+const RANGES = [{ d: 7, label: "7 วัน" }, { d: 30, label: "30 วัน" }, { d: 90, label: "90 วัน" }];
+
+function SalesAnalytics() {
+  const [days, setDays] = useState(30);
+  const { data, isFetching } = useAdminAnalytics(days);
+
+  return (
+    <section className="space-y-5 pt-2">
+      <div className="flex items-center justify-between">
+        <h2 className="text-[15px] font-semibold text-ink">รายงานยอดขาย</h2>
+        <div className="flex gap-1 rounded-full border border-line bg-white p-0.5">
+          {RANGES.map((r) => (
+            <button key={r.d} onClick={() => setDays(r.d)}
+              className={`rounded-full px-3 py-1 text-[12px] font-medium transition ${days === r.d ? "bg-ink text-white" : "text-sub hover:text-ink"}`}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {!data ? (
+        <p className="text-[13px] text-sub">กำลังโหลด...</p>
+      ) : (
+        <div className={`space-y-5 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          {/* KPI */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Kpi label={`ยอดขาย ${days} วัน (ชำระแล้ว)`} value={formatPrice(data.revenue)} sub={`${data.paidOrders} คำสั่งซื้อ`} />
+            <Kpi label="มูลค่าเฉลี่ยต่อออเดอร์ (AOV)" value={formatPrice(data.aov)} />
+            <Kpi label="อัตราลูกค้าซื้อซ้ำ" value={`${data.returningRate}%`} sub="ของลูกค้าที่ชำระแล้ว" />
+          </div>
+
+          {/* กราฟ + breakdown */}
+          <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+            <div className="rounded-2xl border border-line bg-white p-5">
+              <p className="text-[13px] font-medium text-sub">ยอดขายตามเวลา</p>
+              <AreaChart data={data.salesByDay} />
+            </div>
+            <div className="rounded-2xl border border-line bg-white p-5">
+              <p className="mb-3 text-[13px] font-medium text-sub">สรุปยอดขาย</p>
+              <BreakRow label="ยอดขายสินค้า" value={formatPrice(data.breakdown.goods)} />
+              <BreakRow label="ส่วนลด" value={`-${formatPrice(data.breakdown.discount)}`} tone="rose" />
+              <BreakRow label="ค่าจัดส่ง" value={formatPrice(data.breakdown.shipping)} />
+              <div className="mt-2 border-t border-line pt-2">
+                <BreakRow label="ยอดสุทธิ" value={formatPrice(data.breakdown.net)} bold />
+              </div>
+            </div>
+          </div>
+
+          {/* แยกหมวด / สำนักพิมพ์ */}
+          <div className="grid gap-5 lg:grid-cols-2">
+            <BarCard title="ยอดขายตามหมวดหมู่" rows={data.byCategory} />
+            <BarCard title="ยอดขายตามสำนักพิมพ์" rows={data.byPublisher} />
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// กราฟพื้นที่ (area) วาดด้วย SVG เอง
+function AreaChart({ data }) {
+  const w = 640, h = 180, pad = 6;
+  if (!data?.length) return <p className="py-10 text-center text-[13px] text-sub">ยังไม่มีข้อมูล</p>;
+  const max = Math.max(1, ...data.map((d) => d.total));
+  const n = data.length;
+  const x = (i) => pad + (i / Math.max(1, n - 1)) * (w - pad * 2);
+  const y = (v) => h - pad - (v / max) * (h - pad * 2);
+  const line = data.map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.total).toFixed(1)}`).join(" ");
+  const area = `${line} L ${x(n - 1).toFixed(1)} ${h - pad} L ${x(0).toFixed(1)} ${h - pad} Z`;
+  const total = data.reduce((s, d) => s + d.total, 0);
+  return (
+    <div className="mt-1">
+      <p className="text-2xl font-semibold tracking-tight text-ink">{formatPrice(total)}</p>
+      <svg viewBox={`0 0 ${w} ${h}`} className="mt-3 w-full" preserveAspectRatio="none" style={{ height: 180 }}>
+        <path d={area} fill="#0071e3" fillOpacity="0.08" />
+        <path d={line} fill="none" stroke="#0071e3" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+      <div className="mt-1 flex justify-between text-[11px] text-sub">
+        <span>{new Date(data[0].date).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}</span>
+        <span>{new Date(data[n - 1].date).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}</span>
+      </div>
+    </div>
+  );
+}
+
+function BreakRow({ label, value, tone, bold }) {
+  return (
+    <div className="flex items-center justify-between py-1.5">
+      <span className={`text-[13px] ${bold ? "font-semibold text-ink" : "text-sub"}`}>{label}</span>
+      <span className={`text-[14px] tabular-nums ${bold ? "font-semibold text-ink" : tone === "rose" ? "text-rose-500" : "text-ink"}`}>{value}</span>
+    </div>
+  );
+}
+
+function BarCard({ title, rows }) {
+  const max = Math.max(1, ...(rows || []).map((r) => r.total));
+  return (
+    <div className="rounded-2xl border border-line bg-white p-5">
+      <p className="mb-4 text-[13px] font-medium text-sub">{title}</p>
+      {(!rows || rows.length === 0) ? (
+        <p className="py-6 text-center text-[13px] text-sub">ยังไม่มีข้อมูล</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map((r) => (
+            <div key={r.name}>
+              <div className="mb-1 flex items-center justify-between gap-3">
+                <span className="truncate text-[13px] text-ink">{r.name}</span>
+                <span className="shrink-0 text-[13px] font-medium tabular-nums text-ink">{formatPrice(r.total)}</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-mist">
+                <div className="h-full rounded-full bg-accent" style={{ width: `${(r.total / max) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
