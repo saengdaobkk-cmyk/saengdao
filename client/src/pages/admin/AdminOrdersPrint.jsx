@@ -299,8 +299,8 @@ function Invoice({ o, shopName, settings }) {
           {Number(o.ruleDiscount) > 0 && <div className="inv-sumline"><span>ส่วนลดโปรโมชั่น{o.ruleName ? ` · ${o.ruleName}` : ""}</span><span>−{formatPrice(o.ruleDiscount)}</span></div>}
           {Number(o.pointsDiscount) > 0 && <div className="inv-sumline"><span>ใช้แต้มเป็นส่วนลด ({o.pointsUsed} แต้ม)</span><span>−{formatPrice(o.pointsDiscount)}</span></div>}
           {Number(o.discount) > 0 && <div className="inv-sumline"><span>คูปอง{o.discountCode ? ` (${o.discountCode})` : ""}</span><span>−{formatPrice(o.discount)}</span></div>}
-          {Number(o.shippingFee) > 0 && <div className="inv-sumline"><span>ค่าจัดส่ง</span><span>{formatPrice(o.shippingFee)}</span></div>}
-          <div className="inv-sum-total"><span>ยอดชำระทั้งสิ้น</span><span>{formatPrice(o.total)}</span></div>
+          <div className="inv-sumline"><span>ค่าจัดส่ง</span><span>{Number(o.shippingFee) > 0 ? formatPrice(o.shippingFee) : "ฟรี"}</span></div>
+          <div className="inv-sum-total"><span>ยอดรวมสุทธิ</span><span>{formatPrice(o.total)}</span></div>
         </div>
       </div>
 
