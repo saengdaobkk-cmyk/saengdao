@@ -404,7 +404,7 @@ const BASE_CSS = `
 .lbl-logo { max-height: 20mm; max-width: 40mm; object-fit: contain; }
 .lbl-qr { display: flex; flex-direction: column; align-items: center; }
 .lbl-qr img { width: 20mm; height: 20mm; object-fit: contain; }
-.lbl-qr span { font-size: 7pt; font-weight: 700; margin-top: 0.6mm; white-space: nowrap; }
+.lbl-qr span { font-size: 7pt; font-weight: 700; margin-top: -1.5mm; line-height: 1; white-space: nowrap; }
 .lbl-fragile { text-align: center; margin-left: auto; }
 .lbl-fragile-big { font-size: 15pt; font-weight: 800; color: #c0271e; line-height: 1.1; }
 .lbl-fragile-sm { font-size: 8pt; font-weight: 600; color: #333; margin-top: 0.5mm; }
