@@ -5,6 +5,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { useAdminOrdersByIds } from "../../api/admin";
 import { useSettings } from "../../api/settings";
 import { formatPrice } from "../../lib/format";
+import brandLogo from "../../assets/saengdao-logo.svg";
 
 const DOC_TITLE = {
   picking: "ใบจัดเตรียมสินค้า",
@@ -132,7 +133,7 @@ function PickingCombined({ list, shopName }) {
 
 /* ── ใบปะหน้าพัสดุ (Label) — สติ๊กเกอร์ 100×150mm ── */
 function Label({ o, shopName, settings }) {
-  const logo = settings.logoUrl;
+  const logo = brandLogo;
   const qr = settings.lineQrUrl;
   return (
     <div className="lbl">
@@ -209,7 +210,7 @@ function Invoice({ o, shopName, settings }) {
       {/* หัวกระดาษ */}
       <div className="inv-top">
         <div className="inv-brand">
-          {settings.logoUrl && <img className="inv-logo" src={settings.logoUrl} alt="" />}
+          <img className="inv-logo" src={brandLogo} alt="" />
           <div>
             <div className="inv-shop">{shopName}</div>
             {settings.contactAddress && <div className="inv-shop-sub">{settings.contactAddress}</div>}
@@ -346,7 +347,7 @@ const BASE_CSS = `
 .inv { color: #1d1d1f; font-size: 13px; }
 .inv-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 3px solid #1d1d1f; padding-bottom: 14px; }
 .inv-brand { display: flex; gap: 12px; align-items: flex-start; }
-.inv-logo { max-height: 54px; max-width: 130px; object-fit: contain; }
+.inv-logo { max-height: 66px; max-width: 130px; object-fit: contain; }
 .inv-shop { font-size: 20px; font-weight: 800; line-height: 1.2; }
 .inv-shop-sub { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.45; }
 .inv-title-box { text-align: right; min-width: 210px; }
