@@ -178,7 +178,7 @@ function Label({ o, shopName, settings }) {
         </div>
         <div className="lbl-fragile">
           <div className="lbl-fragile-big">⚠ ระวังแตก</div>
-          <div className="lbl-fragile-sm">สินค้าเป็นหนังสือ · ห้ามพับ / โยน / โดนน้ำ</div>
+          <div className="lbl-fragile-sm">สินค้าเป็นหนังสือ<br />ห้ามพับ / โยน / โดนน้ำ</div>
         </div>
       </div>
     </div>
