@@ -97,14 +97,16 @@ export default function HeroSlider() {
                       {s.eyebrow}
                     </p>
                   )}
-                  <h1
-                    className={`whitespace-pre-line font-semibold leading-[1.05] tracking-tightest ${TITLE_SIZE[s.titleSize] || TITLE_SIZE.md} ${
-                      s.dark ? "text-white" : "text-ink"
-                    }`}
-                    style={s.textColor ? { color: s.textColor } : undefined}
-                  >
-                    {s.title}
-                  </h1>
+                  {s.title && (
+                    <h1
+                      className={`whitespace-pre-line font-semibold leading-[1.05] tracking-tightest ${TITLE_SIZE[s.titleSize] || TITLE_SIZE.md} ${
+                        s.dark ? "text-white" : "text-ink"
+                      }`}
+                      style={s.textColor ? { color: s.textColor } : undefined}
+                    >
+                      {s.title}
+                    </h1>
+                  )}
                   {s.subtitle && (
                     <p
                       className={`mt-5 text-[15px] leading-relaxed sm:text-lg ${s.dark ? "text-white/75" : "text-sub"}`}

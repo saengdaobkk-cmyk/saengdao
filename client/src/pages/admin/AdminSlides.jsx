@@ -80,7 +80,7 @@ export default function AdminSlides() {
               </div>
 
               <div className="flex-1">
-                <p className="text-[14px] font-medium text-ink">{s.title.replace(/\n/g, " ")}</p>
+                <p className={`text-[14px] font-medium ${s.title ? "text-ink" : "text-sub italic"}`}>{s.title ? s.title.replace(/\n/g, " ") : "(สไลด์รูปภาพ — ไม่มีข้อความ)"}</p>
                 <p className="text-[12px] text-sub">
                   #{s.order} · {s.eyebrow || "ไม่มี eyebrow"} {s.image ? "· มีรูป" : "· พื้นสี"}
                 </p>
@@ -173,7 +173,7 @@ function SlideForm({ slide, onClose }) {
             <F label="Eyebrow (ข้อความบน)"><Inp value={form.eyebrow} onChange={set("eyebrow")} /></F>
             <F label="ปุ่ม (CTA)"><Inp value={form.ctaText} onChange={set("ctaText")} /></F>
           </div>
-          <F label="หัวข้อใหญ่ * (Enter ขึ้นบรรทัดใหม่)">
+          <F label="หัวข้อใหญ่ (เว้นว่างได้ — Enter ขึ้นบรรทัดใหม่)">
             <textarea value={form.title} onChange={set("title")} rows={2} className="w-full resize-none rounded-xl border border-line px-4 py-2.5 text-[14px] outline-none focus:border-ink/30" />
           </F>
           <F label="คำอธิบาย"><Inp value={form.subtitle} onChange={set("subtitle")} /></F>

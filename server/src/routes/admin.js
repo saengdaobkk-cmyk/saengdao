@@ -1236,7 +1236,6 @@ function slideData(body) {
 router.post("/slides", async (req, res, next) => {
   try {
     const data = slideData(req.body);
-    if (!data.title) return res.status(400).json({ error: "กรอกหัวข้อสไลด์" });
     res.status(201).json(await prisma.slide.create({ data }));
   } catch (err) {
     next(err);
@@ -1246,7 +1245,6 @@ router.post("/slides", async (req, res, next) => {
 router.patch("/slides/:id", async (req, res, next) => {
   try {
     const data = slideData(req.body);
-    if (!data.title) return res.status(400).json({ error: "กรอกหัวข้อสไลด์" });
     res.json(await prisma.slide.update({ where: { id: req.params.id }, data }));
   } catch (err) {
     next(err);
