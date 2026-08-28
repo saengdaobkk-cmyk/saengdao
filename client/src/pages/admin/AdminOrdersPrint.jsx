@@ -10,7 +10,8 @@ import brandLogo from "../../assets/saengdao-logo.svg";
 const DOC_TITLE = {
   picking: "ใบจัดเตรียมสินค้า",
   label: "ใบปะหน้าพัสดุ",
-  invoice: "ใบแจ้งหนี้ / ใบเสร็จ",
+  invoice: "ใบแจ้งหนี้",
+  receipt: "ใบเสร็จรับเงิน",
 };
 
 const PAYMENT_LABEL = { PROMPTPAY: "พร้อมเพย์", TRANSFER: "โอนเงิน", CARD: "บัตรเครดิต" };
@@ -66,7 +67,7 @@ export default function AdminOrdersPrint() {
         list.map((o) => (
           <div className={doc === "label" ? "sheet label-sheet" : "sheet"} key={o.id}>
             {doc === "label" && <Label o={o} shopName={shopName} settings={settings} />}
-            {doc === "invoice" && <Invoice o={o} shopName={shopName} settings={settings} />}
+            {(doc === "invoice" || doc === "receipt") && <Invoice o={o} shopName={shopName} settings={settings} variant={doc} />}
           </div>
         ))
       )}
@@ -200,7 +201,9 @@ function Barcode({ value }) {
 }
 
 /* ── ใบแจ้งหนี้ / ใบเสร็จ (Invoice) ── */
-function Invoice({ o, shopName, settings }) {
+function Invoice({ o, shopName, settings, variant = "invoice" }) {
+  const isReceipt = variant === "receipt";
+  const paid = o.paymentStatus === "PAID";
   const code = (it) => it.book.isbn || it.book.sku || "-";
   const listUnit = (it) => (Number(it.listPrice) > 0 ? Number(it.listPrice) : Number(it.book?.price) || Number(it.price));
   const lineAmt = (it) => Number(it.price) * it.quantity; // price = ราคาสุทธิต่อหน่วย
@@ -221,12 +224,16 @@ function Invoice({ o, shopName, settings }) {
           </div>
         </div>
         <div className="inv-title-box">
-          <div className="inv-title">ใบสั่งซื้อ</div>
+          <div className="inv-title">{isReceipt ? "ใบเสร็จรับเงิน" : "ใบแจ้งหนี้"}</div>
+          <div className={`inv-status ${paid ? "paid" : "unpaid"}`}>
+            {paid ? "● ชำระเงินแล้ว" : isReceipt ? "○ ยังไม่ได้รับชำระ" : "○ รอชำระเงิน"}
+          </div>
           <table className="inv-meta">
             <tbody>
               <tr><td>เลขที่</td><td>{oid(o.id)}</td></tr>
               <tr><td>วันที่</td><td>{fmtDateFull(o.createdAt)}</td></tr>
               <tr><td>ชำระโดย</td><td>{PAYMENT_LABEL[o.paymentMethod] || o.paymentMethod}</td></tr>
+              {isReceipt && paid && o.paidAt && <tr><td>ชำระเมื่อ</td><td>{fmtDateFull(o.paidAt)}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -351,7 +358,10 @@ const BASE_CSS = `
 .inv-shop { font-size: 20px; font-weight: 800; line-height: 1.2; }
 .inv-shop-sub { font-size: 11px; color: #666; margin-top: 2px; line-height: 1.45; }
 .inv-title-box { text-align: right; min-width: 210px; }
-.inv-title { font-size: 24px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
+.inv-title { font-size: 24px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; }
+.inv-status { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-bottom: 8px; }
+.inv-status.paid { background: #e7f6ec; color: #1a7f3c; }
+.inv-status.unpaid { background: #fdecec; color: #c0271e; }
 .inv-meta { margin-left: auto; border-collapse: collapse; font-size: 12px; }
 .inv-meta td { padding: 1.5px 0 1.5px 12px; }
 .inv-meta td:first-child { color: #999; text-align: right; }

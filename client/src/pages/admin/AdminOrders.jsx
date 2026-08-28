@@ -22,7 +22,8 @@ const PAGE_SIZES = [20, 50, 100];
 export const PRINT_DOCS = [
   ["picking", "ใบจัดเตรียมสินค้า"],
   ["label", "ใบปะหน้าพัสดุ (label)"],
-  ["invoice", "ใบแจ้งหนี้ / ใบเสร็จ"],
+  ["invoice", "ใบแจ้งหนี้"],
+  ["receipt", "ใบเสร็จรับเงิน"],
 ];
 export const openPrint = (doc, ids) =>
   window.open(`/sdpub/print/orders?doc=${doc}&ids=${ids.join(",")}`, "_blank", "noopener");
@@ -189,7 +190,8 @@ function RowMenu({ order }) {
             <div className="my-1 border-t border-line" />
             <button onClick={() => print("picking")} className={MENU_ITEM}>พิมพ์ ใบจัดเตรียมสินค้า</button>
             <button onClick={() => print("label")} className={MENU_ITEM}>พิมพ์ ใบปะหน้าพัสดุ (label)</button>
-            <button onClick={() => print("invoice")} className={MENU_ITEM}>พิมพ์ ใบสั่งซื้อ</button>
+            <button onClick={() => print("invoice")} className={MENU_ITEM}>พิมพ์ ใบแจ้งหนี้</button>
+            <button onClick={() => print("receipt")} className={MENU_ITEM}>พิมพ์ ใบเสร็จรับเงิน</button>
             {order.status !== "CANCELLED" && (
               <>
                 <div className="my-1 border-t border-line" />
