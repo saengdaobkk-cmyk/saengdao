@@ -16,7 +16,19 @@ const VALIGN = { top: "justify-start", center: "justify-center", bottom: "justif
 export default function AdminSlides() {
   const { data: slides, isLoading } = useAdminSlides();
   const del = useDeleteSlide();
+  const save = useSaveSlide();
   const [editing, setEditing] = useState(null);
+
+  // เลื่อนสไลด์ขึ้น/ลง — สลับตำแหน่งกับตัวข้างๆ แล้วจัด order ใหม่ตามลำดับ (บันทึกเฉพาะตัวที่เปลี่ยน)
+  const move = (idx, dir) => {
+    const j = idx + dir;
+    if (!slides || j < 0 || j >= slides.length) return;
+    const arr = [...slides];
+    [arr[idx], arr[j]] = [arr[j], arr[idx]];
+    arr.forEach((s, k) => {
+      if (s.order !== k + 1) save.mutate({ ...s, order: k + 1 });
+    });
+  };
 
   return (
     <div>
@@ -36,8 +48,27 @@ export default function AdminSlides() {
         <p className="text-sub">กำลังโหลด...</p>
       ) : (
         <div className="space-y-3">
-          {slides.map((s) => (
+          {slides.map((s, idx) => (
             <div key={s.id} className="flex items-center gap-4 rounded-2xl border border-line bg-white p-3">
+              {/* เลื่อนลำดับ */}
+              <div className="flex flex-col">
+                <button
+                  onClick={() => move(idx, -1)}
+                  disabled={idx === 0 || save.isPending}
+                  aria-label="เลื่อนขึ้น"
+                  className="flex h-6 w-6 items-center justify-center rounded text-sub transition hover:bg-mist hover:text-ink disabled:opacity-25 disabled:hover:bg-transparent"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 15 6-6 6 6" /></svg>
+                </button>
+                <button
+                  onClick={() => move(idx, 1)}
+                  disabled={idx === slides.length - 1 || save.isPending}
+                  aria-label="เลื่อนลง"
+                  className="flex h-6 w-6 items-center justify-center rounded text-sub transition hover:bg-mist hover:text-ink disabled:opacity-25 disabled:hover:bg-transparent"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+              </div>
               {/* preview ย่อ */}
               <div
                 className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cover bg-center text-center"
