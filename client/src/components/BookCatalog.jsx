@@ -39,16 +39,22 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     setSearchParams(next);
   };
 
-  const { showCollectionCount, collectionInfiniteScroll } = useSettings();
+  const { showCollectionCount, collectionInfiniteScroll, collectionPageSize } = useSettings();
   const infinite = !!collectionInfiniteScroll;
   const { data: categories } = useCategories();
+
+  // จำนวนต่อหน้า/ต่อชุดโหลด — จากหลังบ้าน (จำกัด 4–60) · เว้นว่าง/ไม่ถูกต้อง = ใช้ค่า prop
+  const pageSize = (() => {
+    const n = parseInt(collectionPageSize, 10);
+    return Number.isFinite(n) && n > 0 ? Math.min(60, Math.max(4, n)) : limit;
+  })();
 
   const baseParams = {
     q: q || undefined,
     category: category || undefined,
     publisher: publisher || undefined,
     sort,
-    limit,
+    limit: pageSize,
   };
 
   // โหมดแบ่งหน้า (เดิม) — ทำงานเมื่อ infinite ปิด
@@ -157,7 +163,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
                       ) : inf.hasNextPage ? (
                         <button onClick={() => inf.fetchNextPage()} className="text-[14px] text-sub transition hover:text-ink">โหลดเพิ่ม</button>
                       ) : (
-                        total > limit && <span className="text-[13px] text-sub">— ครบทุกเล่มแล้ว —</span>
+                        total > pageSize && <span className="text-[13px] text-sub">— ครบทุกเล่มแล้ว —</span>
                       )}
                     </div>
                   </>

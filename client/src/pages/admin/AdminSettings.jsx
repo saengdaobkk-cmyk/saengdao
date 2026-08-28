@@ -98,6 +98,7 @@ function DisplaySettings({ settings, update }) {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ collectionInfiniteScroll: v })}
           />
+          <PageSizeRow settings={settings} update={update} />
           <ToggleRow
             title="แถบจุดเด่นในหน้าสินค้า"
             desc="เปิด: โชว์แถบ “จัดส่งฟรีทั่วประเทศ / รับประกันหลังการขาย” ใต้ปุ่มหยิบใส่ตะกร้า · ปิด: ซ่อน"
@@ -840,6 +841,35 @@ function TurnstileSettings({ settings, save }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function PageSizeRow({ settings, update }) {
+  const [val, setVal] = useState(settings.collectionPageSize ?? "16");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { setVal(settings.collectionPageSize ?? "16"); }, [settings.collectionPageSize]);
+  const save = () => {
+    const n = Math.min(60, Math.max(4, parseInt(val, 10) || 16));
+    update.mutate({ collectionPageSize: String(n) }, { onSuccess: () => { setVal(String(n)); setSaved(true); } });
+  };
+  return (
+    <div className="flex items-center justify-between gap-6 px-5 py-4">
+      <div>
+        <p className="text-[14px] font-medium text-ink">จำนวนหนังสือต่อหน้า</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-sub">โหมดแบ่งหน้า: จำนวนต่อหน้า · โหมด Infinite: จำนวนต่อการโหลดหนึ่งชุด (กำหนดได้ 4–60)</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <input
+          type="number" min="4" max="60" value={val} disabled={update.isPending}
+          onChange={(e) => { setVal(e.target.value); setSaved(false); }}
+          className="w-20 rounded-lg border border-line px-3 py-2 text-center text-[14px] outline-none focus:border-ink/30"
+        />
+        <span className="text-[13px] text-sub">ชิ้น</span>
+        <button onClick={save} disabled={update.isPending}
+          className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-white hover:bg-accent/90 disabled:opacity-50">บันทึก</button>
+        {saved && <span className="text-[13px] text-emerald-600">✓</span>}
+      </div>
+    </div>
   );
 }
 
