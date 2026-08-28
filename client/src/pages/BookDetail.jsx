@@ -18,7 +18,7 @@ export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { add, openDrawer } = useCart();
-  const { cartDrawerEnabled, showProductTrust, productStickyCover, showRatingSummary } = useSettings();
+  const { cartDrawerEnabled, showProductTrust, productStickyCover, showRatingSummary, showProductSectionHeadings } = useSettings();
   const { t } = useContent();
   const { data: book, isLoading, isError } = useBook(id);
   const { data: related } = useRelated(id);
@@ -317,7 +317,7 @@ export default function BookDetail() {
           {/* description */}
           {book.description && (
             <div className="mt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>
+              {showProductSectionHeadings !== false && <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>}
               <p ref={descRef} className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen ? "line-clamp-[7]" : ""}`}>
                 {book.description}
               </p>
@@ -332,7 +332,7 @@ export default function BookDetail() {
           {/* specs */}
           {meta.length > 0 && (
             <div className="mt-8 border-t border-line pt-8">
-              <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.specs_heading", "ข้อมูลจำเพาะ")}</h2>
+              {showProductSectionHeadings !== false && <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.specs_heading", "ข้อมูลจำเพาะ")}</h2>}
               <dl className="grid gap-x-8 gap-y-2 text-[14px] sm:grid-cols-2">
                 {meta.map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-4 border-b border-line/60 py-1.5">

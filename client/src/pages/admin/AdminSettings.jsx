@@ -114,6 +114,13 @@ function DisplaySettings({ settings, update }) {
             onChange={(v) => update.mutate({ showRatingSummary: v })}
           />
           <ToggleRow
+            title="หัวข้อ “รายละเอียด / ข้อมูลจำเพาะ” ในหน้าสินค้า"
+            desc="เปิด: โชว์หัวข้อเหนือเนื้อเรื่องและตารางสเปก · ปิด: ซ่อนหัวข้อ (เนื้อหายังแสดงอยู่)"
+            checked={settings.showProductSectionHeadings}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showProductSectionHeadings: v })}
+          />
+          <ToggleRow
             title="ปุ่มแชร์ในหน้าบทความ"
             desc="เปิด: โชว์ปุ่มแชร์ Facebook / LINE / X / คัดลอกลิงก์ ใต้หัวข้อบทความ · ปิด: ซ่อน"
             checked={settings.showBlogShare}
