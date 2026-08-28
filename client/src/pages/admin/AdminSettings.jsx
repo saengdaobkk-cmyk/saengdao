@@ -92,6 +92,13 @@ function DisplaySettings({ settings, update }) {
             onChange={(v) => update.mutate({ showCollectionCount: v })}
           />
           <ToggleRow
+            title="หน้าเลือกซื้อ: เลื่อนโหลดต่อเนื่อง (Infinite Scroll)"
+            desc="เปิด: เลื่อนลงถึงท้ายแล้วโหลดหนังสือชุดถัดไปอัตโนมัติ · ปิด: แบ่งเป็นหน้า (ก่อนหน้า / ถัดไป) แบบเดิม"
+            checked={settings.collectionInfiniteScroll}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ collectionInfiniteScroll: v })}
+          />
+          <ToggleRow
             title="แถบจุดเด่นในหน้าสินค้า"
             desc="เปิด: โชว์แถบ “จัดส่งฟรีทั่วประเทศ / รับประกันหลังการขาย” ใต้ปุ่มหยิบใส่ตะกร้า · ปิด: ซ่อน"
             checked={settings.showProductTrust}

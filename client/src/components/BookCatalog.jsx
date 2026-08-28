@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useBooks, useCategories } from "../api/books";
+import { useBooks, useBooksInfinite, useCategories } from "../api/books";
 import { useSettings } from "../api/settings";
 import BookCard from "./BookCard";
 import BookLoader from "./BookLoader";
@@ -39,18 +39,47 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
     setSearchParams(next);
   };
 
-  const { showCollectionCount } = useSettings();
+  const { showCollectionCount, collectionInfiniteScroll } = useSettings();
+  const infinite = !!collectionInfiniteScroll;
   const { data: categories } = useCategories();
-  const { data, isLoading, isError, isPlaceholderData } = useBooks({
+
+  const baseParams = {
     q: q || undefined,
     category: category || undefined,
     publisher: publisher || undefined,
     sort,
-    page,
     limit,
-  });
+  };
+
+  // โหมดแบ่งหน้า (เดิม) — ทำงานเมื่อ infinite ปิด
+  const paged = useBooks({ ...baseParams, page }, { enabled: !infinite });
+  // โหมดเลื่อนโหลดต่อเนื่อง — ทำงานเมื่อ infinite เปิด
+  const inf = useBooksInfinite(baseParams, { enabled: infinite });
+
+  // รวมผลเป็นชุดเดียวไม่ว่าจะโหมดไหน
+  const items = infinite
+    ? (inf.data?.pages ?? []).flatMap((p) => (Array.isArray(p?.items) ? p.items : []))
+    : (Array.isArray(paged.data?.items) ? paged.data.items : []);
+  const total = infinite ? (inf.data?.pages?.[0]?.total ?? 0) : (paged.data?.total ?? 0);
+  const isError = infinite ? inf.isError : paged.isError;
   // กำลังโหลดผลชุดใหม่ (รวมตอนสลับหมวด/ค้นหา) → โชว์ "กำลังโหลด" แทน ไม่ให้เห็นผลเก่า
-  const busy = isLoading || isPlaceholderData;
+  const busy = infinite ? inf.isLoading : (paged.isLoading || paged.isPlaceholderData);
+
+  // sentinel สำหรับ IntersectionObserver — เลื่อนถึงแล้วดึงหน้าถัดไป
+  const loadMoreRef = useRef(null);
+  useEffect(() => {
+    if (!infinite) return;
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const ob = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && inf.hasNextPage && !inf.isFetchingNextPage) inf.fetchNextPage();
+      },
+      { rootMargin: "600px" },
+    );
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, [infinite, inf.hasNextPage, inf.isFetchingNextPage, inf.fetchNextPage, items.length]);
 
   const pickCategory = (slug) => {
     setCategory(slug);
@@ -67,7 +96,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
             <p className="text-[13px] font-medium tracking-tight text-sub">ผลการค้นหา</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">“{q}”</h2>
             <p className="mt-2 flex items-center gap-3 text-[13px] text-sub">
-              {!busy && data && <span>{data.total} เล่ม</span>}
+              {!busy && <span>{total} เล่ม</span>}
               <button onClick={clearSearch} className="text-accent hover:underline">ล้างการค้นหา</button>
             </p>
           </>
@@ -75,7 +104,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
           <>
             {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
             <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
-            {!busy && data && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
+            {!busy && showCollectionCount && total > 0 && <p className="mt-2 text-[13px] text-sub">{total} เล่ม</p>}
           </>
         )}
       </div>
@@ -103,24 +132,43 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 
       {/* รายการ — กัน data ที่ไม่มี items (เช่น response ผิดรูป) ไม่ให้หน้าขาว */}
       {(() => {
-        const items = Array.isArray(data?.items) ? data.items : [];
-        const totalPages = Number(data?.totalPages) || 1;
+        const totalPages = Number(paged.data?.totalPages) || 1;
         return (
           <>
             {busy && <BookLoader />}
             {!busy && isError && <p className="py-12 text-center text-sub">โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>}
-            {!busy && !isError && data && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
+            {!busy && !isError && items.length === 0 && <p className="py-20 text-center text-sub">ไม่พบหนังสือที่ค้นหา</p>}
             {!busy && items.length > 0 && (
               <>
                 <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {items.map((book, i) => <BookCard key={book.id} book={book} index={i} reveal />)}
                 </div>
-                {totalPages > 1 && (
-                  <div className="mt-16 flex items-center justify-center gap-6">
-                    <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">← ก่อนหน้า</button>
-                    <span className="text-[13px] tabular-nums text-sub">{data?.page ?? page} / {totalPages}</span>
-                    <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">ถัดไป →</button>
-                  </div>
+
+                {infinite ? (
+                  <>
+                    {/* จุดสังเกต — เลื่อนถึงแล้วโหลดต่อ */}
+                    <div ref={loadMoreRef} className="h-px w-full" />
+                    <div className="mt-12 flex items-center justify-center">
+                      {inf.isFetchingNextPage ? (
+                        <span className="flex items-center gap-2 text-[13px] text-sub">
+                          <svg className="h-4 w-4 animate-spin text-sub" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z" /></svg>
+                          กำลังโหลด…
+                        </span>
+                      ) : inf.hasNextPage ? (
+                        <button onClick={() => inf.fetchNextPage()} className="text-[14px] text-sub transition hover:text-ink">โหลดเพิ่ม</button>
+                      ) : (
+                        total > limit && <span className="text-[13px] text-sub">— ครบทุกเล่มแล้ว —</span>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  totalPages > 1 && (
+                    <div className="mt-16 flex items-center justify-center gap-6">
+                      <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">← ก่อนหน้า</button>
+                      <span className="text-[13px] tabular-nums text-sub">{paged.data?.page ?? page} / {totalPages}</span>
+                      <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">ถัดไป →</button>
+                    </div>
+                  )
                 )}
               </>
             )}

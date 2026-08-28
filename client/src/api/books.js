@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 // รายการหนังสือ (ค้นหา/กรอง/แบ่งหน้า)
@@ -8,6 +8,22 @@ export function useBooks(params, options = {}) {
     queryFn: async () => (await api.get("/books", { params })).data,
     placeholderData: keepPreviousData, // ไม่กระพริบตอนเปลี่ยนหน้า/ค้นหา
     ...options, // เช่น { enabled } — กันดึงก่อนพร้อม
+  });
+}
+
+// รายการหนังสือแบบเลื่อนโหลดต่อเนื่อง (Infinite Scroll) — สะสมทีละหน้า
+export function useBooksInfinite(params, options = {}) {
+  return useInfiniteQuery({
+    queryKey: ["books-inf", params],
+    queryFn: async ({ pageParam = 1 }) =>
+      (await api.get("/books", { params: { ...params, page: pageParam } })).data,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const cur = Number(lastPage?.page) || 1;
+      const totalPages = Number(lastPage?.totalPages) || 1;
+      return cur < totalPages ? cur + 1 : undefined;
+    },
+    ...options, // เช่น { enabled }
   });
 }
 
