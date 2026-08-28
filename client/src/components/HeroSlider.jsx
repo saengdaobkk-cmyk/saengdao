@@ -29,6 +29,11 @@ export default function HeroSlider() {
     if (i >= slides.length) setI(0);
   }, [slides.length, i]);
 
+  // โหลด+ถอดรหัสรูปทุกสไลด์ล่วงหน้า → ตอนเปลี่ยนภาพพร้อมแสดงทันที ไม่กระตุก/แว็บ (สำคัญบนมือถือ)
+  useEffect(() => {
+    slides.forEach((s) => { if (s.image) { const im = new Image(); im.src = img(s.image, 1600); } });
+  }, [slides]);
+
   if (slides.length === 0)
     return <section className="h-[40vh] min-h-[300px] w-full bg-mist" />;
 
@@ -39,13 +44,16 @@ export default function HeroSlider() {
         return (
           <div
             key={s.id}
-            className={`absolute inset-0 bg-cover ease-out ${isSlide ? "transition-transform duration-700" : "transition-opacity duration-[1100ms]"}`}
+            className={`absolute inset-0 bg-cover ease-[cubic-bezier(0.45,0,0.15,1)] ${isSlide ? "transition-transform duration-[800ms]" : "transition-opacity duration-[900ms]"}`}
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
               backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
               backgroundPosition: hasImage ? (BG_POS[s.imagePosition] || "center") : undefined,
               opacity: isSlide ? 1 : idx === i ? 1 : 0,
-              transform: isSlide ? `translateX(${(idx - i) * 100}%)` : undefined,
+              // translateZ(0) ดันเลเยอร์ขึ้น GPU → เปลี่ยนภาพลื่นขึ้นมาก โดยเฉพาะบนมือถือ
+              transform: isSlide ? `translateX(${(idx - i) * 100}%) translateZ(0)` : "translateZ(0)",
+              willChange: isSlide ? "transform" : "opacity",
+              backfaceVisibility: "hidden",
             }}
             aria-hidden={idx !== i}
           >
