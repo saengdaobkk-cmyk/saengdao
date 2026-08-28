@@ -402,7 +402,7 @@ const BASE_CSS = `
 .lbl-foot { display: flex; align-items: center; justify-content: space-between; gap: 3mm; padding: 3mm 4mm; min-height: 24mm; }
 .lbl-brand { display: flex; align-items: flex-start; gap: 3mm; }
 .lbl-logo { max-height: 20mm; max-width: 40mm; object-fit: contain; }
-.lbl-qr { display: flex; flex-direction: column; align-items: center; }
+.lbl-qr { display: flex; flex-direction: column; align-items: center; margin-top: -2mm; }
 .lbl-qr img { width: 20mm; height: 20mm; object-fit: contain; }
 .lbl-qr span { font-size: 7pt; font-weight: 700; margin-top: -1.5mm; line-height: 1; white-space: nowrap; }
 .lbl-fragile { text-align: center; margin-left: auto; }
