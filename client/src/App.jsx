@@ -199,7 +199,7 @@ export default function App() {
             <div className="flex gap-3">
               {s.socialFacebook && <Social label="Facebook" href={s.socialFacebook}><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
               {s.socialInstagram && <Social label="Instagram" href={s.socialInstagram}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
-              {s.socialLine && <Social label="LINE" href={s.socialLine}><circle cx="12" cy="11" r="8" /><path d="M8 11h1M12 11h.01M15 9v4" /></Social>}
+              {s.socialLine && <Social label="LINE" href={s.socialLine}><path d="M21 10.4C21 6.9 17 4 12 4s-9 2.9-9 6.4c0 3.2 3.2 5.8 7.5 6.3.3.03.7.11.8.26.1.14.06.35.03.49 0 0-.1.6-.13.73-.04.22-.17.85.75.46s4.96-2.92 6.77-5C20.6 12.9 21 11.7 21 10.4Z" /></Social>}
             </div>
           </div>
 
