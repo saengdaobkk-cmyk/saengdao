@@ -212,6 +212,10 @@
   .reveal-section {
     transition-duration: 800ms !important;
   }
+  /* จุดโหลด — เป็นตัวบอกสถานะ (loader) ต้องวนต่อเนื่องนุ่มๆ ไม่งั้นจะกระพริบรัว */
+  .sd-bk__dot {
+    animation-duration: 1.6s !important;
+  }
 }
 
 /* ── โหลดเดอร์: จุดมินิมอลเต้นนุ่มๆ ── */
