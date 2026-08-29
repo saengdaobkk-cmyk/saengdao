@@ -209,6 +209,9 @@
   .card-reveal {
     transition-duration: 500ms !important;
   }
+  .reveal-section {
+    transition-duration: 700ms !important;
+  }
 }
 
 /* ── โหลดเดอร์: จุดมินิมอลเต้นนุ่มๆ ── */

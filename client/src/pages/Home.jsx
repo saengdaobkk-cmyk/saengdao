@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import BookRow from "../components/BookRow";
+import Reveal from "../components/Reveal";
 import HeroSlider from "../components/HeroSlider";
 import BrowseSections from "../components/BrowseSections";
 import PublisherMarquee from "../components/PublisherMarquee";
@@ -61,9 +62,16 @@ export default function Home() {
 
   return (
     <>
-      {order.map((key) => (
-        <Fragment key={key}>{render(key)}</Fragment>
-      ))}
+      {order.map((key) => {
+        const content = render(key);
+        if (!content) return null;
+        // hero อยู่บนสุด/เต็มจอ ไม่ต้อง reveal · ที่เหลือค่อยๆ เฟดขึ้นตอนเลื่อนถึง
+        return (
+          <Fragment key={key}>
+            {key === "hero" ? content : <Reveal>{content}</Reveal>}
+          </Fragment>
+        );
+      })}
     </>
   );
 }
