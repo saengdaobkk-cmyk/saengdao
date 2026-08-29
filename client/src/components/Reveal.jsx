@@ -20,7 +20,7 @@ export default function Reveal({ children, className = "" }) {
   return (
     <div
       ref={ref}
-      className={`reveal-section transition-all duration-700 ease-out ${shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"} ${className}`}
+      className={`reveal-section transition-all duration-[800ms] ease-out ${shown ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"} ${className}`}
     >
       {children}
     </div>
