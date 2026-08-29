@@ -148,6 +148,7 @@ function DisplaySettings({ settings, update }) {
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showTextMarquee: v })}
           />
+          {settings.showTextMarquee && <MarqueeSpeedRow settings={settings} update={update} />}
           <ToggleRow
             title="แถบเมนูโปร่งใสทับสไลด์ (หน้าแรก)"
             desc="เปิด: เมนูบนโปร่งใสทับสไลด์ ตัวอักษรขาว แล้วทึบเมื่อเลื่อนลง · เหมาะกับสไลด์พื้นเข้ม/มีรูป · ปิดถ้าสไลด์พื้นสว่าง"
@@ -848,6 +849,26 @@ function TurnstileSettings({ settings, save }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function MarqueeSpeedRow({ settings, update }) {
+  const speed = Math.min(2, Math.max(0.1, Number(settings.textMarqueeSpeed) || 0.6));
+  return (
+    <div className="flex items-center justify-between gap-6 bg-mist/40 px-5 py-4">
+      <div>
+        <p className="text-[14px] font-medium text-ink">ความเร็วแถบตัวอักษรเลื่อน</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-sub">เลื่อนตามการ scroll หน้า · น้อย = ช้านุ่ม · มาก = ไวขึ้น</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <input
+          type="range" min="0.1" max="2" step="0.1" value={speed} disabled={update.isPending}
+          onChange={(e) => update.mutate({ textMarqueeSpeed: e.target.value })}
+          className="w-40 accent-accent"
+        />
+        <span className="w-8 text-right text-[13px] tabular-nums text-sub">{speed.toFixed(1)}×</span>
+      </div>
+    </div>
   );
 }
 

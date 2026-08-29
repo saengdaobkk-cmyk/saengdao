@@ -45,6 +45,7 @@ const STRING_KEYS = [
   "loyaltyPointValue", // มูลค่า 1 แต้ม (บาท) เวลานำมาแลกส่วนลด เช่น 1 = 1 แต้ม = 1 บาท
   "orderExpiryDays", // ออเดอร์ที่ยังไม่ชำระเกินกี่วัน = ยกเลิกอัตโนมัติ (0 = ปิด)
   "collectionPageSize", // หน้าเลือกซื้อ: จำนวนหนังสือต่อหน้า/ต่อชุดโหลด
+  "textMarqueeSpeed", // ความเร็วแถบตัวอักษรเลื่อน (ต่อการ scroll)
   "footerLogoText", // ข้อความโลโก้ที่ footer (ใช้เมื่อไม่มีรูป)
   "footerLogoUrl", // โลโก้ที่ footer (รูปภาพ) — มีรูปใช้รูปก่อน
   "footerLogoSize", // ความสูงโลโก้รูปที่ footer (px)
@@ -102,6 +103,7 @@ const DEFAULTS = {
   productStickyCover: false, // ปกสินค้าค้าง (sticky) ตอนเลื่อน
   collectionInfiniteScroll: false, // หน้า Collection: true = เลื่อนโหลดต่อเนื่อง, false = แบ่งหน้า
   collectionPageSize: "16", // หน้า Collection: จำนวนต่อหน้า/ต่อชุดโหลด
+  textMarqueeSpeed: "0.6", // ความเร็วแถบตัวอักษรเลื่อน (0.1–2.0)
   omiseEnabled: false, // รับชำระอัตโนมัติผ่าน Omise (PromptPay + บัตร)
   omisePublicKey: "",
   omisePromptPayEnabled: true, // เปิด/ปิดช่องทางแต่ละแบบ (มีผลเมื่อเปิด Omise)

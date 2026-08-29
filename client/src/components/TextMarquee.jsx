@@ -3,7 +3,7 @@ import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 
 export default function TextMarquee() {
-  const { showTextMarquee } = useSettings();
+  const { showTextMarquee, textMarqueeSpeed } = useSettings();
   const { t } = useContent();
   const text = t("textmarquee.text", "SAENGDAO BOOKS");
   const row1 = useRef(null);
@@ -13,7 +13,7 @@ export default function TextMarquee() {
   useEffect(() => {
     if (!showTextMarquee) return;
     let ticking = false, y = window.scrollY || 0;
-    const FACTOR = 0.6;
+    const FACTOR = Math.min(2, Math.max(0.1, Number(textMarqueeSpeed) || 0.6));
     const apply = () => {
       ticking = false;
       const h1 = (row1.current?.scrollWidth || 0) / 2;
@@ -26,7 +26,7 @@ export default function TextMarquee() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
-  }, [showTextMarquee, text]);
+  }, [showTextMarquee, text, textMarqueeSpeed]);
 
   if (!showTextMarquee) return null;
 
