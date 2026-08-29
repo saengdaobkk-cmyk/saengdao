@@ -64,7 +64,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
       onMouseEnter={prefetch}
       onFocus={prefetch}
       style={reveal ? { transitionDelay: `${(index % 10) * 45}ms` } : undefined}
-      className={`group block ${reveal ? `transition-all duration-500 ease-out ${shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}` : ""}`}
+      className={`group block ${reveal ? `card-reveal transition-all duration-500 ease-out ${shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}` : ""}`}
     >
       {/* ปก */}
       <div className="relative aspect-[145/210] overflow-hidden rounded-2xl bg-mist ring-1 ring-line shadow-sm transition-shadow duration-300 group-hover:shadow-md">
