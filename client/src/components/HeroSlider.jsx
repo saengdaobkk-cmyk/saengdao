@@ -44,15 +44,18 @@ export default function HeroSlider() {
         return (
           <div
             key={s.id}
-            className={`absolute inset-0 bg-cover ease-[cubic-bezier(0.45,0,0.15,1)] ${isSlide ? "transition-transform duration-[800ms]" : "transition-opacity duration-[900ms]"}`}
+            className={`hero-slide absolute inset-0 bg-cover ease-[cubic-bezier(0.22,0.61,0.36,1)] ${isSlide ? "transition-transform duration-[800ms]" : "transition-[opacity,transform] duration-[1200ms]"}`}
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
               backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
               backgroundPosition: hasImage ? (BG_POS[s.imagePosition] || "center") : undefined,
               opacity: isSlide ? 1 : idx === i ? 1 : 0,
-              // translateZ(0) ดันเลเยอร์ขึ้น GPU → เปลี่ยนภาพลื่นขึ้นมาก โดยเฉพาะบนมือถือ
-              transform: isSlide ? `translateX(${(idx - i) * 100}%) translateZ(0)` : "translateZ(0)",
-              willChange: isSlide ? "transform" : "opacity",
+              // fade: จาง + ซูมเบาๆ (1.04→1) ให้เข้านุ่มแบบ premium · slide: เลื่อนแนวนอน
+              // translateZ(0) ดันเลเยอร์ขึ้น GPU → ลื่นขึ้นมากบนมือถือ
+              transform: isSlide
+                ? `translateX(${(idx - i) * 100}%) translateZ(0)`
+                : `scale(${idx === i ? 1 : 1.04}) translateZ(0)`,
+              willChange: isSlide ? "transform" : "opacity, transform",
               backfaceVisibility: "hidden",
             }}
             aria-hidden={idx !== i}
