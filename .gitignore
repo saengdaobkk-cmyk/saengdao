@@ -15,6 +15,10 @@ dist/
 # uploads (dev disk) — prod ใช้ Supabase Storage
 **/uploads/
 
+# backups ฐานข้อมูล — มีข้อมูลลูกค้า/ออเดอร์ ห้าม commit เด็ดขาด
+backups/
+**/backups/
+
 # logs / os
 *.log
 .DS_Store
