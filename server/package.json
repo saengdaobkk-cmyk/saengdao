@@ -15,7 +15,9 @@
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "db:backup": "node scripts/backup-db.js",
-    "db:restore": "node scripts/restore-db.js"
+    "db:restore": "node scripts/restore-db.js",
+    "storage:backup": "node scripts/backup-storage.js",
+    "storage:restore": "node scripts/restore-storage.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

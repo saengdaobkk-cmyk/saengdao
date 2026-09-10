@@ -41,11 +41,31 @@ npm run db:restore -- ../backups/saengdao-db-2026-09-10T16-46-15.json --yes
 
 ---
 
-## 3. รูปที่อัปโหลด (Supabase Storage)
+## 3. รูปที่อัปโหลด (Supabase Storage — bucket `uploads`)
 รูปสไลด์/ปกหนังสือ/สลิป เก็บใน bucket `uploads` บน Supabase
-- Supabase Storage มีความทนทานสูงอยู่แล้ว (ไม่หายง่าย)
-- สำรองเอง: Supabase Dashboard → Storage → bucket `uploads` → ดาวน์โหลด
-- ในฐานข้อมูล รูปถูกอ้างเป็น URL เต็ม → กู้ DB กลับมาแล้วรูปยังชี้ที่เดิมได้ทันที (ตราบใดที่ bucket ยังอยู่)
+
+### ต้องตั้งค่าก่อน (ครั้งเดียว)
+เพิ่ม 2 บรรทัดนี้ในไฟล์ `server/.env` (ก๊อปจาก env ฝั่ง Hostinger หรือ Supabase Dashboard → Settings → API):
+```
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_KEY=...(service_role key — เป็นความลับ ห้ามหลุด)
+```
+
+### สำรองรูป
+```bash
+cd server
+npm run storage:backup
+```
+→ ดาวน์โหลดรูปทั้งหมดลง `backups/storage-<วันเวลา>/` (พร้อม `_manifest.json`)
+
+### กู้รูปกลับ
+```bash
+cd server
+npm run storage:restore -- ../backups/storage-2026-09-11T.../
+```
+→ อัปรูปทุกไฟล์กลับเข้า bucket (upsert — ทับของเดิมชื่อเดียวกัน)
+
+> หมายเหตุ: ในฐานข้อมูล รูปถูกอ้างเป็น URL เต็ม → ถ้า bucket ยังอยู่ กู้แค่ DB รูปก็ชี้ที่เดิมได้ทันที · สำรองรูปเผื่อกรณี bucket เสียหาย/ถูกลบ · Supabase Storage เองก็ทนทานสูงอยู่แล้ว
 
 ---
 
