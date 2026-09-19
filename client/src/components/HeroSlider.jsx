@@ -17,6 +17,16 @@ export default function HeroSlider() {
   const [i, setI] = useState(0);
   const go = useCallback((n) => setI((n + slides.length) % slides.length), [slides.length]);
 
+  // เลือกรูปตามขนาดจอ — มือถือใช้ imageMobile (ถ้ามี)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const on = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const srcOf = (s) => (isMobile ? s.imageMobile || s.image : s.image);
+
   // เลื่อนอัตโนมัติ (หน่วงเวลาตาม setting กลาง)
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -31,8 +41,8 @@ export default function HeroSlider() {
 
   // โหลด+ถอดรหัสรูปทุกสไลด์ล่วงหน้า → ตอนเปลี่ยนภาพพร้อมแสดงทันที ไม่กระตุก/แว็บ (สำคัญบนมือถือ)
   useEffect(() => {
-    slides.forEach((s) => { if (s.image) { const im = new Image(); im.src = img(s.image, 1600); } });
-  }, [slides]);
+    slides.forEach((s) => { const src = srcOf(s); if (src) { const im = new Image(); im.src = img(src, isMobile ? 900 : 1600); } });
+  }, [slides, isMobile]);
 
   if (slides.length === 0)
     return <section className="h-[40vh] min-h-[300px] w-full bg-mist" />;
@@ -40,14 +50,15 @@ export default function HeroSlider() {
   return (
     <section className="relative h-[78vh] min-h-[460px] w-full overflow-hidden">
       {slides.map((s, idx) => {
-        const hasImage = !!s.image;
+        const src = srcOf(s);
+        const hasImage = !!src;
         return (
           <div
             key={s.id}
             className={`hero-slide absolute inset-0 bg-cover ease-[cubic-bezier(0.22,0.61,0.36,1)] ${isSlide ? "transition-transform duration-[800ms]" : "transition-[opacity,transform] duration-[1200ms]"}`}
             style={{
               background: hasImage ? undefined : s.bgColor || "#1d1d1f",
-              backgroundImage: hasImage ? `url(${img(s.image, 1600)})` : undefined,
+              backgroundImage: hasImage ? `url(${img(src, isMobile ? 900 : 1600)})` : undefined,
               backgroundPosition: hasImage ? (BG_POS[s.imagePosition] || "center") : undefined,
               opacity: isSlide ? 1 : idx === i ? 1 : 0,
               // fade: จาง + ซูมเบาๆ (1.04→1) ให้เข้านุ่มแบบ premium · slide: เลื่อนแนวนอน

@@ -1216,6 +1216,7 @@ function slideData(body) {
     ctaText: body.ctaText?.trim() || null,
     ctaLink: body.ctaLink?.trim() || "#catalog",
     image: body.image?.trim() || null,
+    imageMobile: body.imageMobile?.trim() || null,
     bgColor: body.bgColor?.trim() || null,
     dark: body.dark !== false,
     align: ["left", "center", "right"].includes(body.align) ? body.align : "center",

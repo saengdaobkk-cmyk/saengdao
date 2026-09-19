@@ -4,7 +4,7 @@ import { useSettings, useUpdateSettings } from "../../api/settings";
 
 const EMPTY = {
   eyebrow: "", title: "", subtitle: "", ctaText: "เลือกซื้อเลย", ctaLink: "#catalog",
-  image: "", bgColor: "#1d1d1f", dark: true, align: "center", valign: "center", overlay: 0,
+  image: "", imageMobile: "", bgColor: "#1d1d1f", dark: true, align: "center", valign: "center", overlay: 0,
   overlayGradient: false, titleSize: "md", imagePosition: "center",
   linkUrl: "", textColor: "", buttonColor: "", buttonTextColor: "", order: 0, active: true,
 };
@@ -114,13 +114,13 @@ function SlideForm({ slide, onClose }) {
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const onFile = async (e) => {
+  const onFile = (field) => async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     try {
       const url = await uploadImage(file);
-      setForm((f) => ({ ...f, image: url }));
+      setForm((f) => ({ ...f, [field]: url }));
     } catch {
       setError("อัปโหลดรูปไม่สำเร็จ");
     } finally {
@@ -178,28 +178,29 @@ function SlideForm({ slide, onClose }) {
           </F>
           <F label="คำอธิบาย"><Inp value={form.subtitle} onChange={set("subtitle")} /></F>
 
-          {/* รูป / สีพื้น */}
+          {/* รูปพื้นหลัง — PC / มือถือ */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <F label="รูปพื้นหลัง — แนะนำ 1920×1080 (16:9), < 500KB">
-              <div className="flex gap-2">
-                <label className="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[13px] text-sub hover:text-ink">
-                  {uploading ? "กำลังอัปโหลด..." : form.image ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
-                  <input type="file" accept="image/*" onChange={onFile} className="hidden" />
-                </label>
-                {form.image && (
-                  <button type="button" onClick={() => setForm((f) => ({ ...f, image: "" }))} className="rounded-xl border border-line px-3 text-[13px] text-sub hover:text-red-600">
-                    เอาออก
-                  </button>
-                )}
-              </div>
+            <F label="รูป PC / จอกว้าง">
+              <ImageUpload
+                url={form.image} uploading={uploading}
+                onPick={onFile("image")} onClear={() => setForm((f) => ({ ...f, image: "" }))}
+                hint="แนวนอน 16:9 · แนะนำ 1920×1080 px · ไฟล์ < 500KB"
+              />
             </F>
-            <F label="สีพื้นหลัง (ถ้าไม่มีรูป)">
-              <div className="flex items-center gap-2">
-                <input type="color" value={form.bgColor || "#1d1d1f"} onChange={set("bgColor")} className="h-10 w-12 rounded border border-line" />
-                <Inp value={form.bgColor} onChange={set("bgColor")} />
-              </div>
+            <F label="รูปมือถือ (แนวตั้ง)">
+              <ImageUpload
+                url={form.imageMobile} uploading={uploading}
+                onPick={onFile("imageMobile")} onClear={() => setForm((f) => ({ ...f, imageMobile: "" }))}
+                hint="แนวตั้ง 3:4 · แนะนำ 1080×1440 px · ไฟล์ < 500KB · เว้นว่าง = ใช้รูป PC"
+              />
             </F>
           </div>
+          <F label="สีพื้นหลัง (ถ้าไม่มีรูป)">
+            <div className="flex items-center gap-2">
+              <input type="color" value={form.bgColor || "#1d1d1f"} onChange={set("bgColor")} className="h-10 w-12 rounded border border-line" />
+              <Inp value={form.bgColor} onChange={set("bgColor")} />
+            </div>
+          </F>
 
           {/* ตำแหน่งข้อความ + แรเงา */}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -388,6 +389,31 @@ function ColorField({ label, value, fallback, onChange }) {
         />
       </div>
     </label>
+  );
+}
+
+// ช่องอัปโหลดรูป + ปุ่มเอาออก + note ขนาดที่แนะนำ
+function ImageUpload({ url, uploading, onPick, onClear, hint }) {
+  return (
+    <div>
+      {url && (
+        <div className="mb-2 overflow-hidden rounded-xl border border-line">
+          <img src={url} alt="" className="h-24 w-full object-cover" />
+        </div>
+      )}
+      <div className="flex gap-2">
+        <label className="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[13px] text-sub hover:text-ink">
+          {uploading ? "กำลังอัปโหลด..." : url ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+          <input type="file" accept="image/*" onChange={onPick} className="hidden" />
+        </label>
+        {url && (
+          <button type="button" onClick={onClear} className="rounded-xl border border-line px-3 text-[13px] text-sub hover:text-red-600">
+            เอาออก
+          </button>
+        )}
+      </div>
+      {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-sub">{hint}</p>}
+    </div>
   );
 }
 

@@ -54,7 +54,8 @@ model Slide {
   subtitle        String?
   ctaText         String? // ข้อความปุ่ม
   ctaLink         String   @default("#catalog")
-  image           String? // URL รูปพื้นหลัง
+  image           String? // URL รูปพื้นหลัง (PC/จอกว้าง)
+  imageMobile     String? // URL รูปพื้นหลังสำหรับมือถือ (ถ้าว่าง = ใช้ image)
   bgColor         String? // สีพื้นหลัง (ถ้าไม่มีรูป) เช่น #1d1d1f
   dark            Boolean  @default(true) // true = ตัวหนังสือสีขาว
   align           String   @default("center") // แนวนอน: left|center|right
