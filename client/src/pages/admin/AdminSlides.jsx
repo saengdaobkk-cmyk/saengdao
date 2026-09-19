@@ -182,16 +182,18 @@ function SlideForm({ slide, onClose }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <F label="รูป PC / จอกว้าง">
               <ImageUpload
-                url={form.image} uploading={uploading}
+                url={form.image} uploading={uploading} ratio="16 / 9"
                 onPick={onFile("image")} onClear={() => setForm((f) => ({ ...f, image: "" }))}
                 hint="แนวนอน 16:9 · แนะนำ 1920×1080 px · ไฟล์ < 500KB"
+                overlay={{ text: form.title, align: form.align, valign: form.valign, dark: form.dark, bgColor: form.bgColor }}
               />
             </F>
             <F label="รูปมือถือ (แนวตั้ง)">
               <ImageUpload
-                url={form.imageMobile} uploading={uploading}
+                url={form.imageMobile} previewUrl={form.imageMobile || form.image} uploading={uploading} ratio="3 / 4" narrow
                 onPick={onFile("imageMobile")} onClear={() => setForm((f) => ({ ...f, imageMobile: "" }))}
                 hint="แนวตั้ง 3:4 · แนะนำ 1080×1440 px · ไฟล์ < 500KB · เว้นว่าง = ใช้รูป PC"
+                overlay={{ text: form.title, align: form.alignMobile || form.align, valign: form.valignMobile || form.valign, dark: form.dark, bgColor: form.bgColor }}
               />
             </F>
           </div>
@@ -408,15 +410,29 @@ function ColorField({ label, value, fallback, onChange }) {
   );
 }
 
-// ช่องอัปโหลดรูป + ปุ่มเอาออก + note ขนาดที่แนะนำ
-function ImageUpload({ url, uploading, onPick, onClear, hint }) {
+// ช่องอัปโหลดรูป + preview สัดส่วนจริง + ตำแหน่งข้อความจริง + note ขนาดที่แนะนำ
+// ratio = สัดส่วนตอนแสดงจริง · narrow = ย่อความกว้าง (แนวตั้ง) · overlay = {text, align, valign, dark, bgColor}
+function ImageUpload({ url, previewUrl, uploading, onPick, onClear, hint, ratio = "16 / 9", narrow = false, overlay }) {
+  const shown = previewUrl ?? url; // รูปที่โชว์ใน preview (มือถือ fallback เป็นรูป PC ได้) — ปุ่มยังอิง url จริง
+  const line = (overlay?.text || "").split("\n")[0] || "ตัวอย่างข้อความ";
   return (
     <div>
-      {url && (
-        <div className="mb-2 overflow-hidden rounded-xl border border-line">
-          <img src={url} alt="" className="h-24 w-full object-cover" />
-        </div>
-      )}
+      <div
+        className={`relative mb-2 overflow-hidden rounded-xl border border-line ${narrow ? "mx-auto max-w-[150px]" : "w-full"}`}
+        style={{ aspectRatio: ratio, background: shown ? undefined : overlay?.bgColor || "#1d1d1f" }}
+      >
+        {shown && <img src={shown} alt="" className="h-full w-full object-cover" />}
+        {overlay && (
+          <div className={`pointer-events-none absolute inset-0 flex flex-col p-2.5 ${ALIGN[overlay.align] || ALIGN.center} ${VALIGN[overlay.valign] || VALIGN.center}`}>
+            <span
+              className={`max-w-full truncate text-[10px] font-bold leading-tight ${overlay.dark ? "text-white" : "text-ink"}`}
+              style={{ textShadow: overlay.dark ? "0 1px 4px rgba(0,0,0,.55)" : "0 1px 4px rgba(255,255,255,.55)" }}
+            >
+              {line}
+            </span>
+          </div>
+        )}
+      </div>
       <div className="flex gap-2">
         <label className="flex flex-1 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line py-2 text-[13px] text-sub hover:text-ink">
           {uploading ? "กำลังอัปโหลด..." : url ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
