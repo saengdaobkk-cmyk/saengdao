@@ -4,7 +4,7 @@ import { useSettings, useUpdateSettings } from "../../api/settings";
 
 const EMPTY = {
   eyebrow: "", title: "", subtitle: "", ctaText: "เลือกซื้อเลย", ctaLink: "#catalog",
-  image: "", imageMobile: "", bgColor: "#1d1d1f", dark: true, align: "center", valign: "center", overlay: 0,
+  image: "", imageMobile: "", bgColor: "#1d1d1f", dark: true, align: "center", valign: "center", alignMobile: "", valignMobile: "", overlay: 0,
   overlayGradient: false, titleSize: "md", imagePosition: "center",
   linkUrl: "", textColor: "", buttonColor: "", buttonTextColor: "", order: 0, active: true,
 };
@@ -202,15 +202,31 @@ function SlideForm({ slide, onClose }) {
             </div>
           </F>
 
-          {/* ตำแหน่งข้อความ + แรเงา */}
+          {/* ตำแหน่งข้อความ — PC / มือถือ */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <F label="ตำแหน่งข้อความ">
+            <F label="ตำแหน่งข้อความ — PC">
               <PositionPicker
                 align={form.align}
                 valign={form.valign}
                 onChange={(align, valign) => setForm((f) => ({ ...f, align, valign }))}
               />
             </F>
+            <F label="ตำแหน่งข้อความ — มือถือ">
+              <PositionPicker
+                align={form.alignMobile || form.align}
+                valign={form.valignMobile || form.valign}
+                onChange={(alignMobile, valignMobile) => setForm((f) => ({ ...f, alignMobile, valignMobile }))}
+              />
+              <p className="mt-1.5 text-[11px] text-sub">
+                {form.alignMobile || form.valignMobile
+                  ? <button type="button" onClick={() => setForm((f) => ({ ...f, alignMobile: "", valignMobile: "" }))} className="text-accent hover:underline">↺ ใช้ตำแหน่งเดียวกับ PC</button>
+                  : "ยังไม่ตั้งแยก = ใช้ตำแหน่งเดียวกับ PC"}
+              </p>
+            </F>
+          </div>
+
+          {/* แรเงา */}
+          <div className="grid gap-4 sm:grid-cols-2">
             <F label={`แผ่นแรเงาบนรูป (${form.overlay || 0}%)`}>
               <input
                 type="range"

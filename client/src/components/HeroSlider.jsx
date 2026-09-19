@@ -52,6 +52,8 @@ export default function HeroSlider() {
       {slides.map((s, idx) => {
         const src = srcOf(s);
         const hasImage = !!src;
+        const alignV = isMobile && s.alignMobile ? s.alignMobile : s.align;
+        const valignV = isMobile && s.valignMobile ? s.valignMobile : s.valign;
         return (
           <div
             key={s.id}
@@ -98,8 +100,8 @@ export default function HeroSlider() {
 
             <div
               className={`pointer-events-none relative z-10 mx-auto flex h-full max-w-page flex-col px-5 ${
-                ALIGN[s.align] || ALIGN.center
-              } ${VALIGN[s.valign] || VALIGN.center}`}
+                ALIGN[alignV] || ALIGN.center
+              } ${VALIGN[valignV] || VALIGN.center}`}
             >
               {idx === i && (
                 <div key={i} className="pointer-events-auto w-full max-w-xl animate-fadeUp">

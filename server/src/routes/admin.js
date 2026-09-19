@@ -1221,6 +1221,8 @@ function slideData(body) {
     dark: body.dark !== false,
     align: ["left", "center", "right"].includes(body.align) ? body.align : "center",
     valign: ["top", "center", "bottom"].includes(body.valign) ? body.valign : "center",
+    alignMobile: ["left", "center", "right"].includes(body.alignMobile) ? body.alignMobile : null,
+    valignMobile: ["top", "center", "bottom"].includes(body.valignMobile) ? body.valignMobile : null,
     overlay: Math.min(100, Math.max(0, parseInt(body.overlay) || 0)),
     overlayGradient: !!body.overlayGradient,
     titleSize: ["sm", "md", "lg"].includes(body.titleSize) ? body.titleSize : "md",

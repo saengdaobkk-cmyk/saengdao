@@ -60,6 +60,8 @@ model Slide {
   dark            Boolean  @default(true) // true = ตัวหนังสือสีขาว
   align           String   @default("center") // แนวนอน: left|center|right
   valign          String   @default("center") // แนวตั้ง: top|center|bottom
+  alignMobile     String? // ตำแหน่งข้อความแนวนอนบนมือถือ (ว่าง = ใช้ align)
+  valignMobile    String? // ตำแหน่งข้อความแนวตั้งบนมือถือ (ว่าง = ใช้ valign)
   overlay         Int      @default(0) // ความเข้มแผ่นแรเงาบนรูป 0-100 (0=เห็นรูปชัด)
   overlayGradient Boolean  @default(false) // แรเงาไล่ระดับจากล่าง (อ่านง่ายบนรูป)
   titleSize       String   @default("md") // ขนาดหัวข้อ: sm|md|lg
