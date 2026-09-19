@@ -274,7 +274,6 @@ function SlideForm({ slide, onClose }) {
             <ColorField label="สีอักษรปุ่ม" value={form.buttonTextColor} fallback="#ffffff" onChange={(v) => setForm((f) => ({ ...f, buttonTextColor: v }))} />
           </div>
 
-          <F label="ลำดับ (order)"><Inp type="number" value={form.order} onChange={set("order")} /></F>
 
           <div className="flex gap-6">
             <label className="flex items-center gap-2">
