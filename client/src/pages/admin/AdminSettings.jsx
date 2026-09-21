@@ -121,6 +121,13 @@ function DisplaySettings({ settings, update }) {
             onChange={(v) => update.mutate({ showProductSectionHeadings: v })}
           />
           <ToggleRow
+            title="ชื่อหมวดบนการ์ดหมวดหมู่ (หน้าแรก)"
+            desc="เปิด: โชว์ชื่อหมวด + จำนวนเล่มทับบนการ์ด · ปิด: โชว์แต่รูป/สีพื้น (ชื่อจะไม่บังภาพ)"
+            checked={settings.showBrowseCategoryName}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showBrowseCategoryName: v })}
+          />
+          <ToggleRow
             title="ปุ่มแชร์ในหน้าบทความ"
             desc="เปิด: โชว์ปุ่มแชร์ Facebook / LINE / X / คัดลอกลิงก์ ใต้หัวข้อบทความ · ปิด: ซ่อน"
             checked={settings.showBlogShare}

@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCategories } from "../api/books";
+import { useSettings } from "../api/settings";
 import { img } from "../lib/img";
 import SectionHeading from "./SectionHeading";
 
@@ -16,6 +17,8 @@ const TILES = [
 
 export default function BrowseSections({ title = "หมวดหมู่หนังสือ", subtitle = "เลือกอ่านตามหมวดที่คุณสนใจ" }) {
   const { data: categories } = useCategories();
+  const { showBrowseCategoryName } = useSettings();
+  const showName = showBrowseCategoryName !== false;
   const scroller = useRef(null);
   const scroll = (dir) => scroller.current?.scrollBy({ left: dir * 360, behavior: "smooth" });
 
@@ -50,11 +53,15 @@ export default function BrowseSections({ title = "หมวดหมู่หน
                       <span className="text-7xl font-bold text-white/25">{c.name[0]}</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-[18px] font-semibold text-white drop-shadow-sm">{c.name}</p>
-                    <p className="text-[12px] text-white/80">{c.bookCount} เล่ม</p>
-                  </div>
+                  {showName && (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <p className="text-[18px] font-semibold text-white drop-shadow-sm">{c.name}</p>
+                        <p className="text-[12px] text-white/80">{c.bookCount} เล่ม</p>
+                      </div>
+                    </>
+                  )}
                 </Link>
               ))}
             </div>

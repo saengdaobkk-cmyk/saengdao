@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "collectionInfiniteScroll", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "showBrowseCategoryName", "collectionInfiniteScroll", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -62,6 +62,7 @@ const DEFAULTS = {
   showProductTrust: true, // แถบจุดเด่น (จัดส่งฟรี/รับประกัน) ในหน้าสินค้า
   showRatingSummary: true, // ดาวสรุปใต้ชื่อหนังสือ (หน้าสินค้า)
   showProductSectionHeadings: true, // หัวข้อ "รายละเอียด"/"ข้อมูลจำเพาะ" ในหน้าสินค้า
+  showBrowseCategoryName: true, // ชื่อหมวด+จำนวนเล่ม บนการ์ดหมวดหมู่ (หน้าแรก)
   showBlogShare: true, // ปุ่มแชร์ในหน้าบทความ
   promptpayId: "",
   promptpayName: "",
