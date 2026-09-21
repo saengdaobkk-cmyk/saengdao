@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "node:crypto";
 import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js";
@@ -1690,6 +1691,55 @@ router.get("/customers", async (req, res, next) => {
         lastOrderAt: s?._max.createdAt || null,
       };
     }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// นำเข้าลูกค้าจากไฟล์ (CSV → client แปลงเป็น rows) — match ด้วยอีเมล: มีอยู่=อัปเดต, ไม่มี=สร้างใหม่
+// สร้างใหม่จะตั้งรหัสผ่านสุ่ม (ลูกค้าใช้ "ลืมรหัสผ่าน" ตั้งใหม่เองได้) · ADMIN เท่านั้น
+router.post("/customers/import", requireAdmin, async (req, res, next) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    if (!rows.length) return res.status(400).json({ error: "ไม่มีข้อมูลให้นำเข้า" });
+    if (rows.length > 5000) return res.status(400).json({ error: "นำเข้าได้สูงสุด 5000 รายการต่อครั้ง" });
+
+    let created = 0, updated = 0, skipped = 0;
+    const errors = [];
+    const parseTags = (t) =>
+      Array.isArray(t) ? t.map((x) => String(x).trim()).filter(Boolean)
+      : (typeof t === "string" && t.trim() ? t.split(/[,;|]/).map((s) => s.trim()).filter(Boolean) : undefined);
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i] || {};
+      const email = String(r.email || "").trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { skipped++; if (errors.length < 20) errors.push(`แถว ${i + 2}: อีเมลไม่ถูกต้อง`); continue; }
+
+      const name = r.name != null && String(r.name).trim() ? String(r.name).trim() : undefined;
+      const phone = r.phone != null && String(r.phone).trim() ? String(r.phone).trim() : undefined;
+      const address = r.address != null && String(r.address).trim() ? String(r.address).trim() : undefined;
+      const tags = parseTags(r.tags);
+      const points = r.points != null && String(r.points).trim() !== "" && !isNaN(Number(r.points)) ? Math.max(0, parseInt(r.points, 10)) : undefined;
+
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) {
+        const data = {};
+        if (name) data.name = name;
+        if (phone) data.phone = phone;
+        if (address) data.address = address;
+        if (tags) data.tags = tags;
+        if (points != null) data.points = points;
+        if (Object.keys(data).length) { await prisma.user.update({ where: { id: existing.id }, data }); updated++; }
+        else skipped++;
+      } else {
+        const password = await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 10);
+        await prisma.user.create({
+          data: { email, name: name || null, phone: phone || null, address: address || null, tags: tags || [], points: points || 0, role: "USER", password, emailVerified: true },
+        });
+        created++;
+      }
+    }
+    res.json({ created, updated, skipped, total: rows.length, errors });
   } catch (err) {
     next(err);
   }

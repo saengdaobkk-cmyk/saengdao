@@ -1,9 +1,52 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { formatPrice } from "../../lib/format";
 import {
-  useAdminCustomers, useSaveCustomer, useDeleteCustomer,
+  useAdminCustomers, useSaveCustomer, useDeleteCustomer, useImportCustomers,
   useCustomerTags, useCustomerDetail, useAddNote, useToggleNote, useDeleteNote, useAdjustPoints,
 } from "../../api/admin";
+
+// ---- CSV helpers ----
+const EXPORT_COLS = ["email", "name", "phone", "address", "receiptName", "receiptTaxId", "receiptAddress", "tags", "points", "orderCount", "totalSpent", "lastOrderAt", "createdAt"];
+const csvEsc = (v) => {
+  const s = v == null ? "" : Array.isArray(v) ? v.join("|") : String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+function exportCustomersCsv(rows) {
+  const head = EXPORT_COLS.join(",");
+  const body = (rows || []).map((c) => EXPORT_COLS.map((k) => csvEsc(c[k])).join(",")).join("\n");
+  const csv = "﻿" + head + "\n" + body; // BOM ให้ Excel อ่านภาษาไทยถูก
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `customers-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+// header ที่รองรับ (อังกฤษ + ไทย) → key มาตรฐาน
+const HEADER_MAP = { email: "email", "อีเมล": "email", name: "name", "ชื่อ": "name", phone: "phone", "เบอร์": "phone", "เบอร์โทร": "phone", address: "address", "ที่อยู่": "address", tags: "tags", "แท็ก": "tags", points: "points", "แต้ม": "points" };
+function parseCsv(text) {
+  const rows = []; let field = "", record = [], inQ = false;
+  text = text.replace(/^﻿/, "");
+  const pushF = () => { record.push(field); field = ""; };
+  const pushR = () => { rows.push(record); record = []; };
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) { if (ch === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; } else field += ch; }
+    else if (ch === '"') inQ = true;
+    else if (ch === ",") pushF();
+    else if (ch === "\n") { pushF(); pushR(); }
+    else if (ch !== "\r") field += ch;
+  }
+  if (field.length || record.length) { pushF(); pushR(); }
+  if (!rows.length) return [];
+  const headers = rows.shift().map((h) => h.trim().toLowerCase());
+  return rows.filter((r) => r.some((x) => x && x.trim())).map((r) => {
+    const o = {};
+    headers.forEach((h, idx) => { const key = HEADER_MAP[h]; if (key) o[key] = r[idx]; });
+    return o;
+  });
+}
 
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) : "—");
 const fmtDateTime = (d) => (d ? new Date(d).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—");
@@ -21,9 +64,28 @@ export default function AdminCustomers() {
   const { data: allTags = [] } = useCustomerTags();
   const del = useDeleteCustomer();
 
+  const imp = useImportCustomers();
+  const fileRef = useRef(null);
+  const [importResult, setImportResult] = useState(null);
+
   const [q, setQ] = useState("");
   const [tagFilter, setTagFilter] = useState("");
   const [openId, setOpenId] = useState(null);
+
+  const onImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setImportResult(null);
+    let rows;
+    try { rows = parseCsv(await file.text()); } catch { alert("อ่านไฟล์ไม่สำเร็จ"); return; }
+    if (!rows.length) { alert("ไม่พบข้อมูล — ตรวจว่าไฟล์มีคอลัมน์ email และมีข้อมูลอย่างน้อย 1 แถว"); return; }
+    if (!rows.some((r) => r.email)) { alert("ไม่พบคอลัมน์ email ในไฟล์"); return; }
+    imp.mutate(rows, {
+      onSuccess: (res) => setImportResult(res),
+      onError: (err) => alert(err.response?.data?.error || "นำเข้าไม่สำเร็จ"),
+    });
+  };
 
   const list = useMemo(() => {
     let arr = customers || [];
@@ -39,9 +101,34 @@ export default function AdminCustomers() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[13px] text-sub">ลูกค้าทั้งหมด {customers && `(${customers.length})`}</p>
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาชื่อ/อีเมล/เบอร์..."
-          className="w-64 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
+        <div className="flex flex-wrap items-center gap-2">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาชื่อ/อีเมล/เบอร์..."
+            className="w-56 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
+          <button onClick={() => exportCustomersCsv(customers)} disabled={!customers?.length}
+            className="rounded-lg border border-line px-3 py-2 text-[13px] text-ink transition hover:bg-mist disabled:opacity-40">
+            ↓ Export CSV
+          </button>
+          <button onClick={() => fileRef.current?.click()} disabled={imp.isPending}
+            className="rounded-lg border border-line px-3 py-2 text-[13px] text-ink transition hover:bg-mist disabled:opacity-50">
+            {imp.isPending ? "กำลังนำเข้า..." : "↑ Import CSV"}
+          </button>
+          <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onImportFile} className="hidden" />
+        </div>
       </div>
+
+      {importResult && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+          <div>
+            นำเข้าเสร็จ — เพิ่มใหม่ <b>{importResult.created}</b> · อัปเดต <b>{importResult.updated}</b> · ข้าม <b>{importResult.skipped}</b> (จาก {importResult.total} แถว)
+            {importResult.errors?.length > 0 && (
+              <ul className="mt-1 list-disc pl-5 text-[12px] text-rose-700">
+                {importResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+              </ul>
+            )}
+          </div>
+          <button onClick={() => setImportResult(null)} className="shrink-0 text-emerald-700 hover:text-emerald-900">✕</button>
+        </div>
+      )}
 
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">

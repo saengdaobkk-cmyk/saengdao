@@ -320,6 +320,17 @@ export function useDeleteCustomer() {
   });
 }
 
+export function useImportCustomers() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows) => (await api.post(`/admin/customers/import`, { rows })).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "customers"] });
+      qc.invalidateQueries({ queryKey: ["admin", "customer-tags"] });
+    },
+  });
+}
+
 /* ---------- CRM: โปรไฟล์ 360 / โน้ต / แต้ม ---------- */
 export const useCustomerTags = () =>
   useQuery({ queryKey: ["admin", "customer-tags"], queryFn: async () => (await api.get("/admin/customer-tags")).data });
