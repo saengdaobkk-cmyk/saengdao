@@ -296,6 +296,15 @@ export async function sendEmailVerification({ to, toName, token }) {
   return send({ to, toName, subject: "ยืนยันอีเมล — SAENGDAO", html: layout("ยืนยันอีเมลของคุณ", body, { eyebrow: "ยืนยันการสมัคร", icon: { color: "#0071e3", glyph: "✓" } }) });
 }
 
+export async function sendPasswordReset({ to, toName, token }) {
+  const url = `${SITE}/reset-password?token=${encodeURIComponent(token)}`;
+  const body = `<p style="margin:0 0 6px;font-size:15px;line-height:1.7;color:#515154;text-align:center">มีคำขอตั้งรหัสผ่านใหม่สำหรับบัญชีนี้<br>กดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
+    ${button(url, "ตั้งรหัสผ่านใหม่")}
+    <p style="margin:18px 0 0;font-size:12.5px;line-height:1.7;color:#a1a1a6;text-align:center">ลิงก์นี้ใช้ได้ภายใน 1 ชั่วโมง · หากคุณไม่ได้ขอ ข้ามอีเมลนี้ได้เลย (รหัสผ่านเดิมยังใช้ได้ตามปกติ)</p>
+    <p style="margin:10px 0 0;font-size:11.5px;line-height:1.6;color:#c7c7cc;text-align:center;word-break:break-all">ถ้าปุ่มกดไม่ได้ คัดลอกลิงก์นี้: ${url}</p>`;
+  return send({ to, toName, subject: "ตั้งรหัสผ่านใหม่ — SAENGDAO", html: layout("ตั้งรหัสผ่านใหม่", body, { eyebrow: "ลืมรหัสผ่าน", icon: { color: "#0071e3", glyph: "🔑" } }) });
+}
+
 export async function sendTestEmail(to) {
   return send({ to, subject: "SAENGDAO · ทดสอบระบบอีเมล", html: layout("ระบบอีเมลพร้อมใช้งาน", `<p style="margin:0;font-size:15px;line-height:1.6;color:#515154;text-align:center">ยินดีด้วยค่ะ — ระบบอีเมลผ่าน Brevo ทำงานปกติแล้ว<br>อีเมลยืนยันคำสั่งซื้อ ชำระเงิน จัดส่ง และฟอร์มติดต่อ จะส่งอัตโนมัติจากนี้ไป</p>`, { eyebrow: "ทดสอบ", icon: { color: "#1d9e75", glyph: "✓" } }) });
 }

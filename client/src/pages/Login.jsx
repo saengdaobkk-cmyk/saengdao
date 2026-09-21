@@ -88,6 +88,10 @@ export default function Login() {
         <Field label="อีเมล" type="email" value={email} onChange={setEmail} autoComplete="email" />
         <Field label="รหัสผ่าน" type="password" value={password} onChange={setPassword} autoComplete="current-password" />
 
+        <div className="-mt-1 text-right">
+          <Link to="/forgot-password" className="text-[13px] text-sub transition hover:text-accent">ลืมรหัสผ่าน?</Link>
+        </div>
+
         {error && <p className="text-[13px] text-red-600">{error}</p>}
 
         {needVerify && (

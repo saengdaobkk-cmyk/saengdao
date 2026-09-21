@@ -7,11 +7,19 @@ import QRCode from "qrcode";
 import { prisma } from "../lib/prisma.js";
 import { signToken, signPendingToken, authenticate } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
-import { sendEmailVerification } from "../lib/email.js";
+import { sendEmailVerification, sendPasswordReset } from "../lib/email.js";
 import { verifyTurnstile } from "../lib/turnstile.js";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // ลิงก์ยืนยันอีเมลอายุ 24 ชม.
 const newVerifyToken = () => ({ emailVerifyToken: crypto.randomBytes(32).toString("hex"), emailVerifyExpires: new Date(Date.now() + VERIFY_TTL_MS) });
+
+const RESET_TTL_MS = 60 * 60 * 1000; // ลิงก์รีเซ็ตรหัสผ่านอายุ 1 ชม.
+const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
+// เก็บ hash ของ token ใน DB (กันหลุดจาก DB ใช้ต่อได้) · ส่ง raw ไปในอีเมล
+const newResetToken = () => {
+  const raw = crypto.randomBytes(32).toString("hex");
+  return { raw, resetToken: sha256(raw), resetExpires: new Date(Date.now() + RESET_TTL_MS) };
+};
 
 const router = Router();
 
@@ -22,6 +30,7 @@ const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
 const twofaLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, message: "ยืนยันรหัสบ่อยเกินไป กรุณารอสักครู่" });
 const resendLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 4, message: "ขอลิงก์ยืนยันบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
+const forgotLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, message: "ขอลิงก์รีเซ็ตรหัสผ่านบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" });
 
 // ส่งข้อมูล user ที่ปลอดภัย (ไม่มี password)
 const publicUser = (u) => ({
@@ -113,6 +122,50 @@ router.post("/resend-verification", resendLimiter, async (req, res, next) => {
       }
     }
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/forgot-password — ขอลิงก์ตั้งรหัสผ่านใหม่ (ตอบเหมือนกันเสมอ กันเดาว่าอีเมลมีในระบบ)
+router.post("/forgot-password", forgotLimiter, async (req, res, next) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (email && emailRe.test(email)) {
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user && !user.deletedAt) {
+        const t = newResetToken();
+        await prisma.user.update({ where: { id: user.id }, data: { resetToken: t.resetToken, resetExpires: t.resetExpires } });
+        sendPasswordReset({ to: user.email, toName: user.name, token: t.raw }).catch(() => {});
+      }
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/reset-password — ตั้งรหัสผ่านใหม่จากลิงก์ แล้วเข้าสู่ระบบให้เลย
+router.post("/reset-password", async (req, res, next) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    const password = String(req.body?.password || "");
+    if (!token) return res.status(400).json({ error: "ลิงก์ไม่ถูกต้อง" });
+    if (password.length < 6) return res.status(400).json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" });
+
+    const user = await prisma.user.findFirst({ where: { resetToken: sha256(token) } });
+    if (!user) return res.status(400).json({ error: "ลิงก์ไม่ถูกต้องหรือถูกใช้ไปแล้ว" });
+    if (user.resetExpires && user.resetExpires < new Date())
+      return res.status(400).json({ error: "ลิงก์หมดอายุแล้ว กรุณาขอลิงก์ใหม่", expired: true });
+    if (user.deletedAt) return res.status(403).json({ error: "บัญชีนี้ถูกลบแล้ว" });
+
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      // ตั้งรหัสใหม่ + ล้าง token + ถือว่ายืนยันอีเมลแล้ว (กดลิงก์ในเมลได้ = อีเมลใช้ได้จริง)
+      data: { password: await bcrypt.hash(password, 10), resetToken: null, resetExpires: null, emailVerified: true },
+    });
+    if (updated.totpEnabled) return res.json({ twoFactorRequired: true, pendingToken: signPendingToken(updated.id) });
+    res.json({ token: signToken(updated), user: publicUser(updated) });
   } catch (err) {
     next(err);
   }

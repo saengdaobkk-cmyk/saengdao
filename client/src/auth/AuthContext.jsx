@@ -59,6 +59,19 @@ export function AuthProvider({ children }) {
     await api.post("/auth/resend-verification", { email });
   };
 
+  // ขอลิงก์ตั้งรหัสผ่านใหม่ทางอีเมล
+  const forgotPassword = async (email) => {
+    await api.post("/auth/forgot-password", { email });
+  };
+
+  // ตั้งรหัสผ่านใหม่จากลิงก์ → เข้าสู่ระบบให้เลย (หรือไปกรอก 2FA ถ้าเปิดไว้)
+  const resetPassword = async (token, password) => {
+    const res = await api.post("/auth/reset-password", { token, password });
+    if (res.data.twoFactorRequired) return { twoFactorRequired: true, pendingToken: res.data.pendingToken };
+    saveSession(res.data);
+    return { user: res.data.user };
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
@@ -69,7 +82,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, verify2fa, register, verifyEmail, resendVerification, logout, updateUser: setUser, isAdmin, isStaff }}
+      value={{ user, loading, login, verify2fa, register, verifyEmail, resendVerification, forgotPassword, resetPassword, logout, updateUser: setUser, isAdmin, isStaff }}
     >
       {children}
     </AuthContext.Provider>
