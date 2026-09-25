@@ -72,7 +72,7 @@ export default function CartDrawer() {
       >
         {/* หัว */}
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <h2 className="text-[15px] font-semibold tracking-tight text-ink">
+          <h2 className="text-[20px] font-semibold tracking-tight text-ink">
             ตะกร้า {count > 0 && <span className="text-sub">({count})</span>}
           </h2>
           <button
