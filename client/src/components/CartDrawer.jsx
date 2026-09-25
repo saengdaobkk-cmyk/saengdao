@@ -153,12 +153,9 @@ export default function CartDrawer() {
             <div className="border-t border-line">
               <PreorderNotice items={items} className="mx-5 mt-4" />
               {/* ยอดรวม */}
-              <div className="flex items-end justify-between gap-3 bg-mist/30 px-5 py-4">
-                <p className="max-w-[56%] text-[12px] leading-relaxed text-sub">ค่าจัดส่งคำนวณตอนชำระเงิน</p>
-                <div className="text-right">
-                  <p className="text-[12px] text-sub">ยอดรวม</p>
-                  <p className="text-[26px] font-semibold leading-tight tracking-tight text-ink">{formatPrice(subtotal)}</p>
-                </div>
+              <div className="bg-mist/30 px-5 py-4">
+                <p className="text-[12px] text-sub">ยอดรวม</p>
+                <p className="text-[26px] font-semibold leading-tight tracking-tight text-ink">{formatPrice(subtotal)}</p>
               </div>
 
               {/* ปุ่ม */}
