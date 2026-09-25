@@ -154,7 +154,7 @@ export default function CartDrawer() {
               <PreorderNotice items={items} className="mx-5 mt-4" />
               {/* ยอดรวม */}
               <div className="flex items-center justify-between gap-3 bg-mist/30 px-5 py-4">
-                <p className="text-[14px] text-sub">ยอดรวม</p>
+                <p className="text-[18px] font-medium text-ink">ยอดรวม</p>
                 <p className="text-[26px] font-semibold leading-tight tracking-tight text-ink">{formatPrice(subtotal)}</p>
               </div>
 
