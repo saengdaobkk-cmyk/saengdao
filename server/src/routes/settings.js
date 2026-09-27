@@ -14,6 +14,7 @@ const STRING_KEYS = [
   "headerLogoOnDark", // โลโก้รูปบนแถบเมนู — พื้นเข้ม (ทับสไลด์)
   "headerLogoSize", // ความสูงโลโก้รูปบนแถบเมนู (px)
   "headerBgColor", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่ง)
+  "headerBgOpacity", // ความทึบพื้นแถบเมนู 0-100 (%)
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
   "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
   "slideInterval", // หน่วงเวลาเปลี่ยนสไลด์ (วินาที)
@@ -88,6 +89,7 @@ const DEFAULTS = {
   headerLogoOnDark: "",
   headerLogoSize: "28",
   headerBgColor: "", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่งเดิม)
+  headerBgOpacity: "80", // ความทึบพื้นแถบเมนู 0-100 (%)
   headerTextLight: false, // ตัวอักษร/ไอคอนบนแถบเมนูเป็นสีขาว (สำหรับพื้นเข้ม)
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",

@@ -32,8 +32,10 @@ export default function App() {
 
   // สีแถบเมนู (ตั้งค่าได้) — เว้นว่าง = ขาวโปร่งเดิม · textLight = ตัวอักษร/ไอคอนสีขาว (สำหรับพื้นเข้ม)
   const headerBg = s.headerBgColor || "";
-  // ทำให้สีที่ตั้งโปร่ง ~80% + เบลอ (frosted) เหมือนแถบขาวเดิม — hex 6 หลักเติม alpha "cc"
-  const headerBgCss = /^#[0-9a-fA-F]{6}$/.test(headerBg) ? headerBg + "cc" : headerBg;
+  // ความทึบ 0-100 → alpha hex · เติมท้ายสี hex 6 หลัก (คง backdrop-blur = frosted glass)
+  const headerOpacity = Math.min(100, Math.max(0, Number(s.headerBgOpacity ?? 80)));
+  const alphaHex = Math.round((headerOpacity / 100) * 255).toString(16).padStart(2, "0");
+  const headerBgCss = /^#[0-9a-fA-F]{6}$/.test(headerBg) ? headerBg + alphaHex : headerBg;
   const headerLight = s.headerTextLight === true;
   const lightText = overHero || headerLight; // ใช้สีขาวเมื่อทับ hero หรือแถบพื้นเข้ม
 

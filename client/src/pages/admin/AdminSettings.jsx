@@ -534,6 +534,15 @@ function BrandSettings({ settings, save }) {
               className="w-64 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
             {settings.headerBgColor && <button type="button" onClick={() => save.mutate({ headerBgColor: "" })} className="text-[13px] text-accent">รีเซ็ต</button>}
           </div>
+          {settings.headerBgColor && (
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-ink">ความทึบ</span>
+              <input type="range" min="0" max="100" step="5" value={Number(settings.headerBgOpacity ?? 80)}
+                onChange={(e) => save.mutate({ headerBgOpacity: e.target.value })} className="w-48 accent-accent" />
+              <span className="w-10 text-right text-[13px] tabular-nums text-sub">{Number(settings.headerBgOpacity ?? 80)}%</span>
+              <span className="text-[12px] text-sub">น้อย = โปร่ง · 100 = ทึบเต็ม</span>
+            </div>
+          )}
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={settings.headerTextLight === true} onChange={(e) => save.mutate({ headerTextLight: e.target.checked })} className="h-4 w-4 accent-accent" />
             <span className="text-[13px] text-ink">ตัวอักษร/ไอคอนบนแถบเป็นสีขาว (สำหรับพื้นเข้ม)</span>
