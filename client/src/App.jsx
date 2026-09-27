@@ -45,6 +45,12 @@ export default function App() {
   const hdrLogoSize = Number(s.headerLogoSize) || 32;
   const hdrLogo = lightText ? hdrLogoDark || hdrLogoLight : hdrLogoLight || hdrLogoDark;
 
+  // สีพื้น footer (ตั้งค่าได้) + ความทึบ — เว้นว่าง = ดำเดิม
+  const footerBg = s.footerBgColor || "";
+  const footerOpacity = Math.min(100, Math.max(0, Number(s.footerBgOpacity ?? 100)));
+  const footerAlpha = Math.round((footerOpacity / 100) * 255).toString(16).padStart(2, "0");
+  const footerBgCss = /^#[0-9a-fA-F]{6}$/.test(footerBg) ? footerBg + footerAlpha : footerBg;
+
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
     if (!mobileOpen) return;
@@ -184,7 +190,7 @@ export default function App() {
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
       <CookieConsent />
 
-      <footer className="bg-ink text-white">
+      <footer className="bg-ink text-white" style={footerBg ? { backgroundColor: footerBgCss } : undefined}>
         <div className="mx-auto max-w-page px-5">
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">

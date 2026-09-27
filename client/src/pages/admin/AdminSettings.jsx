@@ -411,6 +411,29 @@ function FooterSettings({ settings, save }) {
           )}
         </div>
 
+        {/* สีพื้น footer */}
+        <div className="space-y-3 border-t border-line pt-5">
+          <div>
+            <p className="text-[13px] font-medium text-ink">สีพื้น footer</p>
+            <p className="mt-1 text-[12px] text-sub">เว้นว่าง = ดำเดิม · ตัวหนังสือเป็นสีขาว จึงเหมาะกับสีเข้ม</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <input type="color" value={settings.footerBgColor || "#1d1d1f"} onChange={(e) => save.mutate({ footerBgColor: e.target.value })} className="h-10 w-12 rounded border border-line" />
+            <input value={settings.footerBgColor || ""} onChange={(e) => save.mutate({ footerBgColor: e.target.value })} placeholder="เว้นว่าง = ดำ (เช่น #14213d)"
+              className={`${FINP} max-w-xs`} />
+            {settings.footerBgColor && <button type="button" onClick={() => save.mutate({ footerBgColor: "" })} className="text-[13px] text-accent">รีเซ็ต</button>}
+          </div>
+          {settings.footerBgColor && (
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-ink">ความทึบ</span>
+              <input type="range" min="0" max="100" step="5" value={Number(settings.footerBgOpacity ?? 100)}
+                onChange={(e) => save.mutate({ footerBgOpacity: e.target.value })} className="w-48 accent-accent" />
+              <span className="w-10 text-right text-[13px] tabular-nums text-sub">{Number(settings.footerBgOpacity ?? 100)}%</span>
+              <span className="text-[12px] text-sub">น้อย = โปร่ง · 100 = ทึบเต็ม</span>
+            </div>
+          )}
+        </div>
+
         <label className="block border-t border-line pt-5">
           <span className="mb-1 block text-[13px] font-medium text-ink">ข้อความโลโก้ (ใช้เมื่อไม่มีรูป)</span>
           <input value={logo} onChange={(e) => { setLogo(e.target.value); dirty(); }} className={`${FINP} max-w-xs`} />

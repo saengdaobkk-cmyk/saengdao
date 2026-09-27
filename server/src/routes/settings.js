@@ -51,6 +51,8 @@ const STRING_KEYS = [
   "footerLogoText", // ข้อความโลโก้ที่ footer (ใช้เมื่อไม่มีรูป)
   "footerLogoUrl", // โลโก้ที่ footer (รูปภาพ) — มีรูปใช้รูปก่อน
   "footerLogoSize", // ความสูงโลโก้รูปที่ footer (px)
+  "footerBgColor", // สีพื้น footer (เว้นว่าง = ดำ #1d1d1f)
+  "footerBgOpacity", // ความทึบพื้น footer 0-100 (%)
   "footerNav", // เมนู footer (JSON array ของ { label, url })
   "turnstileSiteKey", // Cloudflare Turnstile — Site Key (public)
   "turnstileSecretKey", // 🔒 Secret Key — บันทึกได้ แต่ SECRET_KEY_RE กรองไม่ให้หลุด client
@@ -94,6 +96,8 @@ const DEFAULTS = {
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",
   footerLogoSize: "36",
+  footerBgColor: "", // สีพื้น footer (เว้นว่าง = ดำเดิม)
+  footerBgOpacity: "100", // ความทึบพื้น footer 0-100 (%)
   footerNav: JSON.stringify([
     { label: "หนังสือ", url: "/books" },
     { label: "ติดตามคำสั่งซื้อ", url: "/track" },
