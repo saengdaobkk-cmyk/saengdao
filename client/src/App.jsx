@@ -32,6 +32,8 @@ export default function App() {
 
   // สีแถบเมนู (ตั้งค่าได้) — เว้นว่าง = ขาวโปร่งเดิม · textLight = ตัวอักษร/ไอคอนสีขาว (สำหรับพื้นเข้ม)
   const headerBg = s.headerBgColor || "";
+  // ทำให้สีที่ตั้งโปร่ง ~80% + เบลอ (frosted) เหมือนแถบขาวเดิม — hex 6 หลักเติม alpha "cc"
+  const headerBgCss = /^#[0-9a-fA-F]{6}$/.test(headerBg) ? headerBg + "cc" : headerBg;
   const headerLight = s.headerTextLight === true;
   const lightText = overHero || headerLight; // ใช้สีขาวเมื่อทับ hero หรือแถบพื้นเข้ม
 
@@ -55,8 +57,8 @@ export default function App() {
       {/* เมนูลอยติดบน — โปร่งใสทับสไลด์ตอนอยู่บนสุดหน้าแรก */}
       <header className="fixed inset-x-0 top-0 z-50">
         <div
-          className={`transition-colors duration-300 ${overHero ? "" : headerBg ? `border-b ${headerLight ? "border-white/15" : "border-line/70"}` : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}
-          style={!overHero && headerBg ? { backgroundColor: headerBg } : undefined}
+          className={`transition-colors duration-300 ${overHero ? "" : headerBg ? `border-b backdrop-blur-xl backdrop-saturate-150 ${headerLight ? "border-white/15" : "border-line/70"}` : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}
+          style={!overHero && headerBg ? { backgroundColor: headerBgCss } : undefined}
         >
           <div className="mx-auto flex h-16 max-w-page items-center justify-between px-5">
             <div className="flex items-center gap-2.5">
