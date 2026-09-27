@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "showBrowseCategoryName", "collectionInfiniteScroll", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "showBrowseCategoryName", "collectionInfiniteScroll", "headerTextLight", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -13,6 +13,7 @@ const STRING_KEYS = [
   "headerLogoOnLight", // โลโก้รูปบนแถบเมนู — พื้นสว่าง (แถบขาว)
   "headerLogoOnDark", // โลโก้รูปบนแถบเมนู — พื้นเข้ม (ทับสไลด์)
   "headerLogoSize", // ความสูงโลโก้รูปบนแถบเมนู (px)
+  "headerBgColor", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่ง)
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
   "logoSizeFooter", // ขนาดตัวอักษร SAENGDAO (px) ท้ายเว็บ
   "slideInterval", // หน่วงเวลาเปลี่ยนสไลด์ (วินาที)
@@ -86,6 +87,8 @@ const DEFAULTS = {
   headerLogoOnLight: "",
   headerLogoOnDark: "",
   headerLogoSize: "28",
+  headerBgColor: "", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่งเดิม)
+  headerTextLight: false, // ตัวอักษร/ไอคอนบนแถบเมนูเป็นสีขาว (สำหรับพื้นเข้ม)
   footerLogoText: "SAENGDAO",
   footerLogoUrl: "",
   footerLogoSize: "36",

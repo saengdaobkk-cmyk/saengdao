@@ -30,11 +30,16 @@ export default function App() {
   const isHome = location.pathname === "/";
   const overHero = s.transparentHeader !== false && isHome && !scrolled;
 
+  // สีแถบเมนู (ตั้งค่าได้) — เว้นว่าง = ขาวโปร่งเดิม · textLight = ตัวอักษร/ไอคอนสีขาว (สำหรับพื้นเข้ม)
+  const headerBg = s.headerBgColor || "";
+  const headerLight = s.headerTextLight === true;
+  const lightText = overHero || headerLight; // ใช้สีขาวเมื่อทับ hero หรือแถบพื้นเข้ม
+
   // โลโก้รูปบนแถบเมนู — แยกพื้นสว่าง/พื้นเข้ม + ปรับขนาดได้ (ไม่มีรูป = ใช้ข้อความ SAENGDAO)
   const hdrLogoLight = s.headerLogoOnLight || ""; // ใช้บนพื้นสว่าง (แถบขาว)
   const hdrLogoDark = s.headerLogoOnDark || ""; // ใช้บนพื้นเข้ม (ทับสไลด์)
   const hdrLogoSize = Number(s.headerLogoSize) || 32;
-  const hdrLogo = overHero ? hdrLogoDark || hdrLogoLight : hdrLogoLight || hdrLogoDark;
+  const hdrLogo = lightText ? hdrLogoDark || hdrLogoLight : hdrLogoLight || hdrLogoDark;
 
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
@@ -49,13 +54,16 @@ export default function App() {
     <div className="flex min-h-screen flex-col bg-white text-ink">
       {/* เมนูลอยติดบน — โปร่งใสทับสไลด์ตอนอยู่บนสุดหน้าแรก */}
       <header className="fixed inset-x-0 top-0 z-50">
-        <div className={`transition-colors duration-300 ${overHero ? "" : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}>
+        <div
+          className={`transition-colors duration-300 ${overHero ? "" : headerBg ? `border-b ${headerLight ? "border-white/15" : "border-line/70"}` : "border-b border-line/70 bg-white/80 backdrop-blur-xl backdrop-saturate-150"}`}
+          style={!overHero && headerBg ? { backgroundColor: headerBg } : undefined}
+        >
           <div className="mx-auto flex h-16 max-w-page items-center justify-between px-5">
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setMobileOpen(true)}
                 aria-label="เมนู"
-                className={`-ml-1 rounded-lg p-1 transition sm:hidden ${overHero ? "text-white hover:bg-white/15" : "text-ink hover:bg-mist"}`}
+                className={`-ml-1 rounded-lg p-1 transition sm:hidden ${lightText ? "text-white hover:bg-white/15" : "text-ink hover:bg-mist"}`}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
@@ -70,7 +78,7 @@ export default function App() {
               ) : (
                 <Link
                   to="/"
-                  className={`font-semibold tracking-[0.22em] transition-colors ${overHero ? "text-white" : "text-ink"}`}
+                  className={`font-semibold tracking-[0.22em] transition-colors ${lightText ? "text-white" : "text-ink"}`}
                   style={{ fontSize: `${Number(s.logoSizeHeader) || 18}px` }}
                 >
                   SAENGDAO
@@ -81,13 +89,13 @@ export default function App() {
             <nav className="hidden items-center gap-8 sm:flex">
               {nav.map((n) =>
                 n.dropdown?.length ? (
-                  <NavDropdown key={n.id} item={n} overHero={overHero} />
+                  <NavDropdown key={n.id} item={n} overHero={lightText} />
                 ) : (
                   <NavLink
                     key={n.id}
                     to={n.url}
                     end={n.url === "/"}
-                    className={({ isActive }) => navLinkCls(isActive, overHero)}
+                    className={({ isActive }) => navLinkCls(isActive, lightText)}
                   >
                     {n.label}
                   </NavLink>
@@ -99,15 +107,15 @@ export default function App() {
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="ค้นหา"
-                className={`group transition-colors ${overHero ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
+                className={`group transition-colors ${lightText ? "text-white/90 hover:text-white" : "text-sub hover:text-ink"}`}
               >
                 <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
                   className="block transition-transform duration-200 group-hover:scale-110 group-active:scale-90">
                   <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
                 </svg>
               </button>
-              <CartButton overHero={overHero} />
-              <AccountMenu overHero={overHero} />
+              <CartButton overHero={lightText} />
+              <AccountMenu overHero={lightText} />
             </div>
           </div>
         </div>

@@ -522,6 +522,24 @@ function BrandSettings({ settings, save }) {
           )}
         </div>
 
+        {/* สีพื้นแถบเมนู */}
+        <div className="space-y-3 border-t border-line pt-5">
+          <div>
+            <p className="text-[13px] font-semibold text-ink">สีพื้นแถบเมนู (บนสุด)</p>
+            <p className="mt-1 text-[12px] text-sub">เว้นว่าง = ขาวโปร่งเดิม · ถ้าตั้งสีเข้ม เปิด “ตัวอักษรสีขาว” ด้วยจะอ่านง่าย · หน้าแรกที่เปิดโปร่งใสทับสไลด์ยังโปร่งตามเดิม</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <input type="color" value={settings.headerBgColor || "#ffffff"} onChange={(e) => save.mutate({ headerBgColor: e.target.value })} className="h-10 w-12 rounded border border-line" />
+            <input value={settings.headerBgColor || ""} onChange={(e) => save.mutate({ headerBgColor: e.target.value })} placeholder="เว้นว่าง = ขาวโปร่ง (เช่น #1d1d1f)"
+              className="w-64 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
+            {settings.headerBgColor && <button type="button" onClick={() => save.mutate({ headerBgColor: "" })} className="text-[13px] text-accent">รีเซ็ต</button>}
+          </div>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={settings.headerTextLight === true} onChange={(e) => save.mutate({ headerTextLight: e.target.checked })} className="h-4 w-4 accent-accent" />
+            <span className="text-[13px] text-ink">ตัวอักษร/ไอคอนบนแถบเป็นสีขาว (สำหรับพื้นเข้ม)</span>
+          </label>
+        </div>
+
         {/* รูปโลโก้ (หน้าติดต่อ) */}
         <div className="space-y-5 border-t border-line pt-5">
           <p className="text-[13px] font-semibold text-ink">รูปโลโก้ (หน้าติดต่อ)</p>
