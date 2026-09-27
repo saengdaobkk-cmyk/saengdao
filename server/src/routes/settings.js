@@ -5,7 +5,7 @@ import { authenticate, requireAdmin } from "../middleware/auth.js";
 const router = Router();
 
 // ค่าเริ่มต้น + ชนิดข้อมูลของแต่ละ setting
-const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "showBrowseCategoryName", "collectionInfiniteScroll", "headerTextLight", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
+const BOOL_KEYS = ["cartDrawerEnabled", "showCardCategory", "showPublisherMarquee", "showCollectionCount", "showPromoRibbon", "showTextMarquee", "transparentHeader", "loyaltyEnabled", "showProductTrust", "showBlogShare", "turnstileEnabled", "contactMapEnabled", "productStickyCover", "showRatingSummary", "showProductSectionHeadings", "showBrowseCategoryName", "collectionInfiniteScroll", "headerTextLight", "footerTextDark", "omiseEnabled", "omisePromptPayEnabled", "omiseMobileBankingEnabled", "omiseCardEnabled"];
 const STRING_KEYS = [
   "logoUrl", // โลโก้ร้าน (URL รูป)
   "lineQrUrl", // QR LINE (URL รูป) — แสดงบนใบปะหน้าพัสดุ
@@ -98,6 +98,7 @@ const DEFAULTS = {
   footerLogoSize: "36",
   footerBgColor: "", // สีพื้น footer (เว้นว่าง = ดำเดิม)
   footerBgOpacity: "100", // ความทึบพื้น footer 0-100 (%)
+  footerTextDark: false, // ตัวอักษร footer เป็นสีเข้ม (สำหรับพื้นอ่อน)
   footerNav: JSON.stringify([
     { label: "หนังสือ", url: "/books" },
     { label: "ติดตามคำสั่งซื้อ", url: "/track" },

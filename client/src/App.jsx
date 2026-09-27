@@ -50,6 +50,14 @@ export default function App() {
   const footerOpacity = Math.min(100, Math.max(0, Number(s.footerBgOpacity ?? 100)));
   const footerAlpha = Math.round((footerOpacity / 100) * 255).toString(16).padStart(2, "0");
   const footerBgCss = /^#[0-9a-fA-F]{6}$/.test(footerBg) ? footerBg + footerAlpha : footerBg;
+  // โหมดตัวอักษรเข้ม (สำหรับ footer พื้นอ่อน) — สลับชุดสีข้อความ/เส้น/ไอคอน
+  const footerDark = s.footerTextDark === true;
+  const fBase = footerDark ? "text-ink" : "text-white";
+  const fMuted = footerDark ? "text-ink/70" : "text-white/70";
+  const fHover = footerDark ? "hover:text-ink" : "hover:text-white";
+  const fFaint = footerDark ? "text-ink/50" : "text-white/45";
+  const fBorder = footerDark ? "border-ink/10" : "border-white/10";
+  const fFaintHover = footerDark ? "hover:text-ink/80" : "hover:text-white/80";
 
   // ล็อกสกอลล์ + ปิดด้วย Esc ตอนเปิดเมนูมือถือ
   useEffect(() => {
@@ -190,7 +198,7 @@ export default function App() {
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
       <CookieConsent />
 
-      <footer className="bg-ink text-white" style={footerBg ? { backgroundColor: footerBgCss } : undefined}>
+      <footer className={`bg-ink ${fBase}`} style={footerBg ? { backgroundColor: footerBgCss } : undefined}>
         <div className="mx-auto max-w-page px-5">
           {/* บน: โลโก้ · เมนู · โซเชียล */}
           <div className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:justify-between sm:gap-4">
@@ -204,29 +212,29 @@ export default function App() {
               )}
             </Link>
 
-            <nav className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[14px] text-white/70">
+            <nav className={`flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[14px] ${fMuted}`}>
               {parseFooterNav(s.footerNav).map((n, i) =>
                 n.url?.startsWith("http") ? (
-                  <a key={i} href={n.url} target="_blank" rel="noreferrer" className="transition hover:text-white">{n.label}</a>
+                  <a key={i} href={n.url} target="_blank" rel="noreferrer" className={`transition ${fHover}`}>{n.label}</a>
                 ) : (
-                  <Link key={i} to={n.url || "/"} className="transition hover:text-white">{n.label}</Link>
+                  <Link key={i} to={n.url || "/"} className={`transition ${fHover}`}>{n.label}</Link>
                 )
               )}
             </nav>
 
             <div className="flex gap-3">
-              {s.socialFacebook && <Social label="Facebook" href={s.socialFacebook}><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
-              {s.socialInstagram && <Social label="Instagram" href={s.socialInstagram}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
-              {s.socialLine && <Social label="LINE" href={s.socialLine}><path d="M21 10.4C21 6.9 17 4 12 4s-9 2.9-9 6.4c0 3.2 3.2 5.8 7.5 6.3.3.03.7.11.8.26.1.14.06.35.03.49 0 0-.1.6-.13.73-.04.22-.17.85.75.46s4.96-2.92 6.77-5C20.6 12.9 21 11.7 21 10.4Z" /></Social>}
+              {s.socialFacebook && <Social dark={footerDark} label="Facebook" href={s.socialFacebook}><path d="M14 9V7c0-1 .5-1.5 1.5-1.5H17V2.5h-2.5C12 2.5 11 4 11 6v3H9v3h2v9h3v-9h2l.5-3H14Z" /></Social>}
+              {s.socialInstagram && <Social dark={footerDark} label="Instagram" href={s.socialInstagram}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></Social>}
+              {s.socialLine && <Social dark={footerDark} label="LINE" href={s.socialLine}><path d="M21 10.4C21 6.9 17 4 12 4s-9 2.9-9 6.4c0 3.2 3.2 5.8 7.5 6.3.3.03.7.11.8.26.1.14.06.35.03.49 0 0-.1.6-.13.73-.04.22-.17.85.75.46s4.96-2.92 6.77-5C20.6 12.9 21 11.7 21 10.4Z" /></Social>}
             </div>
           </div>
 
           {/* ล่าง: ลิขสิทธิ์ · ลิงก์ */}
-          <div className="flex flex-col items-center gap-2.5 border-t border-white/10 py-5 text-[12px] text-white/45 sm:flex-row sm:justify-between">
+          <div className={`flex flex-col items-center gap-2.5 border-t py-5 text-[12px] sm:flex-row sm:justify-between ${fBorder} ${fFaint}`}>
             <p>{t("footer.copyright", "© 2026 SAENGDAO สงวนลิขสิทธิ์")}</p>
             <div className="flex gap-6">
-              <Link to="/terms" className="transition hover:text-white/80">เงื่อนไขการใช้งาน</Link>
-              <Link to="/privacy" className="transition hover:text-white/80">นโยบายความเป็นส่วนตัว</Link>
+              <Link to="/terms" className={`transition ${fFaintHover}`}>เงื่อนไขการใช้งาน</Link>
+              <Link to="/privacy" className={`transition ${fFaintHover}`}>นโยบายความเป็นส่วนตัว</Link>
             </div>
           </div>
         </div>
@@ -313,10 +321,10 @@ function MobileNavGroup({ item, onNavigate }) {
   );
 }
 
-function Social({ label, href, children }) {
+function Social({ label, href, children, dark = false }) {
   return (
     <a href={href} target="_blank" rel="noreferrer" aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/40 hover:text-white">
+      className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${dark ? "border-ink/20 text-ink/70 hover:border-ink/45 hover:text-ink" : "border-white/15 text-white/70 hover:border-white/40 hover:text-white"}`}>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
         {children}
       </svg>

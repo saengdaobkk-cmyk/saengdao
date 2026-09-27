@@ -432,6 +432,10 @@ function FooterSettings({ settings, save }) {
               <span className="text-[12px] text-sub">น้อย = โปร่ง · 100 = ทึบเต็ม</span>
             </div>
           )}
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={settings.footerTextDark === true} onChange={(e) => save.mutate({ footerTextDark: e.target.checked })} className="h-4 w-4 accent-accent" />
+            <span className="text-[13px] text-ink">ตัวอักษร footer เป็นสีเข้ม (สำหรับพื้นอ่อน)</span>
+          </label>
         </div>
 
         <label className="block border-t border-line pt-5">
