@@ -236,8 +236,8 @@ function parseFooterNav(raw) {
 
 // สไตล์ลิงก์เมนูบน (พื้นสว่าง/ทับสไลด์)
 const navLinkCls = (isActive, overHero) =>
-  `text-[15px] tracking-tight transition-colors ${
-    overHero ? (isActive ? "text-white" : "text-white/80 hover:text-white") : isActive ? "text-ink" : "text-sub hover:text-accent"
+  `text-[15px] font-medium tracking-tight transition-colors ${
+    overHero ? (isActive ? "text-white" : "text-white/85 hover:text-white") : isActive ? "text-ink" : "text-ink/75 hover:text-accent"
   }`;
 
 // เมนูบนที่มี dropdown — กางเมื่อ hover/โฟกัส
