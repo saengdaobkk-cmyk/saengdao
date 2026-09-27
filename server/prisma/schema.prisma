@@ -139,6 +139,7 @@ model User {
   tags               String[]       @default([]) // แท็ก/กลุ่มลูกค้า เช่น VIP, ขายส่ง
   points             Int            @default(0) // ยอดแต้มสะสมคงเหลือ (สรุปจาก PointEntry)
   orders             Order[]
+  legacyOrders       LegacyOrder[]
   crmNotes           CustomerNote[]
   pointLogs          PointEntry[]
   reviews            Review[]
@@ -364,6 +365,25 @@ model OrderItem {
   discountPercent Int     @default(0) // ส่วนลด (%) เทียบราคาเต็ม — โชว์/แอดมินปรับได้
 
   @@index([orderId])
+}
+
+// ประวัติออเดอร์เก่าจากเว็บเดิม (WooCommerce) — เก็บเป็นประวัติเฉยๆ
+// ไม่โยง Book/สต็อก/analytics · รายการสินค้าเก็บเป็น JSON (ไม่ต้องมีหนังสือในระบบ)
+model LegacyOrder {
+  id         String   @id @default(uuid())
+  userId     String? // โยงลูกค้า (จับคู่ด้วยอีเมล)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email      String? // อีเมลจากไฟล์ (เผื่อยังไม่มี user)
+  externalId String? // เลขออเดอร์เดิมจากเว็บเก่า
+  orderedAt  DateTime // วันที่สั่ง (จากไฟล์)
+  status     String? // สถานะเดิม (ข้อความ)
+  total      Decimal  @default(0) @db.Decimal(10, 2)
+  items      Json     @default("[]") // [{ isbn, name, qty, price }]
+  source     String   @default("woocommerce")
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([email])
 }
 
 // กฎส่วนลดอัตโนมัติ (คล้าย WooCommerce Discount Rules) — เงื่อนไขระดับตะกร้า

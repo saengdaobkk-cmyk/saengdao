@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { formatPrice } from "../../lib/format";
 import {
   useAdminCustomers, useSaveCustomer, useDeleteCustomer, useImportCustomers,
-  useCustomerTags, useCustomerDetail, useAddNote, useToggleNote, useDeleteNote, useAdjustPoints,
+  useCustomerTags, useCustomerDetail, useAddNote, useToggleNote, useDeleteNote, useAdjustPoints, useImportLegacyOrders,
 } from "../../api/admin";
 
 // ---- CSV helpers ----
@@ -25,7 +25,7 @@ function exportCustomersCsv(rows) {
 }
 // header ที่รองรับ (อังกฤษ + ไทย) → key มาตรฐาน
 const HEADER_MAP = { email: "email", "อีเมล": "email", name: "name", "ชื่อ": "name", phone: "phone", "เบอร์": "phone", "เบอร์โทร": "phone", address: "address", "ที่อยู่": "address", tags: "tags", "แท็ก": "tags", points: "points", "แต้ม": "points" };
-function parseCsv(text) {
+function parseCsv(text, map = HEADER_MAP) {
   const rows = []; let field = "", record = [], inQ = false;
   text = text.replace(/^﻿/, "");
   const pushF = () => { record.push(field); field = ""; };
@@ -43,8 +43,42 @@ function parseCsv(text) {
   const headers = rows.shift().map((h) => h.trim().toLowerCase());
   return rows.filter((r) => r.some((x) => x && x.trim())).map((r) => {
     const o = {};
-    headers.forEach((h, idx) => { const key = HEADER_MAP[h]; if (key) o[key] = r[idx]; });
+    headers.forEach((h, idx) => { const key = map[h]; if (key) o[key] = r[idx]; });
     return o;
+  });
+}
+
+// ---- นำเข้าประวัติออเดอร์เก่า (WooCommerce) — CSV 1 แถว = 1 รายการสินค้า, จับกลุ่มด้วยเลขออเดอร์ ----
+const ORDER_HEADER_MAP = {
+  order_id: "orderId", order_number: "orderId", "เลขออเดอร์": "orderId", "เลขคำสั่งซื้อ": "orderId",
+  date: "orderedAt", order_date: "orderedAt", "วันที่": "orderedAt",
+  email: "email", "อีเมล": "email",
+  name: "name", customer: "name", "ชื่อ": "name", "ชื่อลูกค้า": "name",
+  status: "status", "สถานะ": "status",
+  total: "total", order_total: "total", "ยอดรวม": "total", "ยอดสุทธิ": "total",
+  isbn: "isbn", sku: "isbn",
+  product: "itemName", product_name: "itemName", item: "itemName", "สินค้า": "itemName",
+  qty: "qty", quantity: "qty", "จำนวน": "qty",
+  price: "price", line_total: "price", "ราคา": "price",
+};
+function groupOrders(rows) {
+  const map = new Map();
+  for (const r of rows) {
+    const key = (r.orderId || "").trim();
+    if (!key) continue;
+    if (!map.has(key)) map.set(key, { externalId: key, email: "", name: "", orderedAt: "", status: "", total: "", items: [] });
+    const g = map.get(key);
+    if (!g.email && r.email) g.email = r.email;
+    if (!g.name && r.name) g.name = r.name;
+    if (!g.orderedAt && r.orderedAt) g.orderedAt = r.orderedAt;
+    if (!g.status && r.status) g.status = r.status;
+    if ((!g.total || Number(g.total) === 0) && r.total) g.total = r.total;
+    if (r.isbn || r.itemName || r.qty || r.price) g.items.push({ isbn: r.isbn || "", name: r.itemName || "", qty: r.qty || 1, price: r.price || 0 });
+  }
+  // total สำรอง = ผลรวม (qty × price) ถ้าไฟล์ไม่มีคอลัมน์ยอดรวม
+  return [...map.values()].map((g) => {
+    if (!g.total || Number(g.total) === 0) g.total = g.items.reduce((s, it) => s + (Number(it.qty) || 1) * (Number(it.price) || 0), 0);
+    return g;
   });
 }
 
@@ -65,8 +99,11 @@ export default function AdminCustomers() {
   const del = useDeleteCustomer();
 
   const imp = useImportCustomers();
+  const impOrders = useImportLegacyOrders();
   const fileRef = useRef(null);
+  const orderFileRef = useRef(null);
   const [importResult, setImportResult] = useState(null);
+  const [orderResult, setOrderResult] = useState(null);
 
   const [q, setQ] = useState("");
   const [tagFilter, setTagFilter] = useState("");
@@ -83,6 +120,21 @@ export default function AdminCustomers() {
     if (!rows.some((r) => r.email)) { alert("ไม่พบคอลัมน์ email ในไฟล์"); return; }
     imp.mutate(rows, {
       onSuccess: (res) => setImportResult(res),
+      onError: (err) => alert(err.response?.data?.error || "นำเข้าไม่สำเร็จ"),
+    });
+  };
+
+  const onImportOrders = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setOrderResult(null);
+    let orders;
+    try { orders = groupOrders(parseCsv(await file.text(), ORDER_HEADER_MAP)); } catch { alert("อ่านไฟล์ไม่สำเร็จ"); return; }
+    if (!orders.length) { alert("ไม่พบข้อมูล — ไฟล์ต้องมีคอลัมน์ order_id, email, date อย่างน้อย"); return; }
+    if (!orders.some((o) => o.email)) { alert("ไม่พบคอลัมน์ email ในไฟล์"); return; }
+    impOrders.mutate(orders, {
+      onSuccess: (res) => setOrderResult(res),
       onError: (err) => alert(err.response?.data?.error || "นำเข้าไม่สำเร็จ"),
     });
   };
@@ -113,8 +165,27 @@ export default function AdminCustomers() {
             {imp.isPending ? "กำลังนำเข้า..." : "↑ Import CSV"}
           </button>
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onImportFile} className="hidden" />
+          <button onClick={() => orderFileRef.current?.click()} disabled={impOrders.isPending}
+            className="rounded-lg border border-line px-3 py-2 text-[13px] text-ink transition hover:bg-mist disabled:opacity-50">
+            {impOrders.isPending ? "กำลังนำเข้า..." : "↑ นำเข้าออเดอร์เก่า"}
+          </button>
+          <input ref={orderFileRef} type="file" accept=".csv,text/csv" onChange={onImportOrders} className="hidden" />
         </div>
       </div>
+
+      {orderResult && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+          <div>
+            นำเข้าออเดอร์เก่าเสร็จ — เพิ่ม <b>{orderResult.created}</b> ออเดอร์ · สร้างลูกค้าใหม่ <b>{orderResult.customersCreated}</b> · ข้าม <b>{orderResult.skipped}</b> (จาก {orderResult.total})
+            {orderResult.errors?.length > 0 && (
+              <ul className="mt-1 list-disc pl-5 text-[12px] text-rose-700">
+                {orderResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+              </ul>
+            )}
+          </div>
+          <button onClick={() => setOrderResult(null)} className="shrink-0 text-emerald-700 hover:text-emerald-900">✕</button>
+        </div>
+      )}
 
       {importResult && (
         <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
@@ -202,6 +273,7 @@ function CustomerDrawer({ id, onClose }) {
     ["points", "แต้มสะสม"],
     ["notes", "โน้ต & ติดตาม"],
     ["orders", `ออเดอร์${c ? ` (${c.orders.length})` : ""}`],
+    ...(c?.legacyOrders?.length ? [["legacy", `ประวัติเว็บเก่า (${c.legacyOrders.length})`]] : []),
   ];
 
   return (
@@ -257,6 +329,7 @@ function CustomerDrawer({ id, onClose }) {
               {tab === "points" && <PointsTab c={c} />}
               {tab === "notes" && <NotesTab c={c} />}
               {tab === "orders" && <OrdersTab c={c} />}
+              {tab === "legacy" && <LegacyOrdersTab c={c} />}
             </div>
           </>
         )}
@@ -487,6 +560,37 @@ function OrdersTab({ c }) {
         );
       })}
     </ul>
+  );
+}
+
+function LegacyOrdersTab({ c }) {
+  const list = c.legacyOrders || [];
+  if (!list.length) return <p className="text-[13px] text-sub">ไม่มีประวัติจากเว็บเก่า</p>;
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px] text-sub">ประวัติจากเว็บเดิม (WooCommerce) — เป็นข้อมูลอ้างอิงเท่านั้น ไม่นับรวมในยอดขาย/สต็อก</p>
+      {list.map((o) => (
+        <div key={o.id} className="rounded-xl border border-line bg-white px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-medium text-ink">{o.externalId ? `#${o.externalId}` : "ออเดอร์เก่า"}</p>
+              <p className="text-[11px] text-sub">{fmtDateTime(o.orderedAt)}{o.status ? ` · ${o.status}` : ""}</p>
+            </div>
+            <span className="w-24 text-right text-[14px] font-semibold text-ink">{formatPrice(o.total)}</span>
+          </div>
+          {o.items?.length > 0 && (
+            <ul className="mt-2 space-y-1 border-t border-line/70 pt-2 text-[12px] text-sub">
+              {o.items.map((it, i) => (
+                <li key={i} className="flex justify-between gap-2">
+                  <span className="min-w-0 truncate">{it.name || it.isbn || "—"}{it.isbn && it.name ? <span className="text-sub/70"> · {it.isbn}</span> : null} × {it.qty}</span>
+                  {Number(it.price) > 0 && <span className="shrink-0 tabular-nums">{formatPrice(it.price)}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
   );
 }
 

@@ -331,6 +331,17 @@ export function useImportCustomers() {
   });
 }
 
+export function useImportLegacyOrders() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (orders) => (await api.post(`/admin/customers/import-orders`, { orders })).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "customers"] });
+      qc.invalidateQueries({ queryKey: ["admin", "customer"] });
+    },
+  });
+}
+
 /* ---------- CRM: โปรไฟล์ 360 / โน้ต / แต้ม ---------- */
 export const useCustomerTags = () =>
   useQuery({ queryKey: ["admin", "customer-tags"], queryFn: async () => (await api.get("/admin/customer-tags")).data });

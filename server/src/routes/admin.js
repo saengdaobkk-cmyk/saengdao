@@ -1745,6 +1745,66 @@ router.post("/customers/import", requireAdmin, async (req, res, next) => {
   }
 });
 
+// นำเข้าประวัติออเดอร์เก่า (WooCommerce) — เก็บเป็นประวัติเฉยๆ ไม่แตะสต็อก/ยอดขาย
+// client แปลง CSV → orders[] · match ลูกค้าด้วยอีเมล (ไม่มี = สร้างใหม่รหัสสุ่ม) · ADMIN เท่านั้น
+router.post("/customers/import-orders", requireAdmin, async (req, res, next) => {
+  try {
+    const orders = Array.isArray(req.body?.orders) ? req.body.orders : [];
+    if (!orders.length) return res.status(400).json({ error: "ไม่มีข้อมูลให้นำเข้า" });
+    if (orders.length > 10000) return res.status(400).json({ error: "นำเข้าได้สูงสุด 10000 ออเดอร์ต่อครั้ง" });
+
+    let created = 0, customersCreated = 0, skipped = 0;
+    const errors = [];
+    const userCache = new Map(); // email → userId (ลดการ query ซ้ำ)
+
+    for (let i = 0; i < orders.length; i++) {
+      const o = orders[i] || {};
+      const email = String(o.email || "").trim().toLowerCase();
+      const when = o.orderedAt ? new Date(o.orderedAt) : null;
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { skipped++; if (errors.length < 20) errors.push(`ออเดอร์ ${o.externalId || i + 1}: อีเมลไม่ถูกต้อง`); continue; }
+      if (!when || isNaN(when.getTime())) { skipped++; if (errors.length < 20) errors.push(`ออเดอร์ ${o.externalId || i + 1}: วันที่ไม่ถูกต้อง`); continue; }
+
+      // หา/สร้างลูกค้าจากอีเมล
+      let userId = userCache.get(email);
+      if (!userId) {
+        const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+        if (existing) userId = existing.id;
+        else {
+          const password = await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 10);
+          const u = await prisma.user.create({
+            data: { email, name: (o.name || "").trim() || null, role: "USER", password, emailVerified: true },
+            select: { id: true },
+          });
+          userId = u.id; customersCreated++;
+        }
+        userCache.set(email, userId);
+      }
+
+      const items = Array.isArray(o.items) ? o.items.map((it) => ({
+        isbn: String(it.isbn || "").trim() || null,
+        name: String(it.name || "").trim() || null,
+        qty: Math.max(1, parseInt(it.qty, 10) || 1),
+        price: Number(it.price) || 0,
+      })) : [];
+
+      await prisma.legacyOrder.create({
+        data: {
+          userId, email,
+          externalId: String(o.externalId || "").trim() || null,
+          orderedAt: when,
+          status: String(o.status || "").trim() || null,
+          total: Math.max(0, Number(o.total) || 0),
+          items, source: "woocommerce",
+        },
+      });
+      created++;
+    }
+    res.json({ created, customersCreated, skipped, total: orders.length, errors });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // รวมแท็กทั้งหมดที่เคยใช้ (ช่วย auto-complete)
 router.get("/customer-tags", async (req, res, next) => {
   try {
@@ -1762,7 +1822,7 @@ router.get("/customers/:id", async (req, res, next) => {
   try {
     const u = await prisma.user.findUnique({ where: { id: req.params.id } });
     if (!u || u.role !== "USER") return res.status(404).json({ error: "ไม่พบลูกค้า" });
-    const [orders, notes, points] = await Promise.all([
+    const [orders, notes, points, legacyOrders] = await Promise.all([
       prisma.order.findMany({
         where: { userId: u.id },
         orderBy: { createdAt: "desc" },
@@ -1773,6 +1833,7 @@ router.get("/customers/:id", async (req, res, next) => {
       }),
       prisma.customerNote.findMany({ where: { userId: u.id }, orderBy: { createdAt: "desc" } }),
       prisma.pointEntry.findMany({ where: { userId: u.id }, orderBy: { createdAt: "desc" }, take: 100 }),
+      prisma.legacyOrder.findMany({ where: { userId: u.id }, orderBy: { orderedAt: "desc" } }),
     ]);
     const paid = orders.filter((o) => o.status !== "CANCELLED");
     const totalSpent = paid.reduce((s, o) => s + Number(o.total), 0);
@@ -1792,6 +1853,10 @@ router.get("/customers/:id", async (req, res, next) => {
       })),
       notes,
       pointLogs: points,
+      legacyOrders: legacyOrders.map((l) => ({
+        id: l.id, externalId: l.externalId, orderedAt: l.orderedAt, status: l.status,
+        total: Number(l.total), items: Array.isArray(l.items) ? l.items : [], source: l.source,
+      })),
     });
   } catch (err) {
     next(err);
