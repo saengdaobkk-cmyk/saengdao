@@ -296,14 +296,16 @@ export default function BookDetail() {
 
             {/* qty + ปุ่ม */}
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              {/* ช่องจำนวน + หยิบใส่ตะกร้า — ซ่อนบนมือถือ (ใช้แถบปุ่มล่างแทน) */}
-              <div className="hidden items-center rounded-full border border-line md:flex">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">−</button>
-                <span className="w-10 text-center text-[15px] tabular-nums">{qty}</span>
-                <button onClick={() => setQty((q) => (effStock != null && !canPreorder ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">+</button>
-              </div>
+              {/* ช่องจำนวน + หยิบใส่ตะกร้า — ซ่อนบนมือถือ (ใช้แถบปุ่มล่างแทน) · ซ่อนช่องจำนวนเมื่อสินค้าหมด */}
+              {!soldOut && (
+                <div className="hidden items-center rounded-full border border-line md:flex">
+                  <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">−</button>
+                  <span className="w-10 text-center text-[15px] tabular-nums">{qty}</span>
+                  <button onClick={() => setQty((q) => (effStock != null && !canPreorder ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">+</button>
+                </div>
+              )}
               <button disabled={soldOut} onClick={() => addToCart(false)}
-                className={`hidden flex-1 rounded-full px-8 py-3 text-[15px] font-medium transition active:scale-[0.98] md:block sm:max-w-[360px] ${soldOut ? "cursor-not-allowed bg-mist text-sub" : "bg-accent text-white hover:bg-accent/90"}`}>
+                className={`hidden flex-1 rounded-full px-8 py-3 text-[15px] font-medium transition active:scale-[0.98] md:block ${soldOut ? "cursor-not-allowed bg-mist text-sub" : "bg-accent text-white hover:bg-accent/90 sm:max-w-[360px]"}`}>
                 {soldOut ? t("product.out_of_stock", "สินค้าหมด") : canPreorder && book.stock <= 0 ? "สั่งพรีออเดอร์" : t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
               {book.previewPdf && (
