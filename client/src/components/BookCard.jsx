@@ -46,6 +46,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
   const hasVariants = book.variants?.length > 0;
   const isPreorder = preorderActive(book) && !hasVariants; // พรีออเดอร์กำลัง active — สั่งได้แม้สต็อกหมด
   const canQuickAdd = (stock > 0 || isPreorder) && !hasVariants;
+  const soldOut = stock <= 0 && !isPreorder; // หมดจริง (ไม่ใช่พรีออเดอร์)
 
   const onCart = (e) => {
     e.preventDefault();
@@ -76,23 +77,24 @@ export default function BookCard({ book, index = 0, reveal = false }) {
             decoding="async"
             ref={(el) => { if (el && el.complete) setCoverLoaded(true); }} // ปกที่แคชไว้ (โหลดก่อน onLoad ผูก) → โชว์เลย
             onLoad={() => setCoverLoaded(true)}
-            className={`h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.04] ${coverLoaded ? "opacity-100" : "opacity-0"}`}
+            className={`h-full w-full object-cover transition duration-500 ease-out group-hover:scale-[1.04] ${coverLoaded ? "opacity-100" : "opacity-0"} ${soldOut ? "opacity-55 grayscale" : ""}`}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <span className="text-4xl opacity-25">𝐀</span>
           </div>
         )}
-        {stock <= 0 && (
-          isPreorder ? (
-            <span className="absolute right-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
-              PRE-ORDER
-            </span>
-          ) : (
-            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-sub backdrop-blur">
+        {isPreorder && stock <= 0 && (
+          <span className="absolute right-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
+            PRE-ORDER
+          </span>
+        )}
+        {soldOut && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="rounded-full bg-ink/85 px-4 py-1.5 text-[12.5px] font-semibold tracking-wide text-white shadow-lg backdrop-blur">
               สินค้าหมด
             </span>
-          )
+          </div>
         )}
         {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
         {pct > 0 && stock > 0 && (

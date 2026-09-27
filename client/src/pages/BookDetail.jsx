@@ -63,6 +63,7 @@ export default function BookDetail() {
   const effStock = hasVariants ? (variant ? variant.stock : null) : book?.stock;
   // พรีออเดอร์ที่ยัง active — เฉพาะเล่มที่ไม่มี variant · สั่งได้แม้สต็อกหมด
   const canPreorder = preorderActive(book) && !hasVariants;
+  const soldOut = effStock != null && effStock <= 0 && !canPreorder; // ซื้อไม่ได้ (หมด + ไม่ใช่พรีออเดอร์)
 
   // รูปทั้งหมด (ปกหน้า → ปกหลัง → แกลเลอรี) สำหรับ lightbox
   const front = img(variant?.coverImage || book?.coverImage, 800);
@@ -256,16 +257,24 @@ export default function BookDetail() {
                 </>
               )}
             </div>
-            {!canPreorder && (
-              <p className="mt-1.5 text-[13px]">
-                {hasVariants
-                  ? variant
-                    ? variant.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span> : <span className="font-medium text-rose-600">● {t("product.variant_out", "ตัวเลือกนี้สินค้าหมด")}</span>
-                    : <span className="text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
-                  : book.stock > 0 ? <span className="text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span>
-                    : <span className="font-medium text-rose-600">● {t("product.out_of_stock", "สินค้าหมด")}</span>}
-              </p>
-            )}
+            {!canPreorder && (() => {
+              const outBadge = (text) => (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[13px] font-semibold text-rose-600 ring-1 ring-rose-200">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><circle cx="12" cy="12" r="9" /><path d="m8 8 8 8" strokeLinecap="round" /></svg>
+                  {text}
+                </span>
+              );
+              const inStock = <span className="text-[13px] text-emerald-600">● {t("product.in_stock_prefix", "พร้อมส่ง")}</span>;
+              return (
+                <div className="mt-2">
+                  {hasVariants
+                    ? variant
+                      ? variant.stock > 0 ? inStock : outBadge(t("product.variant_out", "ตัวเลือกนี้สินค้าหมด"))
+                      : <span className="text-[13px] text-sub">{t("product.select_variant_hint", "เลือกตัวเลือกเพื่อดูราคา/สต็อก")}</span>
+                    : book.stock > 0 ? inStock : outBadge(t("product.out_of_stock", "สินค้าหมด"))}
+                </div>
+              );
+            })()}
 
             {/* variant */}
             {hasVariants && (
@@ -293,9 +302,9 @@ export default function BookDetail() {
                 <span className="w-10 text-center text-[15px] tabular-nums">{qty}</span>
                 <button onClick={() => setQty((q) => (effStock != null && !canPreorder ? Math.min(effStock, q + 1) : q + 1))} className="flex h-10 w-10 items-center justify-center text-[18px] text-ink hover:bg-mist">+</button>
               </div>
-              <button disabled={effStock != null && effStock <= 0 && !canPreorder} onClick={() => addToCart(false)}
-                className="hidden flex-1 rounded-full bg-accent px-8 py-3 text-[15px] font-medium text-white transition hover:bg-accent/90 active:scale-[0.98] disabled:opacity-40 md:block sm:max-w-[360px]">
-                {canPreorder && book.stock <= 0 ? "สั่งพรีออเดอร์" : t("product.add_to_cart", "หยิบใส่ตะกร้า")}
+              <button disabled={soldOut} onClick={() => addToCart(false)}
+                className={`hidden flex-1 rounded-full px-8 py-3 text-[15px] font-medium transition active:scale-[0.98] md:block sm:max-w-[360px] ${soldOut ? "cursor-not-allowed bg-mist text-sub" : "bg-accent text-white hover:bg-accent/90"}`}>
+                {soldOut ? t("product.out_of_stock", "สินค้าหมด") : canPreorder && book.stock <= 0 ? "สั่งพรีออเดอร์" : t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
               {book.previewPdf && (
                 <button type="button" onClick={() => setFlipOpen(true)}
@@ -408,20 +417,26 @@ export default function BookDetail() {
         className="fixed inset-x-0 bottom-0 z-40 flex gap-2.5 border-t border-line bg-white/95 px-4 pt-3 backdrop-blur-xl md:hidden"
         style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
       >
-        <button
-          onClick={() => addToCart(false)}
-          disabled={effStock != null && effStock <= 0 && !canPreorder}
-          className="flex-1 rounded-full border border-ink py-3 text-[15px] font-medium text-ink transition active:scale-[0.98] disabled:opacity-40"
-        >
-          ใส่ตะกร้า
-        </button>
-        <button
-          onClick={() => addToCart(true)}
-          disabled={effStock != null && effStock <= 0 && !canPreorder}
-          className="flex-1 rounded-full bg-accent py-3 text-[15px] font-medium text-white transition active:scale-[0.98] disabled:opacity-40"
-        >
-          {canPreorder ? "สั่งพรีออเดอร์" : "ซื้อเลย"}
-        </button>
+        {soldOut ? (
+          <button disabled className="flex-1 cursor-not-allowed rounded-full bg-mist py-3 text-[15px] font-semibold text-sub">
+            {t("product.out_of_stock", "สินค้าหมด")}
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => addToCart(false)}
+              className="flex-1 rounded-full border border-ink py-3 text-[15px] font-medium text-ink transition active:scale-[0.98]"
+            >
+              ใส่ตะกร้า
+            </button>
+            <button
+              onClick={() => addToCart(true)}
+              className="flex-1 rounded-full bg-accent py-3 text-[15px] font-medium text-white transition active:scale-[0.98]"
+            >
+              {canPreorder ? "สั่งพรีออเดอร์" : "ซื้อเลย"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
