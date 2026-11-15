@@ -46,9 +46,7 @@ function MiniCard({ book }) {
         )}
       </div>
       <div className="min-w-0 flex-1 self-center">
-        {hasCut && (
-          <span className="mb-1.5 inline-block rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommend</span>
-        )}
+        <span className="mb-1.5 inline-block rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommend</span>
         {book.author && <p className="truncate text-[11px] font-medium uppercase tracking-wide text-sub">{book.author}</p>}
         <h3 className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-ink transition-colors group-hover:text-accent">{book.title}</h3>
         {hasCut ? (
