@@ -85,8 +85,8 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           </div>
         )}
         {isPreorder && stock <= 0 && (
-          <span className="absolute right-3 top-3 rounded-full bg-indigo-500/90 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white backdrop-blur">
-            PRE-ORDER
+          <span className="absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-indigo-500 px-1 text-center text-[11px] font-semibold leading-[1.1] text-white shadow-md">
+            Pre-Order
           </span>
         )}
         {soldOut && (
@@ -98,7 +98,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         )}
         {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
         {pct > 0 && stock > 0 && (pi.hot || pi.preorder || showCardDiscountBadge !== false) && (
-          <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white ${pi.preorder ? "bg-indigo-500" : pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
+          <span className={`absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full text-center text-[12px] font-semibold leading-[1.1] text-white shadow-md ${pi.preorder ? "bg-indigo-500" : pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
             -{pct}%
           </span>
         )}
