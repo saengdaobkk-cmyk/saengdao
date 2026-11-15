@@ -7,7 +7,7 @@ import { img } from "../lib/img";
 import { formatPrice } from "../lib/format";
 
 export default function Cart() {
-  const { items, setQty, remove, subtotal } = useCart();
+  const { items, setQty, remove, clear, subtotal } = useCart();
   const { user } = useAuth();
   const { t } = useContent();
   const navigate = useNavigate();
@@ -39,7 +39,15 @@ export default function Cart() {
 
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
-      <h1 className="mb-8 text-3xl font-semibold tracking-tightest text-ink">ตะกร้าสินค้า</h1>
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <h1 className="text-3xl font-semibold tracking-tightest text-ink">ตะกร้าสินค้า</h1>
+        <button
+          onClick={() => { if (confirm("ล้างสินค้าทั้งหมดในตะกร้า?")) clear(); }}
+          className="shrink-0 text-[13px] text-sub transition hover:text-red-600"
+        >
+          ล้างทั้งหมด
+        </button>
+      </div>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
         {/* รายการ */}
