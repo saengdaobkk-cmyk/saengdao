@@ -192,7 +192,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 }
 
 // dropdown เรียงลำดับ — ปุ่ม pill + เมนู popover (แทน select เดิม)
-function SortDropdown({ value, onChange }) {
+export function SortDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const current = SORT_OPTIONS.find((o) => o.value === value) || SORT_OPTIONS[0];

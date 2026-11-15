@@ -7,6 +7,7 @@ import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import BookLoader from "../components/BookLoader";
+import { SortDropdown } from "../components/BookCatalog";
 import { img } from "../lib/img";
 
 const TYPE_LABEL = { PUBLISHER: "สำนักพิมพ์", AUTHOR: "ผู้เขียน", TRANSLATOR: "ผู้แปล" };
@@ -57,15 +58,7 @@ export default function TermCollection({ type }) {
       <span className="text-ink">{term.name}</span>
     </nav>
   );
-  const sortSelect = (
-    <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
-      className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
-      <option value="newest">มาใหม่ล่าสุด</option>
-      <option value="popular">ขายดี</option>
-      <option value="price_asc">ราคาน้อย → มาก</option>
-      <option value="price_desc">ราคามาก → น้อย</option>
-    </select>
-  );
+  const sortSelect = <SortDropdown value={sort} onChange={(v) => { setSort(v); setPage(1); }} />;
 
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
