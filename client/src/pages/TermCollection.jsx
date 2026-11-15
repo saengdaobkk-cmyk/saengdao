@@ -48,17 +48,19 @@ export default function TermCollection({ type }) {
 
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
-      <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
-        <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
-        <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
-        <span className="text-ink">{term.name}</span>
-      </nav>
+      {/* หัวหน้า — ชื่อซ้าย / breadcrumb ขวา (บรรทัดเดียวบนจอกว้าง) */}
+      <div className="mb-8 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
+        <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
+          <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
+          <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
+          <span className="text-ink">{term.name}</span>
+        </nav>
+      </div>
 
-      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
-          {data && !booksLoading && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
-        </div>
+      {/* จำนวน (ซ้าย) + เรียงลำดับ (ขวา) */}
+      <div className="mb-10 flex items-center justify-between gap-3">
+        <p className="text-[13px] text-sub">{data && !booksLoading && showCollectionCount ? `${data.total} เล่ม` : ""}</p>
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
           className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
           <option value="newest">มาใหม่ล่าสุด</option>

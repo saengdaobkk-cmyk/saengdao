@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useBooks, useBooksInfinite, useCategories } from "../api/books";
 import { useSettings } from "../api/settings";
 import BookCard from "./BookCard";
@@ -95,24 +95,30 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 
   return (
     <section id={id} className="mx-auto max-w-page px-5 py-16 sm:py-20">
-      {/* หัว */}
-      <div className="mb-10">
-        {q ? (
-          <>
-            <p className="text-[13px] font-medium tracking-tight text-sub">ผลการค้นหา</p>
-            <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">“{q}”</h2>
-            <p className="mt-2 flex items-center gap-3 text-[13px] text-sub">
-              {!busy && <span>{total} เล่ม</span>}
-              <button onClick={clearSearch} className="text-accent hover:underline">ล้างการค้นหา</button>
-            </p>
-          </>
-        ) : (
-          <>
-            {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
-            <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
-            {!busy && showCollectionCount && total > 0 && <p className="mt-2 text-[13px] text-sub">{total} เล่ม</p>}
-          </>
-        )}
+      {/* หัว — ชื่อซ้าย / breadcrumb ขวา (บรรทัดเดียวบนจอกว้าง) */}
+      <div className="mb-10 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          {q ? (
+            <>
+              <p className="text-[13px] font-medium tracking-tight text-sub">ผลการค้นหา</p>
+              <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">“{q}”</h2>
+              <p className="mt-2 flex items-center gap-3 text-[13px] text-sub">
+                {!busy && <span>{total} เล่ม</span>}
+                <button onClick={clearSearch} className="text-accent hover:underline">ล้างการค้นหา</button>
+              </p>
+            </>
+          ) : (
+            <>
+              {eyebrow && <p className="text-[13px] font-medium tracking-tight text-sub">{eyebrow}</p>}
+              <h2 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{heading}</h2>
+              {!busy && showCollectionCount && total > 0 && <p className="mt-2 text-[13px] text-sub">{total} เล่ม</p>}
+            </>
+          )}
+        </div>
+        <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
+          <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
+          {q ? <><Link to="/books" className="hover:text-ink">หนังสือ</Link><span>›</span><span className="text-ink">ค้นหา</span></> : <span className="text-ink">หนังสือ</span>}
+        </nav>
       </div>
 
       {/* ตัวกรอง — หมวดหมู่เลื่อนแนวนอนได้ (รองรับหมวดเยอะๆ) */}
