@@ -143,7 +143,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         <p className="line-clamp-1 text-[13px] text-sub">{book.author}</p>
         {pct > 0 ? (
           <p className="mt-1.5 flex items-center gap-2">
-            <span className={`text-[15px] font-semibold tracking-tight ${pi.preorder ? "text-indigo-600" : pi.hot ? "text-orange-600" : "text-rose-600"}`}>{formatPrice(pi.price)}</span>
+            <span className="text-[15px] font-semibold tracking-tight text-ink">{formatPrice(pi.price)}</span>
             <span className="text-[12px] text-sub line-through">{formatPrice(pi.original)}</span>
           </p>
         ) : (
