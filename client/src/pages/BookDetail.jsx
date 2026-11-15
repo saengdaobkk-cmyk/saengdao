@@ -202,13 +202,13 @@ export default function BookDetail() {
           {(book.authorLinks?.length > 0 || book.translatorLinks?.length > 0) && (
             <p className="mt-2 text-[15px] text-sub">
               {book.authorLinks?.length > 0 && (
-                <span>{t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
+                <span className="block sm:inline">{t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
                   <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
                 ))}</span>
               )}
-              {book.authorLinks?.length > 0 && book.translatorLinks?.length > 0 && <span className="mx-2.5 text-line">|</span>}
+              {book.authorLinks?.length > 0 && book.translatorLinks?.length > 0 && <span className="mx-2.5 hidden text-line sm:inline">|</span>}
               {book.translatorLinks?.length > 0 && (
-                <span>{t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
+                <span className="block sm:inline">{t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
                   <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
                 ))}</span>
               )}
