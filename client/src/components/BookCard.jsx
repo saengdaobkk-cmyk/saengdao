@@ -9,7 +9,7 @@ import { useSettings } from "../api/settings";
 import { useCart } from "../cart/CartContext";
 
 export default function BookCard({ book, index = 0, reveal = false }) {
-  const { showCardCategory } = useSettings();
+  const { showCardCategory, showCardDiscountBadge } = useSettings();
   const { add } = useCart();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -97,7 +97,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           </div>
         )}
         {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
-        {pct > 0 && stock > 0 && (
+        {pct > 0 && stock > 0 && showCardDiscountBadge !== false && (
           <span className={`absolute right-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white ${pi.preorder ? "bg-indigo-500" : pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
             -{pct}%
           </span>

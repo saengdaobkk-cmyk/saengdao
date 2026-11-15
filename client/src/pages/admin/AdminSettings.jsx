@@ -121,6 +121,13 @@ function DisplaySettings({ settings, update }) {
             onChange={(v) => update.mutate({ showProductSectionHeadings: v })}
           />
           <ToggleRow
+            title="ป้ายส่วนลด (-%) บนการ์ดสินค้า"
+            desc="เปิด: โชว์ป้าย -% มุมการ์ดในหน้ารวม/หน้าแรก · ปิด: ซ่อน (หน้าสินค้ายังโชว์ป้ายส่วนลดตามปกติ)"
+            checked={settings.showCardDiscountBadge}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showCardDiscountBadge: v })}
+          />
+          <ToggleRow
             title="ชื่อหมวดบนการ์ดหมวดหมู่ (หน้าแรก)"
             desc="เปิด: โชว์ชื่อหมวด + จำนวนเล่มทับบนการ์ด · ปิด: โชว์แต่รูป/สีพื้น (ชื่อจะไม่บังภาพ)"
             checked={settings.showBrowseCategoryName}
