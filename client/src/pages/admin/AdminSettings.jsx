@@ -122,7 +122,7 @@ function DisplaySettings({ settings, update }) {
           />
           <ToggleRow
             title="ป้ายส่วนลด (-%) บนการ์ดสินค้า"
-            desc="เปิด: โชว์ป้าย -% มุมการ์ดในหน้ารวม/หน้าแรก · ปิด: ซ่อน (หน้าสินค้ายังโชว์ป้ายส่วนลดตามปกติ)"
+            desc="เปิด: โชว์ป้าย -% ส่วนลดธรรมดาบนการ์ด · ปิด: ซ่อนเฉพาะส่วนลดธรรมดา (Hot Deal / พรีออเดอร์ ยังโชว์ · หน้าสินค้ายังโชว์ตามปกติ)"
             checked={settings.showCardDiscountBadge}
             disabled={update.isPending}
             onChange={(v) => update.mutate({ showCardDiscountBadge: v })}
