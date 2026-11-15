@@ -197,12 +197,6 @@ export default function BookDetail() {
 
         {/* ข้อมูล */}
         <div>
-          {/* chips */}
-          <div className="flex flex-wrap items-center gap-2">
-            {book.publisherLink && <Link to={`/publisher/${book.publisherLink.slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-[12px] text-ink transition hover:border-ink/40"><BuildingIcon />{book.publisherLink.name}</Link>}
-            {book.category && <Link to={`/books?category=${book.category.slug}`} className="rounded-full bg-mist px-3 py-1 text-[12px] text-ink/70 transition hover:bg-line">{book.category.name}</Link>}
-            {(book.tags || []).map((t) => <span key={t} className="rounded-full bg-mist px-2.5 py-1 text-[11px] text-ink/60">{t}</span>)}
-          </div>
 
           <h1 className="mt-4 text-3xl font-semibold leading-snug tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
           {book.authorLinks?.length > 0 && (
