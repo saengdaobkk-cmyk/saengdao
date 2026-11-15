@@ -128,7 +128,7 @@ export default function BookDetail() {
   const meta = [
     [t("product.spec_publisher", "สำนักพิมพ์"), book.publisher],
     [t("product.spec_edition", "พิมพ์ครั้งที่"), book.edition],
-    [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && `${book.pageCount} ${t("product.unit_page", "หน้า")}`],
+    [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && `${book.pageCount}`],
     [t("product.spec_dimensions", "ขนาด"), book.dimensions],
     [t("product.spec_weight", "น้ำหนัก"), book.weight],
     [t("product.spec_paper", "กระดาษเนื้อใน"), book.paperType],
