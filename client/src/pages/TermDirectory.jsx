@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTermDirectory } from "../api/books";
 import { useSettings } from "../api/settings";
@@ -17,17 +17,12 @@ export default function TermDirectory({ type }) {
   const { data: items, isLoading } = useTermDirectory(type);
   const { showCollectionCount } = useSettings();
   const { t } = useContent();
-  const [q, setQ] = useState("");
 
-  // เรียงตามจำนวนเล่ม (มาก→น้อย) แล้วชื่อ · กรองด้วยคำค้น
-  const list = useMemo(() => {
-    let arr = [...(items || [])];
-    if (q.trim()) {
-      const s = q.trim().toLowerCase();
-      arr = arr.filter((t) => t.name.toLowerCase().includes(s));
-    }
-    return arr.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "th"));
-  }, [items, q]);
+  // เรียงตามจำนวนเล่ม (มาก→น้อย) แล้วชื่อ
+  const list = useMemo(
+    () => [...(items || [])].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "th")),
+    [items]
+  );
 
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
@@ -36,23 +31,15 @@ export default function TermDirectory({ type }) {
         <span className="text-ink">{meta.label}</span>
       </nav>
 
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{meta.title}</h1>
-          {items && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{items.length} {meta.label}</p>}
-        </div>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={`ค้นหา${meta.label}...`}
-          className="w-full rounded-full border border-line bg-white px-5 py-2.5 text-[14px] text-ink outline-none focus:border-ink/30 sm:w-72"
-        />
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{meta.title}</h1>
+        {items && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{items.length} {meta.label}</p>}
       </div>
 
       {isLoading ? (
         <BookLoader />
       ) : list.length === 0 ? (
-        <p className="py-20 text-center text-sub">{q ? "ไม่พบรายชื่อที่ค้นหา" : `ยังไม่มี${meta.label}`}</p>
+        <p className="py-20 text-center text-sub">ยังไม่มี{meta.label}</p>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {list.map((t) => (
