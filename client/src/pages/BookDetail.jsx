@@ -126,7 +126,9 @@ export default function BookDetail() {
   const pct = showDiscount ? Math.round((1 - showPrice / showFull) * 100) : 0;
 
   const meta = [
-    [t("product.spec_publisher", "สำนักพิมพ์"), book.publisher],
+    [t("product.spec_publisher", "สำนักพิมพ์"), book.publisherLink
+      ? <Link to={`/publisher/${book.publisherLink.slug}`} className="text-ink transition-colors hover:text-accent">{book.publisherLink.name}</Link>
+      : book.publisher],
     [t("product.spec_edition", "พิมพ์ครั้งที่"), book.edition],
     [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && `${book.pageCount}`],
     [t("product.spec_dimensions", "ขนาด"), book.dimensions],
