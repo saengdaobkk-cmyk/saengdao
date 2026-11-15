@@ -7,7 +7,7 @@ import SectionHeading from "./SectionHeading";
 
 // section แนะนำ — กริดการ์ดแนวนอน (ปกซ้าย + ข้อมูลขวา) + ปุ่มดูทั้งหมด
 // โหมดอัตโนมัติ: เรียงตาม sort · โหมดเลือกเอง: ตาม bookIds
-export default function BookGridSection({ title, subtitle, sort, mode = "auto", bookIds = [], limit = 12 }) {
+export default function BookGridSection({ title, subtitle, sort, mode = "auto", bookIds = [], limit = 12, showRating = false }) {
   const manual = mode === "manual" && bookIds.length > 0;
   const { data } = useBooks(manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit });
   const items = data?.items || [];
@@ -26,14 +26,26 @@ export default function BookGridSection({ title, subtitle, sort, mode = "auto", 
         }
       />
       <div className="grid grid-cols-1 gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items.map((book) => <MiniCard key={book.id} book={book} />)}
+        {items.map((book) => <MiniCard key={book.id} book={book} showRating={showRating} />)}
       </div>
     </section>
   );
 }
 
 // การ์ดแนวนอน: ปกเล็กซ้าย + ผู้แต่ง/ชื่อ/ราคา ขวา
-function MiniCard({ book }) {
+function Stars({ value = 0, count = 0 }) {
+  const full = Math.round(value);
+  return (
+    <div className="mb-1.5 flex items-center gap-1.5">
+      <span className="text-[14px] leading-none">
+        {[1, 2, 3, 4, 5].map((i) => <span key={i} className={i <= full ? "text-amber-400" : "text-line"}>★</span>)}
+      </span>
+      <span className="text-[11px] text-sub">{count > 0 ? `${value.toFixed(1)} (${count})` : "ยังไม่มีรีวิว"}</span>
+    </div>
+  );
+}
+
+function MiniCard({ book, showRating = false }) {
   const pi = priceInfo(book);
   const hasCut = pi.price < pi.original;
   return (
@@ -46,7 +58,9 @@ function MiniCard({ book }) {
         )}
       </div>
       <div className="min-w-0 flex-1 self-center">
-        <span className="mb-1.5 inline-block rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommend</span>
+        {showRating
+          ? <Stars value={book.avgRating || 0} count={book.reviewCount || 0} />
+          : <span className="mb-1.5 inline-block rounded-md bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommend</span>}
         {book.author && <p className="truncate text-[11px] font-medium uppercase tracking-wide text-sub">{book.author}</p>}
         <h3 className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-ink transition-colors group-hover:text-accent">{book.title}</h3>
         {hasCut ? (

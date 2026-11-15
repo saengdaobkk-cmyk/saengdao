@@ -42,6 +42,11 @@ export default function Home() {
         <BookGridSection title={rows.recommend.title} subtitle={rows.recommend.subtitle} sort={rows.recommend.sort} mode={rows.recommend.mode} bookIds={rows.recommend.bookIds} limit={rows.recommend.limit} />
       </div>
     ),
+    popular: (
+      <div className="pt-10 sm:pt-14">
+        <BookGridSection title={rows.popular.title} subtitle={rows.popular.subtitle} sort={rows.popular.sort} mode={rows.popular.mode} bookIds={rows.popular.bookIds} limit={rows.popular.limit} showRating />
+      </div>
+    ),
     textmarquee: <TextMarquee />,
     ribbon: <PromoRibbon />,
     brands: <PublisherMarquee title={rows.brands.title} subtitle={rows.brands.subtitle} />,

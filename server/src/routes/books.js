@@ -109,8 +109,16 @@ router.get("/", async (req, res, next) => {
       prisma.book.count({ where }),
     ]);
 
+    // คะแนนรีวิวเฉลี่ย + จำนวนรีวิว (สำหรับการ์ดที่โชว์ดาว เช่น section Popular)
+    const ids = items.map((b) => b.id);
+    const ratings = ids.length
+      ? await prisma.review.groupBy({ by: ["bookId"], where: { bookId: { in: ids } }, _avg: { rating: true }, _count: { _all: true } })
+      : [];
+    const rmap = new Map(ratings.map((r) => [r.bookId, { avg: r._avg.rating, count: r._count._all }]));
+    const itemsRated = items.map((b) => ({ ...b, avgRating: rmap.get(b.id)?.avg ?? null, reviewCount: rmap.get(b.id)?.count ?? 0 }));
+
     const payload = {
-      items,
+      items: itemsRated,
       total,
       page,
       pageSize: limit,

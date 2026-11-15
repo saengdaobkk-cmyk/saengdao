@@ -7,6 +7,7 @@ export const HOME_SECTIONS = [
   { key: "bestseller", label: "หนังสือขายดี" },
   { key: "browse", label: "หมวดหมู่ (Browse)" },
   { key: "recommend", label: "แนะนำสำหรับคุณ (กริด)" },
+  { key: "popular", label: "Popular Books (กริด + ดาว)" },
   { key: "textmarquee", label: "แถบตัวอักษรเลื่อน" },
   { key: "ribbon", label: "แถบโปรโมชั่นเอียง" },
   { key: "brands", label: "สำนักพิมพ์" },
@@ -38,6 +39,7 @@ export const ROW_DEFAULTS = {
   bestseller: { title: "ขายดี", subtitle: "เล่มที่นักอ่านเลือกมากที่สุด", mode: "auto", sort: "popular", limit: 10, bookIds: [] },
   hotdeal: { title: "Hot Deal", subtitle: "ราคาพิเศษ มีเวลาจำกัด", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
   recommend: { title: "แนะนำสำหรับคุณ", subtitle: "คัดสรรมาเพื่อนักอ่านทุกคน", mode: "auto", sort: "popular", limit: 12, bookIds: [] },
+  popular: { title: "Popular Books", subtitle: "เล่มยอดนิยมที่นักอ่านรัก", mode: "auto", sort: "popular", limit: 12, bookIds: [] },
   blog: { title: "บทความ", subtitle: "เรื่องเล่า รีวิว และแรงบันดาลใจจากหนังสือ", mode: "auto", sort: "newest", limit: 4, bookIds: [] },
   browse: { title: "หมวดหมู่หนังสือ", subtitle: "เลือกอ่านตามหมวดที่คุณสนใจ", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
   brands: { title: "สำนักพิมพ์ที่คัดสรร", subtitle: "รวมสำนักพิมพ์ชั้นนำที่เราภูมิใจนำเสนอ", mode: "auto", sort: "newest", limit: 10, bookIds: [] },
@@ -135,7 +137,7 @@ export function parseAuthorSpotlight(raw) {
 }
 
 // แถว built-in ที่เลือกหนังสือเอง/อัตโนมัติได้ (Hot Deal/บทความ ดึงอัตโนมัติ แก้ได้แค่หัวข้อ/คำโปรย)
-export const BOOKS_EDITABLE_KEYS = ["new", "bestseller", "recommend"];
+export const BOOKS_EDITABLE_KEYS = ["new", "bestseller", "recommend", "popular"];
 
 // แถวที่ผู้ใช้สร้างเอง — เก็บใน setting homeCustomRows (JSON array)
 export function parseCustomRows(raw) {
