@@ -278,6 +278,18 @@ export async function uploadPdf(file) {
   return (await api.post("/admin/upload-pdf", fd)).data.url;
 }
 
+/* ---------- คลังไฟล์ (Media Library) ---------- */
+export const useMedia = () =>
+  useQuery({ queryKey: ["admin", "media"], queryFn: async () => (await api.get("/admin/media")).data });
+
+export function useDeleteMedia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (key) => (await api.delete("/admin/media", { data: { key } })).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "media"] }),
+  });
+}
+
 /* ---------- Users (จัดการผู้ใช้/สิทธิ์ — แอดมินเต็ม) ---------- */
 export const useAdminUsers = () =>
   useQuery({ queryKey: ["admin", "users"], queryFn: async () => (await api.get("/admin/users")).data });

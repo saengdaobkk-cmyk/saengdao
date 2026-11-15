@@ -34,6 +34,7 @@ const NAV_GROUPS = [
       { to: "/sdpub/slides", label: "สไลด์หน้าแรก", icon: SlideIcon, adminOnly: true },
       { to: "/sdpub/home-layout", label: "จัดวางหน้าแรก", icon: LayoutIcon, adminOnly: true },
       { to: "/sdpub/content", label: "ข้อความในเว็บ", icon: TextIcon, adminOnly: true },
+      { to: "/sdpub/files", label: "Files", icon: FileIcon, adminOnly: true },
       { to: "/sdpub/blog", label: "บทความ / บล็อก", icon: BlogIcon, adminOnly: true },
       { to: "/sdpub/pages", label: "เพจ / เมนู", icon: PagesIcon, adminOnly: true },
     ],
@@ -50,7 +51,7 @@ const NAV_GROUPS = [
 ];
 
 // path ที่เฉพาะแอดมินเต็ม (กัน STAFF เข้าตรงๆ ผ่าน URL)
-const ADMIN_ONLY_PATHS = ["/sdpub/pages", "/sdpub/slides", "/sdpub/home-layout", "/sdpub/content", "/sdpub/blog", "/sdpub/coupons", "/sdpub/discount-rules", "/sdpub/shipping", "/sdpub/users", "/sdpub/integrations", "/sdpub/redirects", "/sdpub/settings"];
+const ADMIN_ONLY_PATHS = ["/sdpub/pages", "/sdpub/slides", "/sdpub/home-layout", "/sdpub/content", "/sdpub/files", "/sdpub/blog", "/sdpub/coupons", "/sdpub/discount-rules", "/sdpub/shipping", "/sdpub/users", "/sdpub/integrations", "/sdpub/redirects", "/sdpub/settings"];
 
 const TITLES = {
   "/sdpub": "ภาพรวม",
@@ -65,6 +66,7 @@ const TITLES = {
   "/sdpub/slides": "สไลด์หน้าแรก",
   "/sdpub/home-layout": "จัดวางหน้าแรก",
   "/sdpub/content": "ข้อความในเว็บ",
+  "/sdpub/files": "Files",
   "/sdpub/coupons": "โค้ดส่วนลด",
   "/sdpub/discount-rules": "กฎส่วนลดอัตโนมัติ",
   "/sdpub/shipping": "ช่องทางจัดส่ง",
@@ -220,6 +222,7 @@ function SlideIcon() { return <svg {...base()}><rect x="3" y="5" width="18" heig
 function FolderIcon() { return <svg {...base()}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" /></svg>; }
 function PagesIcon() { return <svg {...base()}><path d="M8 3h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" /><path d="M4 6v13a1 1 0 0 0 1 1h9" opacity=".5" /><path d="M10 8h5M10 11h5" /></svg>; }
 function TextIcon() { return <svg {...base()}><path d="M4 6h16M4 6V4h16v2M9 6v14M9 20H7m2 0h2" /></svg>; }
+function FileIcon() { return <svg {...base()}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>; }
 function PlugIcon() { return <svg {...base()}><path d="M9 2v6M15 2v6M7 8h10v3a5 5 0 0 1-10 0V8ZM12 16v6" /></svg>; }
 function UsersIcon() { return <svg {...base()}><circle cx="9" cy="8" r="3" /><path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5" /><path d="M16 5.5a3 3 0 0 1 0 5.5M17.5 20c0-2.3-1-3.8-2.5-4.6" /></svg>; }
 function CustomerIcon() { return <svg {...base()}><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" /></svg>; }

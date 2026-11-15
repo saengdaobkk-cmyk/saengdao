@@ -43,3 +43,60 @@ export async function storeFile(file, prefix = "file") {
   fs.writeFileSync(path.join(UPLOAD_DIR, name), file.buffer);
   return `/uploads/${name}`;
 }
+
+// รายการไฟล์ทั้งหมดในคลัง (ปก/แบนเนอร์/PDF ฯลฯ) — คืน { key, url, size, createdAt }
+export async function listUploads() {
+  if (supabase) {
+    const walk = async (prefix = "") => {
+      const out = [];
+      let offset = 0;
+      for (;;) {
+        const { data, error } = await supabase.storage
+          .from(BUCKET)
+          .list(prefix, { limit: 100, offset, sortBy: { column: "created_at", order: "desc" } });
+        if (error) throw new Error(error.message);
+        if (!data || !data.length) break;
+        for (const item of data) {
+          const full = prefix ? `${prefix}/${item.name}` : item.name;
+          if (item.id === null) out.push(...(await walk(full))); // โฟลเดอร์ → ลงลึก
+          else out.push({ key: full, size: item.metadata?.size || 0, createdAt: item.created_at || item.updated_at || null });
+        }
+        if (data.length < 100) break;
+        offset += 100;
+      }
+      return out;
+    };
+    const files = await walk();
+    files.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    return files.map((f) => ({ ...f, url: supabase.storage.from(BUCKET).getPublicUrl(f.key).data.publicUrl }));
+  }
+  // dev: อ่านจาก disk
+  const out = [];
+  const walkDisk = (dir, rel = "") => {
+    let names = [];
+    try { names = fs.readdirSync(dir); } catch { return; }
+    for (const name of names) {
+      const full = path.join(dir, name);
+      const r = rel ? `${rel}/${name}` : name;
+      const st = fs.statSync(full);
+      if (st.isDirectory()) walkDisk(full, r);
+      else out.push({ key: r, size: st.size, createdAt: st.mtime.toISOString(), url: `/uploads/${r}` });
+    }
+  };
+  walkDisk(UPLOAD_DIR);
+  out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return out;
+}
+
+// ลบไฟล์จากคลัง
+export async function deleteUpload(key) {
+  const k = String(key || "").replace(/^\/+/, "").replace(/^uploads\//, "");
+  if (!k) throw new Error("ไม่พบไฟล์");
+  if (supabase) {
+    const { error } = await supabase.storage.from(BUCKET).remove([k]);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const p = path.join(UPLOAD_DIR, k);
+  if (p.startsWith(UPLOAD_DIR) && fs.existsSync(p)) fs.unlinkSync(p);
+}

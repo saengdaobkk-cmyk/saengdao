@@ -52,6 +52,7 @@ import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminCustomers from "./pages/admin/AdminCustomers.jsx";
 import AdminReviews from "./pages/admin/AdminReviews.jsx";
 import AdminRedirects from "./pages/admin/AdminRedirects.jsx";
+import AdminMedia from "./pages/admin/AdminMedia.jsx";
 
 // cache ข้อมูล 1 นาที + เก็บไว้ 5 นาที → กลับเข้าหน้าเดิมภายในเวลานี้แสดงทันที ไม่ต้องโหลดใหม่
 const queryClient = new QueryClient({
@@ -122,6 +123,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="slides" element={<AdminSlides />} />
                 <Route path="home-layout" element={<AdminHomeLayout />} />
                 <Route path="content" element={<AdminContent />} />
+                <Route path="files" element={<AdminMedia />} />
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="orders/:id" element={<AdminOrderDetail />} />

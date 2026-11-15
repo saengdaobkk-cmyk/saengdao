@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import bcrypt from "bcryptjs";
 import { authenticate, requireAdmin, requireStaff } from "../middleware/auth.js";
 import { uploadImage, uploadImages, uploadPdf } from "../lib/upload.js";
-import { storeFile } from "../lib/storage.js";
+import { storeFile, listUploads, deleteUpload } from "../lib/storage.js";
 import { CONTENT_DEFAULTS, SECTION_LABELS } from "../lib/contentDefaults.js";
 import { cacheClearPrefix } from "../lib/cache.js";
 import { ZK, ZORT_DEFAULT_BASE, ZORT_STOCK_SYNCED_AT, getZortConfig, testZortConnection, pushOrderToZort, syncStockFromZort, syncOrdersFromZort } from "../lib/zort.js";
@@ -1470,6 +1470,28 @@ router.post("/integrations/zort/sync-orders", async (req, res, next) => {
     res.json(await syncOrdersFromZort({ force: true }));
   } catch (err) {
     res.json({ ok: false, error: "ดึงสถานะจาก ZORT ไม่สำเร็จ: " + err.message });
+  }
+});
+
+/* ---------- คลังไฟล์ (Media Library) ---------- */
+// รายการไฟล์ทั้งหมดในคลัง (ปก/แบนเนอร์/PDF ฯลฯ)
+router.get("/media", async (req, res, next) => {
+  try {
+    res.json(await listUploads());
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ลบไฟล์จากคลัง (ADMIN) — ระวัง: ถ้าไฟล์ถูกใช้อยู่ในสินค้า/สไลด์ รูปจะหายจากที่นั้นด้วย
+router.delete("/media", requireAdmin, async (req, res, next) => {
+  try {
+    const key = String(req.body?.key || req.query.key || "").trim();
+    if (!key) return res.status(400).json({ error: "ไม่ระบุไฟล์" });
+    await deleteUpload(key);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
   }
 });
 
