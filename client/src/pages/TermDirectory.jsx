@@ -38,8 +38,7 @@ export default function TermDirectory({ type }) {
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[13px] font-medium tracking-tight text-sub">{meta.desc}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{meta.title}</h1>
+          <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{meta.title}</h1>
           {items && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{items.length} {meta.label}</p>}
         </div>
         <input
