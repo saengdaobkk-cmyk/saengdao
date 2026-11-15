@@ -19,6 +19,8 @@ export default function AdminMedia() {
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
   const [preview, setPreview] = useState(null);
+  const [page, setPage] = useState(1);
+  const PER = 100;
 
   const list = useMemo(() => {
     if (!q.trim()) return files;
@@ -26,9 +28,18 @@ export default function AdminMedia() {
     return files.filter((f) => f.key.toLowerCase().includes(s));
   }, [files, q]);
 
-  const allSelected = list.length > 0 && list.every((f) => sel.has(f.key));
+  const totalPages = Math.max(1, Math.ceil(list.length / PER));
+  const curPage = Math.min(page, totalPages);
+  const pageItems = list.slice((curPage - 1) * PER, curPage * PER);
+
+  const allSelected = pageItems.length > 0 && pageItems.every((f) => sel.has(f.key));
   const toggle = (key) => setSel((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
-  const toggleAll = () => setSel(allSelected ? new Set() : new Set(list.map((f) => f.key)));
+  const toggleAll = () => setSel((p) => {
+    const n = new Set(p);
+    if (allSelected) pageItems.forEach((f) => n.delete(f.key));
+    else pageItems.forEach((f) => n.add(f.key));
+    return n;
+  });
 
   const onFiles = async (e) => {
     const picked = [...(e.target.files || [])];
@@ -64,7 +75,7 @@ export default function AdminMedia() {
     <div className="space-y-4">
       {/* แถบบน */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาชื่อไฟล์..."
+        <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="ค้นหาชื่อไฟล์..."
           className="w-64 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
         <div>
           <button onClick={() => fileRef.current?.click()} disabled={uploading}
@@ -103,7 +114,7 @@ export default function AdminMedia() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {list.map((f) => (
+              {pageItems.map((f) => (
                 <tr key={f.key} className={`transition hover:bg-mist/30 ${sel.has(f.key) ? "bg-accent/5" : ""}`}>
                   <td className="px-4 py-2.5"><input type="checkbox" checked={sel.has(f.key)} onChange={() => toggle(f.key)} className="h-4 w-4 cursor-pointer accent-accent" /></td>
                   <td className="px-3 py-2.5">
@@ -133,7 +144,17 @@ export default function AdminMedia() {
           </table>
         </div>
       )}
-      <p className="text-[12px] text-sub">ไฟล์ทั้งหมด {files.length} ไฟล์ — ปกหนังสือ / แบนเนอร์ / สไลด์ / PDF</p>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-6">
+          <button disabled={curPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">← ก่อนหน้า</button>
+          <span className="text-[13px] tabular-nums text-sub">{curPage} / {totalPages}</span>
+          <button disabled={curPage >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="text-[14px] text-sub transition hover:text-ink disabled:opacity-30">ถัดไป →</button>
+        </div>
+      )}
+      <p className="text-[12px] text-sub">
+        ไฟล์ทั้งหมด {files.length} ไฟล์ — ปกหนังสือ / แบนเนอร์ / สไลด์ / PDF
+        {list.length > 0 && ` · แสดง ${(curPage - 1) * PER + 1}–${Math.min(curPage * PER, list.length)} จาก ${list.length}`}
+      </p>
 
       {/* ขยายรูป (lightbox) */}
       {preview && (
