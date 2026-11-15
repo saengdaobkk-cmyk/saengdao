@@ -98,8 +98,8 @@ export default function BookCard({ book, index = 0, reveal = false }) {
         )}
         {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
         {!isPreorder && pct > 0 && stock > 0 && (pi.hot || showCardDiscountBadge !== false) && (
-          <span className={`absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full text-center text-[12px] font-semibold leading-[1.1] text-white shadow-md ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
-            -{pct}%
+          <span className={`absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full px-1 text-center font-semibold leading-[1.1] text-white shadow-md ${pi.hot ? "bg-orange-500 text-[11px]" : "bg-rose-500 text-[12px]"}`}>
+            {pi.hot ? "Hot Deal" : `-${pct}%`}
           </span>
         )}
 
