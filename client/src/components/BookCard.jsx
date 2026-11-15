@@ -122,9 +122,8 @@ export default function BookCard({ book, index = 0, reveal = false }) {
               </svg>
             ) : (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5.5 8h13l-1 10.5a2 2 0 0 1-2 1.8H8.5a2 2 0 0 1-2-1.8L5.5 8Z" />
-                <path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2" />
-                <path d="M12 12.2v3M10.5 13.7h3" />
+                <path d="M6.33 8h11.34a2 2 0 0 1 1.977 2.304l-1.255 8.152A3 3 0 0 1 15.43 21H8.57a3 3 0 0 1-2.966-2.544l-1.255-8.152A2 2 0 0 1 6.33 8Z" />
+                <path d="M9 11V6a3 3 0 0 1 6 0v5" />
               </svg>
             )}
           </button>
