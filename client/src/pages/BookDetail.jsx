@@ -452,15 +452,22 @@ export default function BookDetail() {
 // ดาวสรุปใต้ชื่อหนังสือ — โชว์เมื่อมีรีวิว · กดแล้วเลื่อนลงไปที่ช่องรีวิว
 function RatingSummary({ bookId }) {
   const { data } = useBookReviews(bookId, 1, 5);
-  if (!data || data.count === 0) return null;
+  if (!data) return null;
+  const none = data.count === 0;
   const scrollToReviews = () => {
     document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   return (
     <button onClick={scrollToReviews} className="mt-3 flex items-center gap-2 text-left transition hover:opacity-80" aria-label="ดูรีวิว">
-      <Stars value={data.avg} size={17} />
-      <span className="text-[14px] text-ink"><b>{data.avg}</b></span>
-      <span className="text-[13px] text-sub underline-offset-2 hover:underline">({data.count} รีวิว)</span>
+      <Stars value={none ? 0 : data.avg} size={17} />
+      {none ? (
+        <span className="text-[13px] text-sub underline-offset-2 hover:underline">ยังไม่มีรีวิว — เป็นคนแรกที่รีวิว</span>
+      ) : (
+        <>
+          <span className="text-[14px] text-ink"><b>{data.avg}</b></span>
+          <span className="text-[13px] text-sub underline-offset-2 hover:underline">({data.count} รีวิว)</span>
+        </>
+      )}
     </button>
   );
 }
