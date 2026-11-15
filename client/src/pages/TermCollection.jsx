@@ -56,8 +56,7 @@ export default function TermCollection({ type }) {
 
       <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[13px] font-medium tracking-tight text-sub">{TYPE_LABEL[type]}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
+          <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
           {data && !booksLoading && showCollectionCount && <p className="mt-2 text-[13px] text-sub">{data.total} เล่ม</p>}
         </div>
         <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
