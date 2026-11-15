@@ -22,6 +22,7 @@ export const SECTION_LABEL = Object.fromEntries(HOME_SECTIONS.map((s) => [s.key,
 export const ROW_SORTS = [
   { value: "newest", label: "หนังสือมาใหม่ (ล่าสุดก่อน)" },
   { value: "popular", label: "ขายดี (ขายมากก่อน)" },
+  { value: "rating", label: "คะแนนรีวิวสูงสุด" },
   { value: "price_asc", label: "ราคาถูก → แพง" },
   { value: "price_desc", label: "ราคาแพง → ถูก" },
   { value: "random", label: "สุ่ม (เปลี่ยนไปเรื่อยๆ)" },

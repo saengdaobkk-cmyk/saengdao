@@ -25,7 +25,7 @@ router.get("/", async (req, res, next) => {
 
     // cache เฉพาะรายการปกติ (ข้ามโหมด ids / สุ่ม ที่ผลไม่ตายตัว)
     const cacheKey =
-      req.query.ids == null && sort !== "random"
+      req.query.ids == null && sort !== "random" && sort !== "rating"
         ? "books:" + JSON.stringify({ q: q || "", category: category || "", publisher: publisher || "", author: req.query.author || "", translator: req.query.translator || "", rated: req.query.rated || "", sort: sort || "", page, limit })
         : null;
     if (cacheKey) {
@@ -88,6 +88,31 @@ router.get("/", async (req, res, next) => {
       const byId = new Map(found.map((b) => [b.id, b]));
       const items = pickIds.map((id) => byId.get(id)).filter(Boolean); // คงลำดับที่สุ่ม
       return res.json({ items, total: all.length, page: 1, pageSize: items.length, totalPages: 1 });
+    }
+
+    // เรียงตามคะแนนรีวิวเฉลี่ย (สูง→ต่ำ) — rating เป็นค่า aggregate เลยต้องคำนวณเอง
+    if (sort === "rating") {
+      const candidates = await prisma.book.findMany({ where, select: { id: true } });
+      const ids = candidates.map((b) => b.id);
+      const ratings = ids.length
+        ? await prisma.review.groupBy({ by: ["bookId"], where: { bookId: { in: ids } }, _avg: { rating: true }, _count: { _all: true } })
+        : [];
+      const rmap = new Map(ratings.map((r) => [r.bookId, { avg: r._avg.rating || 0, count: r._count._all }]));
+      const pickIds = ids
+        .map((id) => ({ id, ...(rmap.get(id) || { avg: 0, count: 0 }) }))
+        .sort((a, b) => b.avg - a.avg || b.count - a.count)
+        .slice(0, limit)
+        .map((x) => x.id);
+      const found = await prisma.book.findMany({
+        where: { id: { in: pickIds } },
+        include: { category: { select: { name: true, slug: true } }, variants: { select: { stock: true } } },
+      });
+      const byId = new Map(found.map((b) => [b.id, b]));
+      const items = pickIds
+        .map((id) => byId.get(id))
+        .filter(Boolean)
+        .map((b) => ({ ...b, avgRating: rmap.get(b.id)?.avg ?? null, reviewCount: rmap.get(b.id)?.count ?? 0 }));
+      return res.json({ items, total: candidates.length, page: 1, pageSize: items.length, totalPages: 1 });
     }
 
     const orderBy =
