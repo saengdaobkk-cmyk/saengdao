@@ -199,18 +199,19 @@ export default function BookDetail() {
         <div>
 
           <h1 className="mt-4 text-3xl font-semibold leading-snug tracking-tightest text-ink sm:text-4xl">{book.title}</h1>
-          {book.authorLinks?.length > 0 && (
+          {(book.authorLinks?.length > 0 || book.translatorLinks?.length > 0) && (
             <p className="mt-2 text-[15px] text-sub">
-              {t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
-                <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
-              ))}
-            </p>
-          )}
-          {book.translatorLinks?.length > 0 && (
-            <p className="mt-0.5 text-[14px] text-sub">
-              {t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
-                <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
-              ))}
+              {book.authorLinks?.length > 0 && (
+                <span>{t("product.by", "โดย")} {book.authorLinks.map((a, i) => (
+                  <span key={a.slug}>{i > 0 && ", "}<Link to={`/author/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
+                ))}</span>
+              )}
+              {book.authorLinks?.length > 0 && book.translatorLinks?.length > 0 && <span className="mx-2.5 text-line">|</span>}
+              {book.translatorLinks?.length > 0 && (
+                <span>{t("product.translated_by", "แปลโดย")} {book.translatorLinks.map((a, i) => (
+                  <span key={a.slug}>{i > 0 && ", "}<Link to={`/translator/${a.slug}`} className="font-medium text-ink transition-colors hover:text-accent">{a.name}</Link></span>
+                ))}</span>
+              )}
             </p>
           )}
 
