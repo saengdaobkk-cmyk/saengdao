@@ -39,8 +39,11 @@ export default function AdminMedia() {
     setCopied(url);
     setTimeout(() => setCopied(""), 1500);
   };
-  const remove = (key) => {
-    if (confirm(`ลบไฟล์นี้?\n${key}\n\n⚠️ ถ้าไฟล์นี้ถูกใช้อยู่ในสินค้า/สไลด์/แบนเนอร์ รูปจะหายจากที่นั่นด้วย`)) del.mutate(key);
+  const remove = (f) => {
+    const msg = f.refs > 0
+      ? `⚠️ ไฟล์นี้ถูกใช้อยู่ ${f.refs} ที่ (สินค้า/สไลด์/แบนเนอร์ ฯลฯ)\nลบแล้วรูปจะหายจากที่นั่นด้วย!\n\n${f.key}\n\nยืนยันลบ?`
+      : `ลบไฟล์นี้?\n${f.key}`;
+    if (confirm(msg)) del.mutate(f.key);
   };
 
   return (
@@ -74,7 +77,7 @@ export default function AdminMedia() {
                     <span className="text-[11px] font-medium">{isPdf(f.key) ? "PDF" : "ไฟล์"}</span>
                   </div>
                 )}
-                <button onClick={() => remove(f.key)} disabled={del.isPending} aria-label="ลบ"
+                <button onClick={() => remove(f)} disabled={del.isPending} aria-label="ลบ"
                   className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-sub shadow transition hover:bg-red-500 hover:text-white">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
                 </button>
@@ -83,8 +86,13 @@ export default function AdminMedia() {
                 <p className="truncate text-[11px] text-sub" title={f.key}>{f.key.split("/").pop()}</p>
                 <div className="mt-1 flex items-center justify-between gap-1">
                   <span className="shrink-0 text-[10px] text-sub/70">{fmtSize(f.size)}</span>
-                  <button onClick={() => copy(f.url)} className="truncate text-[11px] text-accent hover:underline">{copied === f.url ? "คัดลอกแล้ว ✓" : "คัดลอก URL"}</button>
+                  {f.refs > 0 ? (
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700" title="ถูกใช้งานอยู่">ใช้อยู่ {f.refs}</span>
+                  ) : (
+                    <span className="shrink-0 text-[10px] text-sub/60" title="ไม่พบการใช้งาน">ไม่ถูกใช้</span>
+                  )}
                 </div>
+                <button onClick={() => copy(f.url)} className="mt-1 block w-full truncate text-left text-[11px] text-accent hover:underline">{copied === f.url ? "คัดลอกแล้ว ✓" : "คัดลอก URL"}</button>
               </div>
             </div>
           ))}

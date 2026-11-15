@@ -1474,10 +1474,38 @@ router.post("/integrations/zort/sync-orders", async (req, res, next) => {
 });
 
 /* ---------- คลังไฟล์ (Media Library) ---------- */
-// รายการไฟล์ทั้งหมดในคลัง (ปก/แบนเนอร์/PDF ฯลฯ)
+// รายการไฟล์ทั้งหมดในคลัง + จำนวนที่ถูกใช้ (References)
 router.get("/media", async (req, res, next) => {
   try {
-    res.json(await listUploads());
+    const files = await listUploads();
+    const counts = new Map();
+    const bump = (u) => { if (typeof u === "string" && u) counts.set(u, (counts.get(u) || 0) + 1); };
+
+    const [books, variants, slides, terms, cats, blogs, orders, settings] = await Promise.all([
+      prisma.book.findMany({ select: { coverImage: true, backCoverImage: true, galleryImages: true, previewPdf: true } }),
+      prisma.variant.findMany({ select: { coverImage: true, backCoverImage: true } }),
+      prisma.slide.findMany({ select: { image: true, imageMobile: true } }),
+      prisma.term.findMany({ select: { image: true } }),
+      prisma.category.findMany({ select: { image: true } }),
+      prisma.blogPost.findMany({ select: { coverImage: true } }),
+      prisma.order.findMany({ where: { slipImage: { not: null } }, select: { slipImage: true } }),
+      prisma.setting.findMany(),
+    ]);
+    books.forEach((b) => { bump(b.coverImage); bump(b.backCoverImage); bump(b.previewPdf); (b.galleryImages || []).forEach(bump); });
+    variants.forEach((v) => { bump(v.coverImage); bump(v.backCoverImage); });
+    slides.forEach((s) => { bump(s.image); bump(s.imageMobile); });
+    terms.forEach((t) => bump(t.image));
+    cats.forEach((c) => bump(c.image));
+    blogs.forEach((b) => bump(b.coverImage));
+    orders.forEach((o) => bump(o.slipImage));
+    // settings เก็บ URL ไว้ใน JSON/ข้อความ (โลโก้/แบนเนอร์/รูปผู้เขียน ฯลฯ) → นับจากการปรากฏในค่า
+    const settingsBlob = settings.map((s) => s.value || "").join("\n");
+
+    res.json(files.map((f) => {
+      let refs = counts.get(f.url) || 0;
+      if (f.url && settingsBlob.includes(f.url)) refs += settingsBlob.split(f.url).length - 1;
+      return { ...f, refs };
+    }));
   } catch (err) {
     next(err);
   }
