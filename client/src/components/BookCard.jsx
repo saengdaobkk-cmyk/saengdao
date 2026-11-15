@@ -84,7 +84,7 @@ export default function BookCard({ book, index = 0, reveal = false }) {
             <span className="text-4xl opacity-25">𝐀</span>
           </div>
         )}
-        {isPreorder && stock <= 0 && (
+        {isPreorder && (
           <span className="absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-indigo-500 px-1 text-center text-[11px] font-semibold leading-[1.1] text-white shadow-md">
             Pre-Order
           </span>
@@ -97,8 +97,8 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           </div>
         )}
         {/* ป้ายลดราคา / Hot Deal — มุมขวาบน (ตำแหน่งเดียวกับป้าย PRE-ORDER) */}
-        {pct > 0 && stock > 0 && (pi.hot || pi.preorder || showCardDiscountBadge !== false) && (
-          <span className={`absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full text-center text-[12px] font-semibold leading-[1.1] text-white shadow-md ${pi.preorder ? "bg-indigo-500" : pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
+        {!isPreorder && pct > 0 && stock > 0 && (pi.hot || showCardDiscountBadge !== false) && (
+          <span className={`absolute right-2.5 top-2.5 flex h-[52px] w-[52px] items-center justify-center rounded-full text-center text-[12px] font-semibold leading-[1.1] text-white shadow-md ${pi.hot ? "bg-orange-500" : "bg-rose-500"}`}>
             -{pct}%
           </span>
         )}
