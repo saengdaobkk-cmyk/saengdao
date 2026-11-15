@@ -63,9 +63,9 @@ export default function AuthorSpotlight({ cfg }) {
         {/* โปรไฟล์ผู้เขียน + หนังสือ */}
         <div>
           <div className="flex items-start gap-5 sm:gap-6">
-            {cfg.photo && (
+            {(cfg.photo || term?.image) && (
               <img
-                src={img(cfg.photo, 240)}
+                src={img(cfg.photo || term.image, 240)}
                 alt={cfg.name}
                 className="h-20 w-20 shrink-0 rounded-full object-cover ring-1 ring-line sm:h-24 sm:w-24"
               />
@@ -78,8 +78,8 @@ export default function AuthorSpotlight({ cfg }) {
             </div>
           </div>
 
-          {cfg.bio && (
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-sub">{cfg.bio}</p>
+          {(cfg.bio || term?.bio) && (
+            <p className="mt-5 max-w-xl whitespace-pre-line text-[15px] leading-relaxed text-sub">{cfg.bio || term.bio}</p>
           )}
 
           {cfg.buttonText && (
