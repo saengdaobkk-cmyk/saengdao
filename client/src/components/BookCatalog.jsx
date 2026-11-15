@@ -121,23 +121,16 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
         </nav>
       </div>
 
-      {/* ตัวกรอง — หมวดหมู่เลื่อนแนวนอนได้ (รองรับหมวดเยอะๆ) */}
-      <div className="mb-10 flex items-center gap-3">
-        <div className="relative min-w-0 flex-1">
-          <div className="no-scrollbar flex gap-2 overflow-x-auto scroll-smooth py-0.5 pr-8">
-            <button onClick={() => pickCategory("")} className={chip(category === "" && !publisher)}>ทั้งหมด</button>
-            {categories?.map((c) => (
-              <button key={c.id} onClick={() => pickCategory(c.slug)} className={chip(category === c.slug)}>{c.name}</button>
-            ))}
-            {publisher && (
-              <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-3.5 py-2 text-[13px] text-white">
-                สำนักพิมพ์: {publisher}
-                <button onClick={() => { setPublisher(""); setPage(1); }} aria-label="ล้าง" className="text-white/70 hover:text-white">✕</button>
-              </span>
-            )}
-          </div>
-          {/* fade ขวา บอกว่ามีหมวดต่อ */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent" />
+      {/* ตัวกรอง — เลือกหมวดจาก dropdown (รองรับหมวดเยอะๆ) */}
+      <div className="mb-10 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <CategoryDropdown categories={categories} value={category} onPick={pickCategory} />
+          {publisher && (
+            <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink px-3.5 py-2 text-[13px] text-white">
+              สำนักพิมพ์: {publisher}
+              <button onClick={() => { setPublisher(""); setPage(1); }} aria-label="ล้าง" className="text-white/70 hover:text-white">✕</button>
+            </span>
+          )}
         </div>
         <SortDropdown value={sort} onChange={(v) => { setSort(v); setPage(1); }} />
       </div>
@@ -192,6 +185,49 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
 }
 
 // dropdown เรียงลำดับ — ปุ่ม pill + เมนู popover (แทน select เดิม)
+// dropdown เลือกหมวดหมู่ — แทนแถว chip เลื่อนแนวนอน
+function CategoryDropdown({ categories = [], value, onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = value ? (categories.find((c) => c.slug === value)?.name || "หมวดหมู่") : "ทุกหมวด";
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  const Item = ({ label, active, onClick }) => (
+    <li>
+      <button type="button" role="option" aria-selected={active} onClick={onClick}
+        className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-[13px] transition hover:bg-mist ${active ? "font-medium text-ink" : "text-sub"}`}>
+        {label}
+        {active && <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-accent"><path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+      </button>
+    </li>
+  );
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open}
+        className={`flex items-center gap-2 rounded-full border bg-white px-4 py-2.5 text-[13px] transition ${open ? "border-ink/40 text-ink" : "border-line text-ink hover:border-ink/25"}`}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-sub"><path d="M3 6h18M6 12h12M10 18h4" strokeLinecap="round" /></svg>
+        <span className="max-w-[160px] truncate whitespace-nowrap">{current}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-sub transition-transform duration-200 ${open ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
+      {open && (
+        <ul role="listbox" className="absolute left-0 z-20 mt-2 max-h-[60vh] min-w-[200px] overflow-y-auto rounded-xl border border-line bg-white py-1 shadow-lg">
+          <Item label="ทุกหมวด" active={!value} onClick={() => { onPick(""); setOpen(false); }} />
+          {categories.map((c) => <Item key={c.id} label={c.name} active={value === c.slug} onClick={() => { onPick(c.slug); setOpen(false); }} />)}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function SortDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
