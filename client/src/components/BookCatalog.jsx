@@ -213,7 +213,7 @@ export function SortDropdown({ value, onChange }) {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`flex items-center gap-2 rounded-full border bg-white px-4 py-2.5 text-[13px] text-ink transition ${open ? "border-ink/40" : "border-line hover:border-ink/25"}`}
+        className={`flex items-center gap-1.5 py-1.5 text-[13px] transition ${open ? "text-ink" : "text-ink hover:text-accent"}`}
       >
         <span className="whitespace-nowrap">{current.label}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
