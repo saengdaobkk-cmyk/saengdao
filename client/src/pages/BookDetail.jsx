@@ -250,7 +250,7 @@ export default function BookDetail() {
               {showDiscount && (
                 <>
                   <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
-                  <span className={`mb-1.5 rounded-full px-2 py-0.5 text-[12px] font-semibold text-white ${isHot ? "bg-orange-500" : pi.preorder ? "bg-indigo-500" : "bg-rose-500"}`}>{t("product.discount_label", "ลด")} {pct}%</span>
+                  <span className="mb-1.5 rounded-full bg-rose-500 px-2 py-0.5 text-[12px] font-semibold text-white">{t("product.discount_label", "ลด")} {pct}%</span>
                 </>
               )}
             </div>
