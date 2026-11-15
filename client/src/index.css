@@ -21,8 +21,12 @@
   a, button {
     -webkit-tap-highlight-color: transparent;
   }
+  :root {
+    --color-accent: #0071e3; /* สีหลัก (ปรับได้ใน settings) */
+    --font-sans: "IBM Plex Sans Thai"; /* ฟอนต์หลัก (ปรับได้ใน settings) */
+  }
   body {
-    font-family: "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans), "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;
     background-color: #ffffff;
     color: #1d1d1f;
   }

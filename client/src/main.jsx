@@ -8,6 +8,7 @@ import { CartProvider } from "./cart/CartContext";
 import App from "./App.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import RedirectHandler from "./components/RedirectHandler.jsx";
+import ThemeApplier from "./components/ThemeApplier.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Home from "./pages/Home.jsx";
 import Collection from "./pages/Collection.jsx";
@@ -73,6 +74,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
+            <ThemeApplier />
             <RedirectHandler />
             <ErrorBoundary>
             <Routes>

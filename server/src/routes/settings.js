@@ -13,6 +13,8 @@ const STRING_KEYS = [
   "headerLogoOnLight", // โลโก้รูปบนแถบเมนู — พื้นสว่าง (แถบขาว)
   "headerLogoOnDark", // โลโก้รูปบนแถบเมนู — พื้นเข้ม (ทับสไลด์)
   "headerLogoSize", // ความสูงโลโก้รูปบนแถบเมนู (px)
+  "themeAccentColor", // สีหลักของเว็บ (accent) — เว้นว่าง = ฟ้า Apple
+  "themeFont", // ฟอนต์หลักของเว็บ
   "headerBgColor", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่ง)
   "headerBgOpacity", // ความทึบพื้นแถบเมนู 0-100 (%)
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
@@ -91,6 +93,8 @@ const DEFAULTS = {
   orderExpiryDays: "7",
   headerLogoOnLight: "",
   headerLogoOnDark: "",
+  themeAccentColor: "", // สีหลัก (เว้นว่าง = #0071e3)
+  themeFont: "IBM Plex Sans Thai", // ฟอนต์หลัก
   headerLogoSize: "28",
   headerBgColor: "", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่งเดิม)
   headerBgOpacity: "80", // ความทึบพื้นแถบเมนู 0-100 (%)

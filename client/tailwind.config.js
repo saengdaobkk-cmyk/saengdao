@@ -6,14 +6,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["IBM Plex Sans Thai", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["var(--font-sans)", "IBM Plex Sans Thai", "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         ink: "#1d1d1f", // หมึกเข้ม (ตัวหนังสือหลัก)
         sub: "#86868b", // เทารอง
         line: "#e5e5e7", // เส้นแบ่ง
         mist: "#f5f5f7", // เทาหมอก (พื้นเซกชัน)
-        accent: "#0071e3", // ฟ้า Apple
+        accent: "var(--color-accent, #0071e3)", // สีหลัก (ปรับได้ใน settings)
       },
       letterSpacing: {
         tightest: "-0.03em",

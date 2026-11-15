@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSettings, useUpdateSettings } from "../../api/settings";
 import { uploadImage } from "../../api/admin";
 import { api } from "../../lib/api";
+import { THEME_FONTS, DEFAULT_FONT } from "../../lib/themeFonts";
 
 const SETTINGS_TABS = [
   { id: "appearance", label: "หน้าตา & แบรนด์" },
@@ -39,6 +40,7 @@ export default function AdminSettings() {
       <div className="space-y-12">
         {tab === "appearance" && (
           <>
+            <ThemeSettings settings={settings} save={update} />
             <BrandSettings settings={settings} save={update} />
             <FooterSettings settings={settings} save={update} />
             <DisplaySettings settings={settings} update={update} />
@@ -65,6 +67,38 @@ export default function AdminSettings() {
 }
 
 // การแสดงผล — สวิตช์เปิด/ปิดฟีเจอร์หน้าร้าน
+function ThemeSettings({ settings, save }) {
+  const accent = settings.themeAccentColor || "#0071e3";
+  const font = THEME_FONTS[settings.themeFont] ? settings.themeFont : DEFAULT_FONT;
+  return (
+    <section>
+      <h2 className="mb-1 text-[15px] font-semibold text-ink">ธีม (สี & ฟอนต์)</h2>
+      <p className="mb-4 text-[12px] text-sub">กำหนดสีหลักและฟอนต์ของทั้งเว็บ · มีผลทั้งหน้าร้านและหลังบ้าน</p>
+      <div className="space-y-5 rounded-2xl border border-line bg-white p-6">
+        <div>
+          <p className="mb-1 text-[13px] font-medium text-ink">สีหลัก (ปุ่ม / ลิงก์ / จุดเน้น)</p>
+          <p className="mb-2 text-[12px] text-sub">เว้นว่าง = ฟ้า Apple (#0071e3)</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <input type="color" value={accent} onChange={(e) => save.mutate({ themeAccentColor: e.target.value })} className="h-10 w-12 rounded border border-line" />
+            <input value={settings.themeAccentColor || ""} onChange={(e) => save.mutate({ themeAccentColor: e.target.value })} placeholder="#0071e3"
+              className="w-40 rounded-lg border border-line px-3 py-2 text-[13px] outline-none focus:border-ink/30" />
+            {settings.themeAccentColor && <button type="button" onClick={() => save.mutate({ themeAccentColor: "" })} className="text-[13px] text-accent">รีเซ็ต</button>}
+          </div>
+        </div>
+        <div className="border-t border-line pt-5">
+          <p className="mb-1 text-[13px] font-medium text-ink">ฟอนต์หลัก</p>
+          <p className="mb-2 text-[12px] text-sub">ฟอนต์รองรับภาษาไทยทั้งหมด (โหลดจาก Google Fonts)</p>
+          <select value={font} onChange={(e) => save.mutate({ themeFont: e.target.value })} style={{ fontFamily: `'${font}'` }}
+            className="w-64 rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30">
+            {Object.keys(THEME_FONTS).map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+          <p className="mt-3 text-[16px] text-ink" style={{ fontFamily: `'${font}'` }}>ตัวอย่าง: สำนักพิมพ์แสงดาว · The quick brown fox 123</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DisplaySettings({ settings, update }) {
   return (
     <section>
