@@ -9,7 +9,8 @@ import SectionHeading from "./SectionHeading";
 // โหมดอัตโนมัติ: เรียงตาม sort · โหมดเลือกเอง: ตาม bookIds
 export default function BookGridSection({ title, subtitle, sort, mode = "auto", bookIds = [], limit = 12, showRating = false }) {
   const manual = mode === "manual" && bookIds.length > 0;
-  const { data } = useBooks(manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit });
+  // โหมด showRating (Popular) + อัตโนมัติ → กรองเฉพาะเล่มที่มีรีวิว/ดาว
+  const { data } = useBooks(manual ? { ids: bookIds.join(",") } : { sort, page: 1, limit, ...(showRating ? { rated: 1 } : {}) });
   const items = data?.items || [];
   if (!items.length) return null;
 

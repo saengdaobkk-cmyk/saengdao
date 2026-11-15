@@ -26,7 +26,7 @@ router.get("/", async (req, res, next) => {
     // cache เฉพาะรายการปกติ (ข้ามโหมด ids / สุ่ม ที่ผลไม่ตายตัว)
     const cacheKey =
       req.query.ids == null && sort !== "random"
-        ? "books:" + JSON.stringify({ q: q || "", category: category || "", publisher: publisher || "", author: req.query.author || "", translator: req.query.translator || "", sort: sort || "", page, limit })
+        ? "books:" + JSON.stringify({ q: q || "", category: category || "", publisher: publisher || "", author: req.query.author || "", translator: req.query.translator || "", rated: req.query.rated || "", sort: sort || "", page, limit })
         : null;
     if (cacheKey) {
       const hit = cacheGet(cacheKey);
@@ -67,6 +67,10 @@ router.get("/", async (req, res, next) => {
     }
     if (req.query.translator) {
       where.translator = { contains: req.query.translator, mode: "insensitive" };
+    }
+    // เฉพาะเล่มที่มีรีวิว (ใช้กับ section Popular ที่โชว์ดาว)
+    if (req.query.rated === "1" || req.query.rated === "true") {
+      where.reviews = { some: {} };
     }
 
     // สุ่ม: ดึง id ทั้งหมดที่เข้าเงื่อนไข → สลับ → หยิบตาม limit → ดึงเล่มพร้อม include
