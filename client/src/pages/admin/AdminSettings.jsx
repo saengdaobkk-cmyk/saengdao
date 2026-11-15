@@ -121,6 +121,13 @@ function DisplaySettings({ settings, update }) {
             onChange={(v) => update.mutate({ showProductSectionHeadings: v })}
           />
           <ToggleRow
+            title="ดาวรีวิวบนการ์ดสินค้า"
+            desc="เปิด: โชว์ดาว 5 ดวงบนการ์ดในหน้ารวม (มีรีวิว=ดาวเต็ม+จำนวน · ยังไม่มี=ดาวว่าง) · ปิด: ซ่อน"
+            checked={settings.showCardRating}
+            disabled={update.isPending}
+            onChange={(v) => update.mutate({ showCardRating: v })}
+          />
+          <ToggleRow
             title="ป้ายส่วนลด (-%) บนการ์ดสินค้า"
             desc="เปิด: โชว์ป้าย -% ส่วนลดธรรมดาบนการ์ด · ปิด: ซ่อนเฉพาะส่วนลดธรรมดา (Hot Deal / พรีออเดอร์ ยังโชว์ · หน้าสินค้ายังโชว์ตามปกติ)"
             checked={settings.showCardDiscountBadge}

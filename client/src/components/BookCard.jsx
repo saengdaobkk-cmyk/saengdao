@@ -9,7 +9,7 @@ import { useSettings } from "../api/settings";
 import { useCart } from "../cart/CartContext";
 
 export default function BookCard({ book, index = 0, reveal = false }) {
-  const { showCardCategory, showCardDiscountBadge } = useSettings();
+  const { showCardCategory, showCardDiscountBadge, showCardRating } = useSettings();
   const { add } = useCart();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -141,6 +141,14 @@ export default function BookCard({ book, index = 0, reveal = false }) {
           {book.title}
         </h3>
         <p className="line-clamp-1 text-[13px] text-sub">{book.author}</p>
+        {showCardRating !== false && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className="text-[12px] leading-none">
+              {[1, 2, 3, 4, 5].map((i) => <span key={i} className={i <= Math.round(book.avgRating || 0) ? "text-amber-400" : "text-line"}>★</span>)}
+            </span>
+            {book.reviewCount > 0 && <span className="text-[11px] text-sub">{book.reviewCount} รีวิว</span>}
+          </div>
+        )}
         {pct > 0 ? (
           <p className="mt-1.5 flex items-center gap-2">
             <span className="text-[15px] font-semibold tracking-tight text-rose-600">{formatPrice(pi.price)}</span>
