@@ -246,7 +246,7 @@ export default function BookDetail() {
           {/* buybox */}
           <div className={`${canPreorder || isHot ? "mt-3" : "mt-6"} rounded-2xl border border-line p-5`}>
             <div className="flex items-end gap-3">
-              <span className={`text-3xl font-semibold tracking-tight ${isHot ? "text-orange-600" : pi.preorder ? "text-indigo-600" : showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
+              <span className={`text-3xl font-semibold tracking-tight ${showDiscount ? "text-rose-600" : "text-ink"}`}>{formatPrice(showPrice)}</span>
               {showDiscount && (
                 <>
                   <span className="pb-1 text-[16px] text-sub line-through">{formatPrice(showFull)}</span>
