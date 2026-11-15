@@ -42,7 +42,7 @@ router.get("/:type/:key", async (req, res, next) => {
       where: { type, OR: [{ slug: key }, { name: key }] },
     });
     if (!term) return res.status(404).json({ error: "ไม่พบ" });
-    res.json({ type: term.type, name: term.name, slug: term.slug });
+    res.json({ type: term.type, name: term.name, slug: term.slug, image: term.image, bio: term.bio });
   } catch (err) {
     next(err);
   }

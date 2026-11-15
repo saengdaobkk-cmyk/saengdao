@@ -7,6 +7,7 @@ import { useSettings } from "../api/settings";
 import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import BookLoader from "../components/BookLoader";
+import { img } from "../lib/img";
 
 const TYPE_LABEL = { PUBLISHER: "สำนักพิมพ์", AUTHOR: "ผู้เขียน", TRANSLATOR: "ผู้แปล" };
 const TYPE_PARAM = { PUBLISHER: "publisher", AUTHOR: "author", TRANSLATOR: "translator" };
@@ -46,29 +47,63 @@ export default function TermCollection({ type }) {
       </div>
     );
 
+  const isPerson = type === "AUTHOR" || type === "TRANSLATOR";
+  const hasProfile = isPerson && (term.image || term.bio);
+
+  const breadcrumb = (
+    <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
+      <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
+      <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
+      <span className="text-ink">{term.name}</span>
+    </nav>
+  );
+  const sortSelect = (
+    <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
+      className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
+      <option value="newest">มาใหม่ล่าสุด</option>
+      <option value="popular">ขายดี</option>
+      <option value="price_asc">ราคาน้อย → มาก</option>
+      <option value="price_desc">ราคามาก → น้อย</option>
+    </select>
+  );
+
   return (
     <div className="mx-auto max-w-page px-5 py-12 sm:py-16">
-      {/* หัวหน้า — ชื่อซ้าย / breadcrumb ขวา (บรรทัดเดียวบนจอกว้าง) */}
-      <div className="mb-8 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
-        <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
-          <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
-          <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
-          <span className="text-ink">{term.name}</span>
-        </nav>
-      </div>
-
-      {/* จำนวน (ซ้าย) + เรียงลำดับ (ขวา) */}
-      <div className="mb-10 flex items-center justify-between gap-3">
-        <p className="text-[13px] text-sub">{data && !booksLoading && showCollectionCount ? `${data.total} เล่ม` : ""}</p>
-        <select value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }}
-          className="rounded-full border border-line bg-white px-4 py-2 text-[13px] text-ink outline-none focus:border-ink/30">
-          <option value="newest">มาใหม่ล่าสุด</option>
-          <option value="popular">ขายดี</option>
-          <option value="price_asc">ราคาน้อย → มาก</option>
-          <option value="price_desc">ราคามาก → น้อย</option>
-        </select>
-      </div>
+      {hasProfile ? (
+        <>
+          {/* breadcrumb ด้านบน */}
+          <div className="mb-8">{breadcrumb}</div>
+          {/* โปรไฟล์ — รูปซ้าย + ชื่อ/ประวัติขวา */}
+          <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:gap-9">
+            {term.image && (
+              <img src={img(term.image, 480)} alt={term.name}
+                className="h-52 w-52 shrink-0 self-center rounded-2xl object-cover ring-1 ring-line sm:h-60 sm:w-60 sm:self-start" />
+            )}
+            <div className="min-w-0">
+              <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
+              {term.bio && <p className="mt-4 max-w-2xl whitespace-pre-line text-[15px] leading-relaxed text-sub">{term.bio}</p>}
+            </div>
+          </div>
+          {/* หัวข้อ "หนังสือโดย X" + เรียงลำดับ */}
+          <div className="mb-8 flex items-center justify-between gap-3 border-b border-line pb-4">
+            <h2 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">{t("term.books_by", "หนังสือโดย")} {term.name}</h2>
+            {sortSelect}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* หัวหน้า — ชื่อซ้าย / breadcrumb ขวา */}
+          <div className="mb-8 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold tracking-tightest text-ink sm:text-4xl">{term.name}</h1>
+            {breadcrumb}
+          </div>
+          {/* จำนวน (ซ้าย) + เรียงลำดับ (ขวา) */}
+          <div className="mb-10 flex items-center justify-between gap-3">
+            <p className="text-[13px] text-sub">{data && !booksLoading && showCollectionCount ? `${data.total} เล่ม` : ""}</p>
+            {sortSelect}
+          </div>
+        </>
+      )}
 
       {booksLoading ? (
         <BookLoader />

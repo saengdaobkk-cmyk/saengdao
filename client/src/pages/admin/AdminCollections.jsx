@@ -178,8 +178,20 @@ export function TermManager({ type }) {
   const [name, setName] = useState("");
   const [editing, setEditing] = useState(null);
   const [editName, setEditName] = useState("");
+  const [editImage, setEditImage] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
   const [error, setError] = useState("");
   const [uploadingId, setUploadingId] = useState(null);
+
+  const openEdit = (t) => { setEditing(t); setEditName(t.name); setEditImage(t.image || ""); setEditBio(t.bio || ""); setError(""); };
+  const onEditImage = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setEditBusy(true); setError("");
+    try { const url = await uploadImage(file); setEditImage(url); }
+    catch { setError("อัปโหลดรูปไม่สำเร็จ"); }
+    finally { setEditBusy(false); }
+  };
 
   const onLogo = async (t, e) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -196,7 +208,7 @@ export function TermManager({ type }) {
     if (!name.trim()) return;
     save.mutate({ name: name.trim() }, { onSuccess: () => setName(""), onError: (err) => setError(err.response?.data?.error || "เพิ่มไม่สำเร็จ") });
   };
-  const saveEdit = () => save.mutate({ id: editing.id, name: editName.trim() }, { onSuccess: () => setEditing(null), onError: (err) => setError(err.response?.data?.error || "แก้ไม่สำเร็จ") });
+  const saveEdit = () => save.mutate({ id: editing.id, name: editName.trim(), image: editImage, bio: editBio }, { onSuccess: () => setEditing(null), onError: (err) => setError(err.response?.data?.error || "แก้ไม่สำเร็จ") });
 
   return (
     <div className="space-y-4">
@@ -225,17 +237,28 @@ export function TermManager({ type }) {
             {terms?.map((t) => (
               <tr key={t.id} className="hover:bg-mist/30">
                 {editing?.id === t.id ? (
-                  <>
-                    <td className="px-5 py-2" colSpan={3}>
-                      <input value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full max-w-sm rounded-lg border border-line px-3 py-1.5 text-[14px] outline-none focus:border-ink/30" autoFocus />
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-2">
-                      <div className="flex justify-end gap-4">
-                        <button onClick={saveEdit} className="text-[13px] font-medium text-accent">บันทึก</button>
+                  <td colSpan={4} className="bg-mist/30 px-5 py-4">
+                    <div className="max-w-xl space-y-3">
+                      <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="ชื่อ" className="w-full rounded-lg border border-line px-3 py-2 text-[14px] outline-none focus:border-ink/30" autoFocus />
+                      <div className="flex items-center gap-3">
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-line bg-white">
+                          {editImage ? <img src={editImage} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-[10px] text-sub">ไม่มีรูป</span>}
+                        </div>
+                        <label className="cursor-pointer rounded-full border border-line px-4 py-2 text-[13px] text-ink transition hover:bg-mist">
+                          {editBusy ? "กำลังอัป..." : editImage ? "เปลี่ยนรูป" : (type === "PUBLISHER" ? "อัปโหลดโลโก้" : "อัปโหลดรูป")}
+                          <input type="file" accept="image/*" onChange={onEditImage} className="hidden" />
+                        </label>
+                        {editImage && <button type="button" onClick={() => setEditImage("")} className="text-[13px] text-sub hover:text-red-600">ลบรูป</button>}
+                      </div>
+                      <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={4}
+                        placeholder={type === "PUBLISHER" ? "คำอธิบายสำนักพิมพ์ (ถ้ามี)" : "ประวัติ / คำอธิบาย (แสดงบนหน้ารวม)"}
+                        className="w-full resize-none rounded-lg border border-line px-3 py-2 text-[14px] leading-relaxed outline-none focus:border-ink/30" />
+                      <div className="flex gap-4">
+                        <button onClick={saveEdit} disabled={!editName.trim() || editBusy} className="rounded-full bg-accent px-5 py-2 text-[13px] font-medium text-white transition hover:bg-accent/90 disabled:opacity-50">บันทึก</button>
                         <button onClick={() => setEditing(null)} className="text-[13px] text-sub hover:text-ink">ยกเลิก</button>
                       </div>
-                    </td>
-                  </>
+                    </div>
+                  </td>
                 ) : (
                   <>
                     <td className="px-5 py-3">
@@ -264,7 +287,7 @@ export function TermManager({ type }) {
                     <td className="whitespace-nowrap px-5 py-3">
                       <div className="flex justify-end gap-4">
                         <Link to={`/${meta.path}/${t.slug}`} target="_blank" className="text-[13px] text-sub hover:text-ink">ดู ↗</Link>
-                        <button onClick={() => { setEditing(t); setEditName(t.name); setError(""); }} className="text-[13px] text-accent">แก้ไข</button>
+                        <button onClick={() => openEdit(t)} className="text-[13px] text-accent">แก้ไข</button>
                         <button onClick={() => confirm(`ลบ "${t.name}"? จะเอาออกจากหนังสือ ${t.count} เล่มด้วย`) && del.mutate(t.id)} className="text-[13px] text-sub hover:text-red-600">ลบ</button>
                       </div>
                     </td>

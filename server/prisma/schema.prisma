@@ -92,7 +92,8 @@ model Term {
   type      TermType
   name      String
   slug      String?
-  image     String? // โลโก้ (ใช้กับสำนักพิมพ์ — แสดง marquee หน้าแรก)
+  image     String? // โลโก้สำนักพิมพ์ / รูปผู้เขียน-ผู้แปล
+  bio       String? // ประวัติ/คำอธิบาย (ผู้เขียน/ผู้แปล/สำนักพิมพ์)
   createdAt DateTime @default(now())
 
   @@unique([type, name])

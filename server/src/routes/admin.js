@@ -612,6 +612,7 @@ router.patch("/terms/:id", async (req, res, next) => {
       const slug = await uniqueTermSlug(term.type, name, term.id);
       const data = { name, slug };
       if (req.body.image !== undefined) data.image = req.body.image?.trim() || null;
+      if (req.body.bio !== undefined) data.bio = req.body.bio?.trim() || null;
       const t = await prisma.term.update({ where: { id: term.id }, data });
       res.json({ ...t, updated });
     } catch (e) {

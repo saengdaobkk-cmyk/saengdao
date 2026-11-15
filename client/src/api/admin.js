@@ -105,10 +105,11 @@ export function useSaveTerm(type) {
   return useMutation({
     mutationFn: async (t) =>
       t.id
-        ? (await api.patch(`/admin/terms/${t.id}`, { name: t.name, image: t.image })).data
+        ? (await api.patch(`/admin/terms/${t.id}`, { name: t.name, image: t.image, bio: t.bio })).data
         : (await api.post("/admin/terms", { type, name: t.name })).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "terms", type] });
+      qc.invalidateQueries({ queryKey: ["term"] });
       qc.invalidateQueries({ queryKey: ["publishers"] });
       qc.invalidateQueries({ queryKey: ["admin", "books"] });
     },
