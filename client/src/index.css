@@ -5,7 +5,7 @@
 @layer base {
   html {
     /* ฐานฟอนต์ทั้งเว็บ */
-    font-size: 18px;
+    font-size: 17px;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;

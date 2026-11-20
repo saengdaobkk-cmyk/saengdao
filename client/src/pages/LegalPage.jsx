@@ -22,7 +22,7 @@ export default function LegalPage({ titleKey, bodyKey }) {
             return (
               <ul key={i} className="space-y-2 pl-1">
                 {lines.map((l, j) => (
-                  <li key={j} className="flex gap-2.5 text-[15px] leading-relaxed text-ink/80">
+                  <li key={j} className="flex gap-2.5 text-[17px] leading-relaxed text-ink/80">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ink/30" />
                     <span>{l.slice(2)}</span>
                   </li>
@@ -30,7 +30,7 @@ export default function LegalPage({ titleKey, bodyKey }) {
               </ul>
             );
           }
-          return <p key={i} className="whitespace-pre-line text-[15px] leading-relaxed text-ink/80">{block}</p>;
+          return <p key={i} className="whitespace-pre-line text-[17px] leading-relaxed text-ink/80">{block}</p>;
         })}
       </div>
     </div>
