@@ -301,12 +301,12 @@ export default function BookDetail() {
                 </div>
               )}
               <button disabled={soldOut} onClick={() => addToCart(false)}
-                className={`block flex-1 rounded-full px-8 py-3 text-[15px] font-medium transition active:scale-[0.98] ${soldOut ? "cursor-not-allowed bg-mist text-sub" : "bg-accent text-white hover:bg-accent/90 sm:max-w-[360px]"}`}>
+                className={`block flex-1 rounded-full px-8 py-3.5 text-[16px] font-medium transition active:scale-[0.98] ${soldOut ? "cursor-not-allowed bg-mist text-sub" : "bg-accent text-white hover:bg-accent/90 sm:max-w-[360px]"}`}>
                 {soldOut ? t("product.out_of_stock", "สินค้าหมด") : canPreorder && book.stock <= 0 ? "สั่งพรีออเดอร์" : t("product.add_to_cart", "หยิบใส่ตะกร้า")}
               </button>
               {book.previewPdf && (
                 <button type="button" onClick={() => setFlipOpen(true)}
-                  className="flex w-auto items-center justify-center gap-2 rounded-full border border-line px-8 py-3 text-[15px] font-medium text-ink transition hover:bg-mist active:scale-[0.98]">
+                  className="flex w-auto items-center justify-center gap-2 rounded-full border border-line px-8 py-3.5 text-[16px] font-medium text-ink transition hover:bg-mist active:scale-[0.98]">
                   <BookOpenIcon /> {t("product.preview", "อ่านตัวอย่าง")}
                 </button>
               )}
