@@ -115,7 +115,7 @@ export default function BookCatalog({ eyebrow = "คอลเลกชัน", h
             </>
           )}
         </div>
-        <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
+        <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-sub sm:justify-end">
           <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
           {q ? <><Link to="/books" className="hover:text-ink">หนังสือ</Link><span>›</span><span className="text-ink">ค้นหา</span></> : <span className="text-ink">หนังสือ</span>}
         </nav>

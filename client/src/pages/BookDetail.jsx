@@ -142,7 +142,7 @@ export default function BookDetail() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
       {/* breadcrumbs */}
-      <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
+      <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-sub">
         <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
         <Link to="/books" className="hover:text-ink">{t("product.bc_shop", "ร้านหนังสือ")}</Link>
         {book.category && (<><span>›</span><Link to={`/books?category=${book.category.slug}`} className="hover:text-ink">{book.category.name}</Link></>)}

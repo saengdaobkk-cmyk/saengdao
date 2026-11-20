@@ -52,7 +52,7 @@ export default function Orders() {
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
-      <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[12px] text-sub">
+      <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-[13px] text-sub">
         <Link to="/" className="hover:text-ink">หน้าแรก</Link><span>›</span>
         <Link to="/account" className="hover:text-ink">บัญชีของฉัน</Link><span>›</span>
         <span className="text-ink">ประวัติคำสั่งซื้อ</span>
