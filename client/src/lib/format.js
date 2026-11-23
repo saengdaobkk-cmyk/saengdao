@@ -26,8 +26,8 @@ export function localizeSpec(value) {
   if (value == null) return value;
   return String(value)
     .replace(/\d{4,}/g, (m) => Number(m).toLocaleString("en-US"))
-    .replace(/\bkg\b/gi, "กก.")
-    .replace(/\bg\b/gi, "กรัม")
-    .replace(/\bcm\b/gi, "ซม.")
-    .replace(/\bmm\b/gi, "มม.");
+    .replace(/\bkg\b\.?/gi, "กก.")
+    .replace(/\bg\b\.?/gi, "กรัม")
+    .replace(/\bcm\b\.?/gi, "ซม.")
+    .replace(/\bmm\b\.?/gi, "มม.");
 }
