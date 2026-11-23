@@ -10,7 +10,7 @@ import { useContent } from "../api/content";
 import BookCard from "../components/BookCard";
 import FlipBook from "../components/FlipBook";
 import HotDealCountdown from "../components/HotDealCountdown";
-import { formatPrice } from "../lib/format";
+import { formatPrice, formatCount, localizeSpec } from "../lib/format";
 import { priceInfo, preorderActive } from "../lib/pricing";
 import { img } from "../lib/img";
 
@@ -130,9 +130,9 @@ export default function BookDetail() {
       ? <Link to={`/publisher/${book.publisherLink.slug}`} className="text-ink transition-colors hover:text-accent">{book.publisherLink.name}</Link>
       : book.publisher],
     [t("product.spec_edition", "พิมพ์ครั้งที่"), book.edition],
-    [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && `${book.pageCount}`],
-    [t("product.spec_dimensions", "ขนาด"), book.dimensions],
-    [t("product.spec_weight", "น้ำหนัก"), book.weight],
+    [t("product.spec_pages", "จำนวนหน้า"), book.pageCount && formatCount(book.pageCount)],
+    [t("product.spec_dimensions", "ขนาด"), localizeSpec(book.dimensions)],
+    [t("product.spec_weight", "น้ำหนัก"), localizeSpec(book.weight)],
     [t("product.spec_paper", "กระดาษเนื้อใน"), book.paperType],
     [t("product.spec_cover", "ปก"), book.coverType],
     [t("product.spec_isbn", "ISBN"), variant?.isbn || book.isbn],
