@@ -52,7 +52,7 @@ export default function TermCollection({ type }) {
   const hasProfile = isPerson && (term.image || term.bio);
 
   const breadcrumb = (
-    <nav className="flex flex-wrap items-center gap-1.5 text-[13px] text-sub sm:justify-end">
+    <nav className="flex flex-wrap items-center gap-1.5 text-[12px] text-sub sm:justify-end">
       <Link to="/" className="hover:text-ink">{t("product.bc_home", "หน้าแรก")}</Link><span>›</span>
       <Link to={`/${TYPE_PARAM[type]}s`} className="hover:text-ink">{TYPE_LABEL[type]}</Link><span>›</span>
       <span className="text-ink">{term.name}</span>
