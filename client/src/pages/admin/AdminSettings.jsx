@@ -70,6 +70,7 @@ export default function AdminSettings() {
 function ThemeSettings({ settings, save }) {
   const accent = settings.themeAccentColor || "#0071e3";
   const font = THEME_FONTS[settings.themeFont] ? settings.themeFont : DEFAULT_FONT;
+  const scale = settings.contentFontScale || "1";
   return (
     <section>
       <h2 className="mb-1 text-[15px] font-semibold text-ink">ธีม (สี & ฟอนต์)</h2>
@@ -93,6 +94,21 @@ function ThemeSettings({ settings, save }) {
             {Object.keys(THEME_FONTS).map((name) => <option key={name} value={name}>{name}</option>)}
           </select>
           <p className="mt-3 text-[16px] text-ink" style={{ fontFamily: `'${font}'` }}>ตัวอย่าง: สำนักพิมพ์แสงดาว · The quick brown fox 123</p>
+        </div>
+        <div className="border-t border-line pt-5">
+          <p className="mb-1 text-[13px] font-medium text-ink">ขนาดตัวอักษรเนื้อหาอ่าน</p>
+          <p className="mb-2 text-[12px] text-sub">ปรับเฉพาะ “ข้อความเนื้อหา” (คำอธิบายสินค้า · บทความ · หน้ากฎหมาย · เกี่ยวกับเรา) — ไม่กระทบเมนู/ปุ่ม/เลย์เอาต์</p>
+          <select value={scale} onChange={(e) => save.mutate({ contentFontScale: e.target.value })}
+            className="w-64 rounded-lg border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink/30">
+            <option value="0.9">เล็ก (90%)</option>
+            <option value="1">ปกติ (100%)</option>
+            <option value="1.1">ใหญ่ (110%)</option>
+            <option value="1.2">ใหญ่มาก (120%)</option>
+            <option value="1.3">ใหญ่พิเศษ (130%)</option>
+          </select>
+          <p className="mt-3 leading-relaxed text-ink/80" style={{ fontFamily: `'${font}'`, fontSize: `calc(15px * ${scale})` }}>
+            ตัวอย่างข้อความเนื้อหา: หนังสือเล่มนี้พาผู้อ่านเดินทางสู่โลกก่อนมนุษย์ ผ่านเรื่องเล่าที่งดงามและเปี่ยมจินตนาการ
+          </p>
         </div>
       </div>
     </section>

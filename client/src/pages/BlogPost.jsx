@@ -13,12 +13,12 @@ export const MD_COMPONENTS = {
   // ย่อหน้าที่มีแค่รูป → ไม่ครอบ <p> (กัน figure ซ้อนใน p ที่ผิด HTML)
   p: ({ node, children, ...rest }) => {
     if (node?.children?.length === 1 && node.children[0].tagName === "img") return <>{children}</>;
-    return <p className="text-[16px] leading-relaxed text-ink/85" {...rest}>{children}</p>;
+    return <p className="sd-read leading-relaxed text-ink/85" style={{ "--sd-read-base": "16px" }} {...rest}>{children}</p>;
   },
   strong: (p) => <strong className="font-semibold text-ink" {...p} />,
   a: (p) => <a className="text-accent underline underline-offset-2" target="_blank" rel="noreferrer" {...p} />,
-  ul: (p) => <ul className="list-disc space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
-  ol: (p) => <ol className="list-decimal space-y-1 pl-5 text-[16px] text-ink/85" {...p} />,
+  ul: (p) => <ul className="sd-read list-disc space-y-1 pl-5 text-ink/85" style={{ "--sd-read-base": "16px" }} {...p} />,
+  ol: (p) => <ol className="sd-read list-decimal space-y-1 pl-5 text-ink/85" style={{ "--sd-read-base": "16px" }} {...p} />,
   blockquote: (p) => <blockquote className="border-l-4 border-line pl-4 text-ink/70" {...p} />,
   // รูปในเนื้อหา → figure เต็มความกว้าง + คำบรรยายจาก alt
   img: ({ node, alt, ...rest }) => (

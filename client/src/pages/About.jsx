@@ -40,7 +40,7 @@ export default function About() {
             <p className="mt-5 text-[13.5px] tracking-[0.04em] text-sub">{t("about.tagline_note", "")}</p>
           )}
           {t("about.intro", "") && (
-            <p className="mt-9 max-w-2xl whitespace-pre-line text-[17px] leading-relaxed text-ink/70">{t("about.intro", "")}</p>
+            <p className="sd-read mt-9 max-w-2xl whitespace-pre-line leading-relaxed text-ink/70" style={{ "--sd-read-base": "17px" }}>{t("about.intro", "")}</p>
           )}
           {t("about.title", "") && (
             <p className="mt-7 text-[14px] font-medium tracking-[0.02em] text-sub">— {t("about.title", "")}</p>
@@ -82,7 +82,7 @@ export default function About() {
               )}
 
               {t("about.story_body", "") && (
-                <div className="mt-8 whitespace-pre-line text-[16.5px] leading-[1.95] text-ink/75">
+                <div className="sd-read mt-8 whitespace-pre-line leading-[1.95] text-ink/75" style={{ "--sd-read-base": "16.5px" }}>
                   {t("about.story_body", "")}
                 </div>
               )}
@@ -97,7 +97,7 @@ export default function About() {
               )}
 
               {t("about.story_body2", "") && (
-                <div className="whitespace-pre-line text-[16.5px] leading-[1.95] text-ink/75">
+                <div className="sd-read whitespace-pre-line leading-[1.95] text-ink/75" style={{ "--sd-read-base": "16.5px" }}>
                   {t("about.story_body2", "")}
                 </div>
               )}

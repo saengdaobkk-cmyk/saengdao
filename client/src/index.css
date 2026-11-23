@@ -24,6 +24,12 @@
   :root {
     --color-accent: #0071e3; /* สีหลัก (ปรับได้ใน settings) */
     --font-sans: "IBM Plex Sans Thai"; /* ฟอนต์หลัก (ปรับได้ใน settings) */
+    --content-scale: 1; /* สเกลตัวอักษรเนื้อหาอ่าน (ปรับได้ใน settings) */
+  }
+  /* ข้อความเนื้อหาอ่าน (คำอธิบายสินค้า/บทความ/กฎหมาย/about) — ขยายได้จากหลังบ้าน
+     โดยคูณ --content-scale กับขนาดฐานของแต่ละจุด (--sd-read-base) → ไม่ขยับ layout/รูป/เมนู */
+  .sd-read {
+    font-size: calc(var(--sd-read-base, 15px) * var(--content-scale, 1));
   }
   body {
     font-family: var(--font-sans), "IBM Plex Sans Thai", system-ui, -apple-system, sans-serif;

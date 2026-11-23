@@ -15,6 +15,7 @@ const STRING_KEYS = [
   "headerLogoSize", // ความสูงโลโก้รูปบนแถบเมนู (px)
   "themeAccentColor", // สีหลักของเว็บ (accent) — เว้นว่าง = ฟ้า Apple
   "themeFont", // ฟอนต์หลักของเว็บ
+  "contentFontScale", // สเกลขนาดตัวอักษรเนื้อหาอ่าน (คำอธิบายสินค้า/บทความ/กฎหมาย/about) เช่น "1", "1.1"
   "headerBgColor", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่ง)
   "headerBgOpacity", // ความทึบพื้นแถบเมนู 0-100 (%)
   "logoSizeHeader", // ขนาดตัวอักษร SAENGDAO (px) แถบเมนูบน
@@ -95,6 +96,7 @@ const DEFAULTS = {
   headerLogoOnDark: "",
   themeAccentColor: "", // สีหลัก (เว้นว่าง = #0071e3)
   themeFont: "IBM Plex Sans Thai", // ฟอนต์หลัก
+  contentFontScale: "1", // สเกลขนาดตัวอักษรเนื้อหาอ่าน (1 = ปกติ)
   headerLogoSize: "28",
   headerBgColor: "", // สีพื้นแถบเมนู (เว้นว่าง = ขาวโปร่งเดิม)
   headerBgOpacity: "80", // ความทึบพื้นแถบเมนู 0-100 (%)

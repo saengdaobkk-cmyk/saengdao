@@ -14,11 +14,20 @@ export const THEME_FONTS = {
 export const DEFAULT_FONT = "IBM Plex Sans Thai";
 export const fontHref = (name) => `https://fonts.googleapis.com/css2?family=${THEME_FONTS[name] || THEME_FONTS[DEFAULT_FONT]}&display=swap`;
 
+// สเกลตัวอักษรเนื้อหาอ่าน — จำกัดช่วงกันตั้งเพี้ยน
+export function clampContentScale(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 1;
+  return Math.min(1.4, Math.max(0.85, n));
+}
+
 // ใช้ค่าธีมจาก settings → ตั้ง CSS variable + โหลดฟอนต์ (เรียกครั้งเดียวจาก ThemeApplier)
-export function applyTheme({ accent, font }) {
+export function applyTheme({ accent, font, contentScale }) {
   const root = document.documentElement;
   if (accent) root.style.setProperty("--color-accent", accent);
   else root.style.removeProperty("--color-accent");
+
+  root.style.setProperty("--content-scale", String(clampContentScale(contentScale)));
 
   const f = THEME_FONTS[font] ? font : DEFAULT_FONT;
   root.style.setProperty("--font-sans", `'${f}'`);

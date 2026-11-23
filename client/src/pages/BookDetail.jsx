@@ -333,7 +333,7 @@ export default function BookDetail() {
           {book.description && (
             <div className="mt-8">
               {showProductSectionHeadings !== false && <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink">{t("product.description_heading", "รายละเอียด")}</h2>}
-              <p ref={descRef} className={`whitespace-pre-line text-[15px] leading-relaxed text-ink/80 ${!descOpen ? "line-clamp-[7]" : ""}`}>
+              <p ref={descRef} className={`sd-read whitespace-pre-line leading-relaxed text-ink/80 ${!descOpen ? "line-clamp-[7]" : ""}`}>
                 {book.description}
               </p>
               {descOverflow && (
